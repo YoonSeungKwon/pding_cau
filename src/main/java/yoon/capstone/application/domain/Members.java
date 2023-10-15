@@ -39,28 +39,27 @@ public class Members {
     private String username;
 
     @ColumnDefault("false")
-    private boolean oauth;
+    private Boolean oauth;
 
     @CreationTimestamp
     private LocalDateTime regdate;
 
     @UpdateTimestamp
-    private LocalDateTime update;
+    private LocalDateTime updated;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(nullable = true, length = 1000)
     private String address;
 
     @Column(nullable = false, length = 20)
     private String phone;
 
     @ColumnDefault("false")
-    private boolean isDenied;
+    private Boolean isDenied;
 
     @ColumnDefault("false")
-    private boolean isSleep;
+    private Boolean isSleep;
 
     @Builder
     Members(String email, String password, String username, Role role){
