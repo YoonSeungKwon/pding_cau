@@ -39,7 +39,7 @@ public class Members {
     private String username;
 
     @ColumnDefault("false")
-    private Boolean oauth;
+    private boolean oauth;
 
     @CreationTimestamp
     private LocalDateTime regdate;
@@ -56,17 +56,18 @@ public class Members {
     private String phone;
 
     @ColumnDefault("false")
-    private Boolean isDenied;
+    private boolean isDenied;
 
     @ColumnDefault("false")
-    private Boolean isSleep;
+    private boolean isSleep;
 
     @Builder
-    Members(String email, String password, String username, Role role){
+    Members(String email, String password, String username, Role role, boolean oauth){
         this.email = email;
         this.password = password;
         this.username = username;
         this.role = role;
+        this.oauth = oauth;
     }
 
     public Collection<GrantedAuthority> getAuthority(){
