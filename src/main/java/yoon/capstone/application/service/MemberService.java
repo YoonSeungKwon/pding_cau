@@ -35,7 +35,7 @@ public class MemberService {
 
         String email = dto.getEmail();
         String password = dto.getPassword();
-        Members members = memberRepository.getMembersByEmail(email);
+        Members members = memberRepository.findMembersByEmail(email);
 
         if(members == null)
             throw new UsernameNotFoundException(email);

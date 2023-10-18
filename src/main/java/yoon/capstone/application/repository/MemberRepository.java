@@ -7,7 +7,7 @@ import yoon.capstone.application.domain.Members;
 @Repository
 public interface MemberRepository extends JpaRepository<Members, Long> {
 
-    Members getMembersByEmail(String email);
+    Members findMembersByEmail(String email);
 
     boolean existsByEmail(String email);
 
