@@ -7,24 +7,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.cglib.core.Local;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "cart")
+@Table(name = "carts")
 public class Carts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long idx;
-
-    @CreationTimestamp
-    private LocalDateTime regdate;
 
     @UpdateTimestamp
     private LocalDateTime updated;

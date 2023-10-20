@@ -42,9 +42,9 @@ public class SecurityConfig {
                 })
 
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
+//
+//                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
 
                 .build();
     }

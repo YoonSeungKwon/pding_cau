@@ -8,8 +8,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import yoon.capstone.application.domain.Carts;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.enums.Role;
+import yoon.capstone.application.repository.CartRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.vo.request.LoginDto;
 import yoon.capstone.application.vo.request.OAuthDto;
@@ -21,6 +23,7 @@ import yoon.capstone.application.vo.response.MemberResponse;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final CartRepository cartRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
@@ -59,11 +62,18 @@ public class MemberService {
                 .role(Role.USER)
                 .oauth(false)
                 .build();
+        memberRepository.save(members);
 
-        return toResponse(memberRepository.save(members));
+        Carts carts = Carts.builder()
+                .members(members)
+                .build();
+        cartRepository.save(carts);
+
+        return toResponse(members);
     }
 
     public MemberResponse socialRegister(OAuthDto dto){
+
         Members members = Members.builder()
                 .email(dto.getEmail())
                 .username(dto.getName())
@@ -71,7 +81,13 @@ public class MemberService {
                 .role(Role.USER)
                 .oauth(true)
                 .build();
+        memberRepository.save(members);
 
-        return toResponse(memberRepository.save(members));
+        Carts carts = Carts.builder()
+                .members(members)
+                .build();
+        cartRepository.save(carts);
+
+        return toResponse(members);
     }
 }
