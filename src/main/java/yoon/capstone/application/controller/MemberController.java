@@ -1,5 +1,6 @@
 package yoon.capstone.application.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,9 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDto dto){
+    public ResponseEntity<?> login(@RequestBody LoginDto dto, HttpServletResponse response){
 
-        MemberResponse result = memberService.formLogin(dto);
+        MemberResponse result = memberService.formLogin(dto, response);
 
         //Authorization Header Config (JWT)
 

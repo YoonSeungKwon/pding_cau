@@ -1,5 +1,6 @@
 package yoon.capstone.application.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,7 @@ import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.enums.Role;
 import yoon.capstone.application.repository.CartRepository;
 import yoon.capstone.application.repository.MemberRepository;
+import yoon.capstone.application.security.jwt.JwtProvider;
 import yoon.capstone.application.vo.request.LoginDto;
 import yoon.capstone.application.vo.request.OAuthDto;
 import yoon.capstone.application.vo.request.RegisterDto;
@@ -24,6 +26,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final CartRepository cartRepository;
+    private final JwtProvider jwtProvider;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
@@ -34,7 +37,7 @@ public class MemberService {
         return memberRepository.existsByEmail(email);
     }
 
-    public MemberResponse formLogin(LoginDto dto){
+    public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){
 
         String email = dto.getEmail();
         String password = dto.getPassword();
@@ -50,7 +53,14 @@ public class MemberService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return toResponse(members);
+        String accToken = jwtProvider.createAccessToken(members.getEmail());
+        String refToken = jwtProvider.createRefreshToken();
+        members.setRefresh_token(refToken);
+
+        response.setHeader("Authorization", accToken);
+        response.setHeader("X-Refresh-Token", refToken);
+
+        return toResponse(memberRepository.save(members));
     }
 
     public MemberResponse formRegister(RegisterDto dto){
