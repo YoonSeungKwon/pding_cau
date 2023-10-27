@@ -63,7 +63,7 @@ public class OAuthController {
         if(!memberService.existUser(email)){
             memberService.socialRegister(dto);
         }
-
+        memberService.socialLogin(email);
         MemberResponse response = new MemberResponse(email, nickname);
 
         return new ResponseEntity<>(response, HttpStatus.OK);

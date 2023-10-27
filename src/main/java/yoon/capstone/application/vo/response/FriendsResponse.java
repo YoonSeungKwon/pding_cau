@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class FriendsReponse {
+public class FriendsResponse {
 
     private String toUser;
 

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.cglib.core.Local;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import yoon.capstone.application.enums.Role;
@@ -46,6 +47,8 @@ public class Members {
 
     @UpdateTimestamp
     private LocalDateTime updated;
+
+    private LocalDateTime lastVisit;
 
     @Enumerated(EnumType.STRING)
     private Role role;

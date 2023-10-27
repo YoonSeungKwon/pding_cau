@@ -18,7 +18,11 @@ import yoon.capstone.application.security.jwt.JwtProvider;
 import yoon.capstone.application.vo.request.LoginDto;
 import yoon.capstone.application.vo.request.OAuthDto;
 import yoon.capstone.application.vo.request.RegisterDto;
+import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,12 @@ public class MemberService {
 
     public boolean existUser(String email){
         return memberRepository.existsByEmail(email);
+    }
+
+    public MemberDetailResponse memberDetail(String email){
+        Members members = memberRepository.findMembersByEmail(email);
+        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.isOauth(),
+                members.getRegdate(), members.getLastVisit(), members.getPhone());
     }
 
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){
@@ -56,7 +66,7 @@ public class MemberService {
         String accToken = jwtProvider.createAccessToken(members.getEmail());
         String refToken = jwtProvider.createRefreshToken();
         members.setRefresh_token(refToken);
-
+        members.setLastVisit(LocalDateTime.now());
         response.setHeader("Authorization", accToken);
         response.setHeader("X-Refresh-Token", refToken);
 
@@ -99,5 +109,12 @@ public class MemberService {
         cartRepository.save(carts);
 
         return toResponse(members);
+    }
+
+    public void socialLogin(String email){
+        Members members = memberRepository.findMembersByEmail(email);
+        members.setLastVisit(LocalDateTime.now());
+        memberRepository.save(members);
+        return;
     }
 }
