@@ -57,7 +57,6 @@ public class Members {
 
     private String refresh_token;
 
-    @Column(nullable = false, length = 20)
     private String phone;
 
     @ColumnDefault("false")
