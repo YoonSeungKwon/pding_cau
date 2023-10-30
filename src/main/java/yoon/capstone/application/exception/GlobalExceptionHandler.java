@@ -2,6 +2,7 @@ package yoon.capstone.application.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,10 +14,22 @@ import yoon.capstone.application.vo.response.ErrorResponse;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({UsernameNotFoundException.class})
-    public ResponseEntity<ErrorResponse> UserNameNotFoundError(UsernameNotFoundException e){
-        return null;
+    @ExceptionHandler({UsernameNotFoundException.class})    //로그인 이메일 에러
+    public ResponseEntity<ErrorResponse> UserNameNotFoundError(){
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(ErrorCode.MEMBER_EMAIL_NOTFOUND.getCode());
+        response.setMessage(ErrorCode.MEMBER_EMAIL_NOTFOUND.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({BadCredentialsException.class})      //로그인 비밀번호 에러
+    public ResponseEntity<ErrorResponse> BadCredentialError(){
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(ErrorCode.MEMBER_PASSWORD_NOTFOUND.getCode());
+        response.setMessage(ErrorCode.MEMBER_PASSWORD_NOTFOUND.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 
     //유효성 검사 에러
     @ExceptionHandler({MethodArgumentNotValidException.class})
