@@ -22,7 +22,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         try{
             filterChain.doFilter(request, response);
         }catch(JwtException e){
-
+            setErrorResponse(response, e);
         }
     }
 
