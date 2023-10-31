@@ -8,15 +8,15 @@ import org.springframework.http.HttpStatus;
 @Setter
 public class ErrorResponse {
 
-    private HttpStatus status;
+    private HttpStatus code;
 
-    private String code;
+    private String status;
 
     private String message;
 
     public ErrorResponse(){
-        this.status = HttpStatus.BAD_REQUEST;
-        this.code = null;
+        this.code = HttpStatus.BAD_REQUEST;
+        this.status = null;
         this.message = null;
     }
 

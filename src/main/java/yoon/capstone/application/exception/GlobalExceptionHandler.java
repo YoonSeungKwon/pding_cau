@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({UsernameNotFoundException.class})    //로그인 이메일 에러
     public ResponseEntity<ErrorResponse> UserNameNotFoundError(){
         ErrorResponse response = new ErrorResponse();
-        response.setCode(ErrorCode.MEMBER_EMAIL_NOTFOUND.getCode());
+        response.setStatus(ErrorCode.MEMBER_EMAIL_NOTFOUND.getStatus());
         response.setMessage(ErrorCode.MEMBER_EMAIL_NOTFOUND.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -25,11 +25,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({BadCredentialsException.class})      //로그인 비밀번호 에러
     public ResponseEntity<ErrorResponse> BadCredentialError(){
         ErrorResponse response = new ErrorResponse();
-        response.setCode(ErrorCode.MEMBER_PASSWORD_NOTFOUND.getCode());
+        response.setStatus(ErrorCode.MEMBER_PASSWORD_NOTFOUND.getStatus());
         response.setMessage(ErrorCode.MEMBER_PASSWORD_NOTFOUND.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({FriendsException.class})
+    public ResponseEntity<ErrorResponse> RuntimeError(FriendsException e){
+        ErrorResponse response = new ErrorResponse();
+        String message = e.getMessage();
+        if(message == null){
+            response.setCode(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setStatus(ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
+            response.setMessage(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        } else if (message.equals(ErrorCode.ALREADY_FRIENDS.getStatus())) {
+            response.setStatus(ErrorCode.ALREADY_FRIENDS.getStatus());
+            response.setMessage(ErrorCode.ALREADY_FRIENDS.getMessage());
+        }
+
+        System.out.println("error: " + e);
+        System.out.println("Message: " + message);
+
+        return new ResponseEntity<>(response, response.getCode());
+    }
 
     //유효성 검사 에러
     @ExceptionHandler({MethodArgumentNotValidException.class})
@@ -37,23 +55,24 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse();
         BindingResult bindingResult = e.getBindingResult();
         String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
-        if(message == null){                                                    //예외처리
-            response.setCode("INTERNAL_SERVER_ERROR");
-            response.setMessage("알려지지 않은 에러입니다. 고객센터에 문의해주세요.");
-        } else if (message.equals(ErrorCode.MEMBER_EMAIL_BLANK.getCode())) {    //이메일 빈칸
-            response.setCode(ErrorCode.MEMBER_EMAIL_BLANK.getCode());
+        if(message == null){
+            response.setCode(HttpStatus.INTERNAL_SERVER_ERROR);//기타 에러
+            response.setStatus(ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
+            response.setMessage(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        } else if (message.equals(ErrorCode.MEMBER_EMAIL_BLANK.getStatus())) {    //이메일 빈칸
+            response.setStatus(ErrorCode.MEMBER_EMAIL_BLANK.getStatus());
             response.setMessage(ErrorCode.MEMBER_EMAIL_BLANK.getMessage());
-        } else if (message.equals(ErrorCode.MEMBER_EMAIL_FORMAT.getCode())) {   //이메일 형식
-            response.setCode(ErrorCode.MEMBER_EMAIL_FORMAT.getCode());
+        } else if (message.equals(ErrorCode.MEMBER_EMAIL_FORMAT.getStatus())) {   //이메일 형식
+            response.setStatus(ErrorCode.MEMBER_EMAIL_FORMAT.getStatus());
             response.setMessage(ErrorCode.MEMBER_EMAIL_FORMAT.getMessage());
-        } else if (message.equals(ErrorCode.MEMBER_PASSWORD_BLANK.getCode())) { //비밀번호 빈칸
-            response.setCode(ErrorCode.MEMBER_PASSWORD_BLANK.getCode());
+        } else if (message.equals(ErrorCode.MEMBER_PASSWORD_BLANK.getStatus())) { //비밀번호 빈칸
+            response.setStatus(ErrorCode.MEMBER_PASSWORD_BLANK.getStatus());
             response.setMessage(ErrorCode.MEMBER_PASSWORD_BLANK.getMessage());
-        } else if (message.equals(ErrorCode.MEMBER_USERNAME_BLANK.getCode())) { //이름 빈칸
-            response.setCode(ErrorCode.MEMBER_USERNAME_BLANK.getCode());
+        } else if (message.equals(ErrorCode.MEMBER_USERNAME_BLANK.getStatus())) { //이름 빈칸
+            response.setStatus(ErrorCode.MEMBER_USERNAME_BLANK.getStatus());
             response.setMessage(ErrorCode.MEMBER_USERNAME_BLANK.getMessage());
         }
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, response.getCode());
     }
 
 }

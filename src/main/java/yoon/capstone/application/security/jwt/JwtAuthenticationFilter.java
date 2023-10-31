@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import yoon.capstone.application.enums.ErrorCode;
 
 import java.io.IOException;
 
@@ -26,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         else if(acc_token != null){
             String ref_token = jwtProvider.resolveRefreshToken(request);
             if(ref_token == null)
-                throw new JwtException("error enum code");//Errors.ACCESS_TOKEN_EXPIRED.getCode());
+                throw new JwtException(ErrorCode.ACCESS_TOKEN_EXPIRED.getStatus());
             if(jwtProvider.validateToken(ref_token)){
                 String new_token = jwtProvider.createNewToken(ref_token);
                 Authentication authentication = jwtProvider.getAuthentication(new_token);

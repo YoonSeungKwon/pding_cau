@@ -22,7 +22,6 @@ import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -92,7 +91,7 @@ public class MemberService {
         return toResponse(members);
     }
 
-    public MemberResponse socialRegister(OAuthDto dto){
+    public void socialRegister(OAuthDto dto){
 
         Members members = Members.builder()
                 .email(dto.getEmail())
@@ -108,7 +107,7 @@ public class MemberService {
                 .build();
         cartRepository.save(carts);
 
-        return toResponse(members);
+        toResponse(members);
     }
 
     public void socialLogin(String email){
@@ -116,5 +115,11 @@ public class MemberService {
         members.setLastVisit(LocalDateTime.now());
         memberRepository.save(members);
         return;
+    }
+
+    public void logOut(){
+        Members members = (Members) SecurityContextHolder.getContext().getAuthentication();
+        members.setRefresh_token(null);
+        memberRepository.save(members);
     }
 }

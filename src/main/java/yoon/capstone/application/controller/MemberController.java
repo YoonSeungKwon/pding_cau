@@ -29,13 +29,19 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Validated(LoginValidationSequence.class) LoginDto dto, HttpServletResponse response){
+    public ResponseEntity<MemberResponse> login(@RequestBody @Validated(LoginValidationSequence.class) LoginDto dto, HttpServletResponse response){
 
         MemberResponse result = memberService.formLogin(dto, response);
 
         //Authorization Header Config (JWT)
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout(){
+        memberService.logOut();
+        return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
 }

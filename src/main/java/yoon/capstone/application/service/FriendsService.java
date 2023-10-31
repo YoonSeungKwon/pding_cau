@@ -1,11 +1,14 @@
 package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import yoon.capstone.application.domain.Friends;
 import yoon.capstone.application.domain.Members;
+import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.vo.request.FriendsDto;
@@ -44,13 +47,12 @@ public class FriendsService {
 
     public FriendsResponse requestFriends(FriendsDto dto){ //친구 요청
         Members members = memberRepository.findMembersByEmail(dto.getToUserEmail());
+        Members fromUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(members == null)
             throw new UsernameNotFoundException(dto.getToUserEmail());
 
-        Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
-
         if(friendsRepository.existsByToUserAndFromUser(members, fromUser.getIdx()))
-            return null;        // 이미 친구로 등록되어 있거나 친구 요청을 보냄
+            throw new FriendsException(ErrorCode.ALREADY_FRIENDS.getStatus());        // 이미 친구로 등록되어 있거나 친구 요청을 보냄
 
         Friends friends = Friends.builder()
                 .toUser(members)
@@ -63,10 +65,12 @@ public class FriendsService {
     }
 
     public FriendsResponse acceptFriends(FriendsDto dto){  //친구 요청 수락
-        Members toUser = memberRepository.findMembersByEmail(dto.getToUserEmail());
+        Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
+        if(friends.isFriends())
+            throw new FriendsException(ErrorCode.ALREADY_FRIENDS.getStatus());
 
         friends.setFriends(true);
 
@@ -81,7 +85,7 @@ public class FriendsService {
     }
 
     public FriendsResponse declineFriends(FriendsDto dto){ //친구 요청 거절
-        Members toUser = memberRepository.findMembersByEmail(dto.getToUserEmail());
+        Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication();
         Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
