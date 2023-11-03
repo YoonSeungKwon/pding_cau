@@ -3,6 +3,7 @@ package yoon.capstone.application.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,7 +14,6 @@ import yoon.capstone.application.vo.response.ErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler({UsernameNotFoundException.class})    //로그인 이메일 에러
     public ResponseEntity<ErrorResponse> UserNameNotFoundError(){
         ErrorResponse response = new ErrorResponse();
@@ -74,5 +74,14 @@ public class GlobalExceptionHandler {
         }
         return new ResponseEntity<>(response, response.getCode());
     }
+//    인증 에러
+//    @ExceptionHandler({Exception.class})
+//    public ResponseEntity<ErrorResponse> AuthenticationError(){
+//        ErrorResponse response = new ErrorResponse();
+//        response.setCode(HttpStatus.UNAUTHORIZED);
+//        response.setStatus("UNAUTHORIZED");
+//        response.setMessage("유저만 이용가능합니다.");
+//        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+//    }
 
 }

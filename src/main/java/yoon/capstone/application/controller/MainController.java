@@ -3,7 +3,9 @@ package yoon.capstone.application.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.PaymentService;
 import yoon.capstone.application.vo.response.KakaoPayResponse;
@@ -19,6 +21,12 @@ public class MainController {
     @GetMapping("/")
     public String mainPage(){
         return "Hello World!";
+    }
+
+    @GetMapping("/user")
+    public String userTestPage(){
+        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return members.getEmail();
     }
 
     @PostMapping("/test")
