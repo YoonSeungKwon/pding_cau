@@ -13,6 +13,7 @@ import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.vo.request.FriendsDto;
 import yoon.capstone.application.vo.response.FriendsResponse;
+import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
 
 import java.util.ArrayList;
@@ -45,6 +46,30 @@ public class FriendsService {
         return result;
     }
 
+    public List<MemberResponse> getFriendsRequest(){
+        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Friends> list = friendsRepository.findAllByToUser(members);
+        List<MemberResponse> result = new ArrayList<>();
+
+        for(Friends f:list){
+            if(!f.isFriends()) {
+                Members tempMember = memberRepository.findMembersByIdx(f.getFromUser());
+                result.add(new MemberResponse(tempMember.getEmail(), tempMember.getUsername()));
+            }
+        }
+
+        return result;
+    }
+
+    public MemberDetailResponse friendsDetail(String email){
+        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Members members = memberRepository.findMembersByEmail(email);
+        if(!friendsRepository.existsByToUserAndFromUser(me, members.getIdx()))
+            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
+        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.isOauth(),
+                members.getRegdate(), members.getLastVisit(), members.getPhone());
+    }
+
     public FriendsResponse requestFriends(FriendsDto dto){ //친구 요청
         Members members = memberRepository.findMembersByEmail(dto.getToUserEmail());
         Members fromUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -69,6 +94,8 @@ public class FriendsService {
         Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
+        if(friends == null)
+            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
         if(friends.isFriends())
             throw new FriendsException(ErrorCode.ALREADY_FRIENDS.getStatus());
 
@@ -89,7 +116,8 @@ public class FriendsService {
         Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
-
+        if(friends == null)
+            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
         friendsRepository.delete(friends);
 
         return toResponse(friends);
@@ -103,8 +131,12 @@ public class FriendsService {
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, me.getIdx());
-
+        if(friends == null)
+            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
         friendsRepository.delete(friends);
+
+        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(me, members.getIdx());
+        friendsRepository.delete(tempFriends);
 
         return toResponse(friends);
     }

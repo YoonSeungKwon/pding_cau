@@ -18,6 +18,7 @@ public class MainController {
 
     private final MemberService memberService;
     private final PaymentService paymentService;
+
     @GetMapping("/")
     public String mainPage(){
         return "Hello World!";

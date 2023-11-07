@@ -27,6 +27,11 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
 
     private Payment payment;
+
+    public void setPayment(Payment payment){
+        this.payment = payment;
+    }
+
     public KakaoPayResponse kakaoPayment(){
 
         HttpHeaders headers = new HttpHeaders();
@@ -68,7 +73,7 @@ public class PaymentService {
                 .build();
         
         paymentRepository.save(payment);
-        this.payment = payment;
+        setPayment(payment);
 
         return result;
     }

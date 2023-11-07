@@ -31,7 +31,7 @@ public class JwtProvider {
     final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
     private String findIdByToken(String token){
-        return null;//memberRepository.findMembersByRefreshToken(token).getId();
+        return memberRepository.findMembersByRefreshToken(token).getEmail();
     }
     public String createAccessToken(String id){
 
@@ -65,8 +65,8 @@ public class JwtProvider {
     }
 
     public Authentication getAuthentication(String token){
-        Members member = memberRepository.findMembersByEmail(getId(token));
-        return new UsernamePasswordAuthenticationToken(member, null, member.getAuthority());
+        Members members = memberRepository.findMembersByEmail(getId(token));
+        return new UsernamePasswordAuthenticationToken(members, null, members.getAuthority());
     }
 
     public String getId(String token){
@@ -82,7 +82,7 @@ public class JwtProvider {
     }
 
     public String resolveRefreshToken(HttpServletRequest request){
-        String token = request.getHeader("XRefreshToken");
+        String token = request.getHeader("X-Refresh-Token");
         if(StringUtils.hasText(token) && token.startsWith("Bearer"))
             return token.substring(7);
         else return null;

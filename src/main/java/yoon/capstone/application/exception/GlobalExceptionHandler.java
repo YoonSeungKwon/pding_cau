@@ -74,14 +74,5 @@ public class GlobalExceptionHandler {
         }
         return new ResponseEntity<>(response, response.getCode());
     }
-//    인증 에러
-//    @ExceptionHandler({Exception.class})
-//    public ResponseEntity<ErrorResponse> AuthenticationError(){
-//        ErrorResponse response = new ErrorResponse();
-//        response.setCode(HttpStatus.UNAUTHORIZED);
-//        response.setStatus("UNAUTHORIZED");
-//        response.setMessage("유저만 이용가능합니다.");
-//        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-//    }
 
 }

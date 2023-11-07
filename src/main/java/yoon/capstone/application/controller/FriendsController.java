@@ -19,7 +19,22 @@ import java.util.List;
 public class FriendsController {
 
     private final FriendsService friendsService;
-    private final MemberService memberService;
+
+    @GetMapping("/")
+    public ResponseEntity<List<MemberResponse>> getRequests(){
+
+        List<MemberResponse> result = friendsService.getFriendsRequest();
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/info/{email}")                        //친구 정보, 상태 보기
+    public ResponseEntity<MemberDetailResponse> getFriends(@PathVariable String email){
+
+        MemberDetailResponse result = friendsService.friendsDetail(email);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }//친구만 정보를 볼 수 있게 수정 필요!
 
     @GetMapping("/lists")                      //친구 목록 불러오기
     public ResponseEntity<List<MemberResponse>> getFriendsList(){
@@ -28,14 +43,6 @@ public class FriendsController {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
-    @GetMapping("/info/{email}")                        //친구 정보, 상태 보기
-    public ResponseEntity<MemberDetailResponse> getFriends(@PathVariable String email){
-
-        MemberDetailResponse result = memberService.memberDetail(email);
-
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }//친구만 정보를 볼 수 있게 수정 필요!
 
     @PostMapping("/link")                       //친구 요청 보내기
     public ResponseEntity<FriendsResponse> requestFriends(@RequestBody FriendsDto dto){

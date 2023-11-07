@@ -20,12 +20,22 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    @PostMapping("/check/{email}")
+    public ResponseEntity<Boolean> emailDuplicationCheck(@PathVariable String email){
+        return new ResponseEntity<>(memberService.existUser(email), HttpStatus.OK);
+    }
+
     @PostMapping("/")
     public ResponseEntity<?> register(@RequestBody @Validated(RegisterValidationSequence.class) RegisterDto dto){
 
         MemberResponse result = memberService.formRegister(dto);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/{email}")
+    public ResponseEntity<MemberResponse> findMemberByEmail(@PathVariable String email){
+        return new ResponseEntity<>(memberService.findMember(email), HttpStatus.OK);
     }
 
     @PostMapping("/login")

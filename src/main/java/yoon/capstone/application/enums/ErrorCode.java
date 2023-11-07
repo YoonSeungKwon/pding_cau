@@ -24,6 +24,8 @@ public enum ErrorCode {
 
     ALREADY_FRIENDS("ALREADY_FRIENDS", "이미 친구로 등록된 회원입니다."),
 
+    NOT_FRIENDS("NOT_FRIENDS", "친구로 등록되지 않은 회원입니다."),
+
     //Server Error
 
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버가 동작하지 않습니다.");

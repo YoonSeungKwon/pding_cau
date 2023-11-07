@@ -46,6 +46,10 @@ public class MemberService {
                 members.getRegdate(), members.getLastVisit(), members.getPhone());
     }
 
+    public MemberResponse findMember(String email){
+        return toResponse(memberRepository.findMembersByEmail(email));
+    }
+
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){
 
         String email = dto.getEmail();
@@ -64,7 +68,7 @@ public class MemberService {
 
         String accToken = jwtProvider.createAccessToken(members.getEmail());
         String refToken = jwtProvider.createRefreshToken();
-        members.setRefresh_token(refToken);
+        members.setRefreshToken(refToken);
         members.setLastVisit(LocalDateTime.now());
         response.setHeader("Authorization", accToken);
         response.setHeader("X-Refresh-Token", refToken);
@@ -119,7 +123,7 @@ public class MemberService {
 
     public void logOut(){
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication();
-        members.setRefresh_token(null);
+        members.setRefreshToken(null);
         memberRepository.save(members);
     }
 }
