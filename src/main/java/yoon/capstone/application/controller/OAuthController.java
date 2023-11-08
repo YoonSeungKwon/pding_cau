@@ -1,9 +1,10 @@
 package yoon.capstone.application.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.json.ParseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class OAuthController {
     }
 
     @PostMapping("/kakao")
-    public ResponseEntity<MemberResponse> kakaoLogin(@RequestBody String token) throws ParseException, ParseException, org.json.simple.parser.ParseException {
+    public ResponseEntity<MemberResponse> kakaoLogin(@RequestBody String token, HttpServletResponse response) throws ParseException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
@@ -63,10 +64,10 @@ public class OAuthController {
         if(!memberService.existUser(email)){
             memberService.socialRegister(dto);
         }
-        memberService.socialLogin(email);
-        MemberResponse response = new MemberResponse(email, nickname);
+        memberService.socialLogin(email, response);
+        MemberResponse memberResponse = new MemberResponse(email, nickname);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(memberResponse, HttpStatus.OK);
     }
 
 }

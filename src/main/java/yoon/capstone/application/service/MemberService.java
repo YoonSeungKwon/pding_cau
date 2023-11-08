@@ -56,7 +56,7 @@ public class MemberService {
         String password = dto.getPassword();
         Members members = memberRepository.findMembersByEmail(email);
 
-        if(members == null)
+        if(members == null || members.isOauth())
             throw new UsernameNotFoundException(email);
         if(!passwordEncoder.matches(password, members.getPassword()))
             throw new BadCredentialsException(email);
@@ -100,7 +100,7 @@ public class MemberService {
         Members members = Members.builder()
                 .email(dto.getEmail())
                 .username(dto.getName())
-                .password(null)
+                .password("kakao_member")
                 .role(Role.USER)
                 .oauth(true)
                 .build();
@@ -114,9 +114,16 @@ public class MemberService {
         toResponse(members);
     }
 
-    public void socialLogin(String email){
+    public void socialLogin(String email, HttpServletResponse response){
         Members members = memberRepository.findMembersByEmail(email);
+
+        String accToken = jwtProvider.createAccessToken(members.getEmail());
+        String refToken = jwtProvider.createRefreshToken();
+        members.setRefreshToken(refToken);
         members.setLastVisit(LocalDateTime.now());
+        response.setHeader("Authorization", accToken);
+        response.setHeader("X-Refresh-Token", refToken);
+
         memberRepository.save(members);
         return;
     }
