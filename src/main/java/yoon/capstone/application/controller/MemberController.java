@@ -20,7 +20,7 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @PostMapping("/check/{email}")
+    @GetMapping("/check/{email}")
     public ResponseEntity<Boolean> emailDuplicationCheck(@PathVariable String email){
         return new ResponseEntity<>(memberService.existUser(email), HttpStatus.OK);
     }
