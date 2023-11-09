@@ -8,4 +8,6 @@ public class FriendsDto {
     private String toUserEmail;
 
     private String fromUserEmail;
+
+    private boolean oauth;
 }

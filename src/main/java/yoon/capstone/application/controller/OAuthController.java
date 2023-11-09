@@ -66,7 +66,7 @@ public class OAuthController {
             memberService.socialRegister(dto);
         }
         memberService.socialLogin(email, response);
-        MemberResponse memberResponse = new MemberResponse(email, nickname, image);
+        MemberResponse memberResponse = new MemberResponse(email, nickname, image, true);
 
         return new ResponseEntity<>(memberResponse, HttpStatus.OK);
     }

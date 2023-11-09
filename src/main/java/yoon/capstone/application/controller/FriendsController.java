@@ -28,10 +28,10 @@ public class FriendsController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @GetMapping("/info/{email}")                        //친구 정보, 상태 보기
-    public ResponseEntity<MemberDetailResponse> getFriends(@PathVariable String email){
+    @GetMapping("/info")                        //친구 정보, 상태 보기
+    public ResponseEntity<MemberDetailResponse> getFriends(@RequestBody FriendsDto dto){
 
-        MemberDetailResponse result = friendsService.friendsDetail(email);
+        MemberDetailResponse result = friendsService.friendsDetail(dto);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }//친구만 정보를 볼 수 있게 수정 필요!
@@ -66,10 +66,10 @@ public class FriendsController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @DeleteMapping("/unlink/{email}")             //친구 삭제
-    public ResponseEntity<FriendsResponse> deleteFriends(@PathVariable String email){
+    @DeleteMapping("/unlink")             //친구 삭제
+    public ResponseEntity<FriendsResponse> deleteFriends(@RequestBody FriendsDto dto){
 
-        FriendsResponse result = friendsService.deleteFriends(email);
+        FriendsResponse result = friendsService.deleteFriends(dto);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

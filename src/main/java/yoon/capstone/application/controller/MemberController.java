@@ -13,6 +13,8 @@ import yoon.capstone.application.vo.request.LoginDto;
 import yoon.capstone.application.vo.request.RegisterDto;
 import yoon.capstone.application.vo.response.MemberResponse;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/members")
@@ -34,7 +36,7 @@ public class MemberController {
     }
 
     @GetMapping("/{email}")
-    public ResponseEntity<MemberResponse> findMemberByEmail(@PathVariable String email){
+    public ResponseEntity<List<MemberResponse>> findMemberByEmail(@PathVariable String email){
         return new ResponseEntity<>(memberService.findMember(email), HttpStatus.OK);
     }
 

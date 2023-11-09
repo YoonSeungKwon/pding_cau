@@ -22,6 +22,8 @@ import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,21 +35,23 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
-        return new MemberResponse(members.getEmail(), members.getUsername(), members.getProfile());
+        return new MemberResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth());
     }
 
     public boolean existUser(String email){
         return memberRepository.existsByEmail(email);
     }
 
-    public MemberDetailResponse memberDetail(String email){
-        Members members = memberRepository.findMembersByEmail(email);
-        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth(),
-                members.getRegdate(), members.getLastVisit(), members.getPhone());
-    }
+    public List<MemberResponse> findMember(String email){
 
-    public MemberResponse findMember(String email){
-        return toResponse(memberRepository.findMembersByEmail(email));
+        List<Members> result = memberRepository.findAllByEmail(email);
+        List<MemberResponse> response = new ArrayList<>();
+
+        for(Members m:result){
+            response.add(toResponse(m));
+        }
+
+        return response;
     }
 
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){

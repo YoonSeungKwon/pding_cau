@@ -40,7 +40,8 @@ public class FriendsService {
 
         for(Friends f: list){
             if(f.isFriends())
-                result.add(new MemberResponse(f.getToUser().getEmail(), f.getToUser().getUsername(), f.getToUser().getProfile()));
+                result.add(new MemberResponse(f.getToUser().getEmail(), f.getToUser().getUsername(), f.getToUser().getProfile()
+                , f.getToUser().isOauth()));
         }
 
         return result;
@@ -54,16 +55,16 @@ public class FriendsService {
         for(Friends f:list){
             if(!f.isFriends()) {
                 Members tempMember = memberRepository.findMembersByIdx(f.getFromUser());
-                result.add(new MemberResponse(tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile()));
+                result.add(new MemberResponse(tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile(), tempMember.isOauth()));
             }
         }
 
         return result;
     }
 
-    public MemberDetailResponse friendsDetail(String email){
+    public MemberDetailResponse friendsDetail(FriendsDto dto){
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members members = memberRepository.findMembersByEmail(email);
+        Members members = memberRepository.findMembersByEmailAndOauth(dto.getToUserEmail(), dto.isOauth());
         if(!friendsRepository.existsByToUserAndFromUser(me, members.getIdx()))
             throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
         return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth(),
@@ -71,7 +72,7 @@ public class FriendsService {
     }
 
     public FriendsResponse requestFriends(FriendsDto dto){ //친구 요청
-        Members members = memberRepository.findMembersByEmail(dto.getToUserEmail());
+        Members members = memberRepository.findMembersByEmailAndOauth(dto.getToUserEmail(), dto.isOauth());
         Members fromUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(members == null)
             throw new UsernameNotFoundException(dto.getToUserEmail());
@@ -91,7 +92,7 @@ public class FriendsService {
 
     public FriendsResponse acceptFriends(FriendsDto dto){  //친구 요청 수락
         Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
+        Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
         if(friends == null)
@@ -113,7 +114,7 @@ public class FriendsService {
 
     public FriendsResponse declineFriends(FriendsDto dto){ //친구 요청 거절
         Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication();
-        Members fromUser = memberRepository.findMembersByEmail(dto.getFromUserEmail());
+        Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
         if(friends == null)
@@ -123,10 +124,10 @@ public class FriendsService {
         return toResponse(friends);
     }
 
-    public FriendsResponse deleteFriends(String email){  //친구 목록 삭제
-        Members members = memberRepository.findMembersByEmail(email);
+    public FriendsResponse deleteFriends(FriendsDto dto){  //친구 목록 삭제
+        Members members = memberRepository.findMembersByEmailAndOauth(dto.getToUserEmail(), dto.isOauth());
         if(members == null)
-            throw new UsernameNotFoundException(email);
+            throw new UsernameNotFoundException(dto.getToUserEmail());
 
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 

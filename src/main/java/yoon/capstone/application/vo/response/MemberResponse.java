@@ -19,4 +19,6 @@ public class MemberResponse {
 
     private String profile;
 
+    private boolean oauth;
+
 }
