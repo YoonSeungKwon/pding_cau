@@ -51,6 +51,8 @@ public class Members {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private String profile;
+
     private String address;
 
     private String refreshToken;
@@ -64,10 +66,11 @@ public class Members {
     private boolean isSleep;
 
     @Builder
-    Members(String email, String password, String username, Role role, boolean oauth){
+    Members(String email, String password, String username, String profile, Role role, boolean oauth){
         this.email = email;
         this.password = password;
         this.username = username;
+        this.profile = profile;
         this.role = role;
         this.oauth = oauth;
     }

@@ -40,7 +40,7 @@ public class FriendsService {
 
         for(Friends f: list){
             if(f.isFriends())
-                result.add(new MemberResponse(f.getToUser().getEmail(), f.getToUser().getUsername()));
+                result.add(new MemberResponse(f.getToUser().getEmail(), f.getToUser().getUsername(), f.getToUser().getProfile()));
         }
 
         return result;
@@ -54,7 +54,7 @@ public class FriendsService {
         for(Friends f:list){
             if(!f.isFriends()) {
                 Members tempMember = memberRepository.findMembersByIdx(f.getFromUser());
-                result.add(new MemberResponse(tempMember.getEmail(), tempMember.getUsername()));
+                result.add(new MemberResponse(tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile()));
             }
         }
 
@@ -66,7 +66,7 @@ public class FriendsService {
         Members members = memberRepository.findMembersByEmail(email);
         if(!friendsRepository.existsByToUserAndFromUser(me, members.getIdx()))
             throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
-        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.isOauth(),
+        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth(),
                 members.getRegdate(), members.getLastVisit(), members.getPhone());
     }
 

@@ -17,4 +17,6 @@ public class MemberResponse {
 
     private String name;
 
+    private String profile;
+
 }

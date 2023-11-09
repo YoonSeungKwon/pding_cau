@@ -11,4 +11,5 @@ public class OAuthDto {
 
     private String name;
 
+    private String image;
 }

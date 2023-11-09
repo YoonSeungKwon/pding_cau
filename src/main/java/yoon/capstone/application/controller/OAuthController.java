@@ -53,10 +53,11 @@ public class OAuthController {
         JSONObject object = (JSONObject) parser.parse(result.getBody());
         JSONObject kakaoAccount = (JSONObject) object.get("kakao_account");
         JSONObject profile = (JSONObject) kakaoAccount.get("profile");
+        String image = String.valueOf(profile.get("profile_image_url"));
         String nickname = String.valueOf(profile.get("nickname"));
         String email = String.valueOf(kakaoAccount.get("email"));
 
-        OAuthDto dto = new OAuthDto(email, nickname);
+        OAuthDto dto = new OAuthDto(email, nickname, image);
         Map<String, String> map = new HashMap<>();
         map.put("email", email);
         map.put("name", nickname);
@@ -65,7 +66,7 @@ public class OAuthController {
             memberService.socialRegister(dto);
         }
         memberService.socialLogin(email, response);
-        MemberResponse memberResponse = new MemberResponse(email, nickname);
+        MemberResponse memberResponse = new MemberResponse(email, nickname, image);
 
         return new ResponseEntity<>(memberResponse, HttpStatus.OK);
     }

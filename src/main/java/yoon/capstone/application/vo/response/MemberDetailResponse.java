@@ -13,6 +13,8 @@ public class MemberDetailResponse {
 
     private String username;
 
+    private String profile;
+
     private boolean oauth;
 
     private LocalDateTime regdate;

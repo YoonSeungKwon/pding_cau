@@ -33,7 +33,7 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
-        return new MemberResponse(members.getEmail(), members.getUsername());
+        return new MemberResponse(members.getEmail(), members.getUsername(), members.getProfile());
     }
 
     public boolean existUser(String email){
@@ -42,7 +42,7 @@ public class MemberService {
 
     public MemberDetailResponse memberDetail(String email){
         Members members = memberRepository.findMembersByEmail(email);
-        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.isOauth(),
+        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth(),
                 members.getRegdate(), members.getLastVisit(), members.getPhone());
     }
 
@@ -82,6 +82,7 @@ public class MemberService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .username(dto.getName())
+                .profile("icon.png")
                 .role(Role.USER)
                 .oauth(false)
                 .build();
@@ -101,9 +102,11 @@ public class MemberService {
                 .email(dto.getEmail())
                 .username(dto.getName())
                 .password("kakao_member")
+                .profile(dto.getImage())
                 .role(Role.USER)
                 .oauth(true)
                 .build();
+
         memberRepository.save(members);
 
         Carts carts = Carts.builder()
