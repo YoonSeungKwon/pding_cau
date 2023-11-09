@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.boot.jaxb.internal.stax.JpaOrmXmlEventReader;
 import org.springframework.cglib.core.Local;
 
+import java.io.File;
 import java.time.LocalDateTime;
 
 @Getter

@@ -86,7 +86,7 @@ public class MemberService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .username(dto.getName())
-                .profile("icon.png")
+                .profile("https://cau-artech-capstone.s3.ap-northeast-2.amazonaws.com/static/icon.png")
                 .role(Role.USER)
                 .oauth(false)
                 .build();
