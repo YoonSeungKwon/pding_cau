@@ -34,6 +34,7 @@ public class FriendsService {
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..
 
     public List<MemberResponse> getFriendsList(){
+        System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Friends> list = friendsRepository.findAllByFromUser(members.getIdx());
         List<MemberResponse> result = new ArrayList<>();
@@ -76,7 +77,8 @@ public class FriendsService {
         Members fromUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(members == null)
             throw new UsernameNotFoundException(dto.getToUserEmail());
-
+        if(members == fromUser)
+            throw new FriendsException(ErrorCode.SELF_FRIENDS.getStatus());
         if(friendsRepository.existsByToUserAndFromUser(members, fromUser.getIdx()))
             throw new FriendsException(ErrorCode.ALREADY_FRIENDS.getStatus());        // 이미 친구로 등록되어 있거나 친구 요청을 보냄
 

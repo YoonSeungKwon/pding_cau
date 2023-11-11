@@ -41,6 +41,9 @@ public class GlobalExceptionHandler {
         } else if (message.equals(ErrorCode.ALREADY_FRIENDS.getStatus())) {
             response.setStatus(ErrorCode.ALREADY_FRIENDS.getStatus());
             response.setMessage(ErrorCode.ALREADY_FRIENDS.getMessage());
+        } else if (message.equals(ErrorCode.SELF_FRIENDS.getStatus())) {
+            response.setStatus(ErrorCode.SELF_FRIENDS.getStatus());
+            response.setMessage(ErrorCode.SELF_FRIENDS.getMessage());
         }
 
         System.out.println("error: " + e);
