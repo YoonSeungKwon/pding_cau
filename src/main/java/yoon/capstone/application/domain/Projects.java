@@ -24,14 +24,14 @@ public class Projects {
     private long idx;
 
     @ManyToOne
-    @JoinColumn(name = "cart_projects")
-    private Carts carts;
+    @JoinColumn(name = "project_members")
+    private Members members;
 
     @Column(nullable = false, length = 250)
-    private String name;
+    private String title;
 
     @Column(nullable = false, length = 1000)
-    private String info;
+    private String content;
 
     @Column(nullable = false)
     private int goal;
@@ -39,24 +39,34 @@ public class Projects {
     @ColumnDefault("0")
     private int curr;
 
-    @ColumnDefault("0")
-    private int count;
-
     @CreationTimestamp
     private LocalDateTime regdate;
 
     @UpdateTimestamp
     private LocalDateTime enddate;
 
+    private String link;
+
     @ColumnDefault("1")
     private boolean isValid;
 
+    @ColumnDefault("0")
+    private boolean isHided;
+
+    private String img;
+
+    private String category;
+
+
     @Builder
-    public Projects(Carts carts, String name, String info, int goal, LocalDate enddate){
-        this.carts = carts;
-        this.name = name;
-        this.info = info;
+    public Projects(Members members, String title, String content, String link, String img, int goal, LocalDate enddate, String category){
+        this.members = members;
+        this.title = title;
+        this.content = content;
+        this.link = link;
+        this.img = img;
         this.goal = goal;
         this.enddate = enddate.atStartOfDay();
+        this.category = category;
     }
 }

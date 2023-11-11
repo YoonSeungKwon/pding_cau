@@ -5,12 +5,12 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Data
-@AllArgsConstructor
-public class CartResponse {
-
-    private String member;
-
-    private LocalDateTime updated;
-
-}
+//@Data
+//@AllArgsConstructor
+//public class CartResponse {
+//
+//    private String member;
+//
+//    private LocalDateTime updated;
+//
+//}

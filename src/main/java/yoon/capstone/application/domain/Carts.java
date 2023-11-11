@@ -9,27 +9,27 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-
-@Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Table(name = "carts")
-public class Carts {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long idx;
-
-    @UpdateTimestamp
-    private LocalDateTime updated;
-
-    @OneToOne
-    @JoinColumn(name = "members_cart")
-    private Members members;
-
-    @Builder
-    public Carts(Members members){
-        this.members = members;
-    }
-}
+//보류
+//@Entity
+//@Table(name = "carts")
+//@Data
+//@AllArgsConstructor
+//@NoArgsConstructor
+//public class Carts {
+//
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private long idx;
+//
+//    @UpdateTimestamp
+//    private LocalDateTime updated;
+//
+//    @OneToOne
+//    @JoinColumn(name = "members_cart")
+//    private Members members;
+//
+//    @Builder
+//    public Carts(Members members){
+//        this.members = members;
+//    }
+//}

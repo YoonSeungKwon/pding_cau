@@ -1,21 +1,22 @@
 package yoon.capstone.application.vo.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class ProjectResponse {
 
-    private long idx;
+@Data
+@AllArgsConstructor
+public class ProjectDetailResponse {
 
     private String title;
 
+    private String content;
+
     private String img;
+
+    private String link;
 
     private int goal;
 
@@ -24,5 +25,3 @@ public class ProjectResponse {
     private LocalDateTime enddate;
 
 }
-
-

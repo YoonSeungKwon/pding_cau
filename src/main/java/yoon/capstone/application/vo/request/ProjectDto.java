@@ -3,14 +3,19 @@ package yoon.capstone.application.vo.request;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 public class ProjectDto {
 
-    private String name;
+    private String title;
 
-    private String info;
+    private String content;
+
+    private String category;
+
+    private String link;
+
+    private String img;
 
     private int goal;
 
