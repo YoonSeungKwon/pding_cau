@@ -77,7 +77,7 @@ public class FriendsService {
         Members fromUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(members == null)
             throw new UsernameNotFoundException(dto.getToUserEmail());
-        if(members == fromUser)
+        if(members.equals(fromUser))
             throw new FriendsException(ErrorCode.SELF_FRIENDS.getStatus());
         if(friendsRepository.existsByToUserAndFromUser(members, fromUser.getIdx()))
             throw new FriendsException(ErrorCode.ALREADY_FRIENDS.getStatus());        // 이미 친구로 등록되어 있거나 친구 요청을 보냄
@@ -115,7 +115,7 @@ public class FriendsService {
     }
 
     public FriendsResponse declineFriends(FriendsDto dto){ //친구 요청 거절
-        Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication();
+        Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(toUser, fromUser.getIdx());
