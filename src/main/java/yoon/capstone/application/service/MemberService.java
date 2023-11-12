@@ -9,16 +9,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import yoon.capstone.application.domain.Carts;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.enums.Role;
-import yoon.capstone.application.repository.CartRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.security.jwt.JwtProvider;
 import yoon.capstone.application.vo.request.LoginDto;
 import yoon.capstone.application.vo.request.OAuthDto;
 import yoon.capstone.application.vo.request.RegisterDto;
-import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
 
 import java.time.LocalDateTime;
@@ -30,7 +27,6 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final CartRepository cartRepository;
     private final JwtProvider jwtProvider;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -92,11 +88,6 @@ public class MemberService {
                 .build();
         memberRepository.save(members);
 
-        Carts carts = Carts.builder()
-                .members(members)
-                .build();
-        cartRepository.save(carts);
-
         return toResponse(members);
     }
 
@@ -113,10 +104,6 @@ public class MemberService {
 
         memberRepository.save(members);
 
-        Carts carts = Carts.builder()
-                .members(members)
-                .build();
-        cartRepository.save(carts);
 
         toResponse(members);
     }
