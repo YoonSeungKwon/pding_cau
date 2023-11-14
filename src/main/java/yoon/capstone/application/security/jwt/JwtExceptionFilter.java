@@ -45,7 +45,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             errorResponse.setStatus(ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
             errorResponse.setMessage(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
         }
-
+        response.setStatus(401);
         mapper.writeValue(response.getOutputStream(), errorResponse);
     }
 }

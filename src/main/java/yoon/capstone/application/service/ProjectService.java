@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.exception.ProjectException;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
 import yoon.capstone.application.vo.request.ProjectDto;
@@ -69,8 +71,8 @@ public class ProjectService {
     public ProjectResponse deleteProjects(long idx){
         Projects projects = projectsRepository.findProjectsByIdx(idx);
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(projects.getMembers() != members);
-            //throw new ProjectException();
+        if(!projects.getMembers().equals(members))
+            throw new ProjectException(ErrorCode.PROJECT_OWNER.getStatus());
 
         projectsRepository.delete(projects);
 

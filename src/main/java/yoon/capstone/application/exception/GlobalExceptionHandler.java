@@ -52,6 +52,25 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, response.getCode());
     }
 
+    @ExceptionHandler({ProjectException.class})
+    public ResponseEntity<ErrorResponse> RuntimeError(ProjectException e){
+        ErrorResponse response = new ErrorResponse();
+        String message = e.getMessage();
+        if(message == null){
+            response.setCode(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setStatus(ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
+            response.setMessage(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        } else if (message.equals(ErrorCode.PROJECT_OWNER.getStatus())) {
+            response.setStatus(ErrorCode.PROJECT_OWNER.getStatus());
+            response.setMessage(ErrorCode.PROJECT_OWNER.getMessage());
+        }
+
+        System.out.println("error: " + e);
+        System.out.println("Message: " + message);
+
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
     //유효성 검사 에러
     @ExceptionHandler({MethodArgumentNotValidException.class})
     public ResponseEntity<ErrorResponse> ValidationError(MethodArgumentNotValidException e){

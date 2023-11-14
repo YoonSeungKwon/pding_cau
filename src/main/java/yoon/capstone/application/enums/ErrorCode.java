@@ -28,6 +28,11 @@ public enum ErrorCode {
 
     SELF_FRIENDS("SELF_FRIENDS", "본인은 등록할 수 없습니다."),
 
+
+    //Project Error
+
+    PROJECT_OWNER("PROJECT_OWNER", "해당 기능을 이용할 권한이 없습니다."),
+
     //Server Error
 
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버가 동작하지 않습니다.");
