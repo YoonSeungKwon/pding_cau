@@ -14,6 +14,8 @@ public class ProjectDetailResponse {
 
     private String content;
 
+    private String option;
+
     private String img;
 
     private String link;

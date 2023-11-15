@@ -30,8 +30,8 @@ public class ProjectService {
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
-        return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getImg(),
-                projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getEnddate());
+        return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getOption(),
+                projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getEnddate());
     }
 
     public ProjectResponse makeProjects(ProjectDto dto){
@@ -41,6 +41,7 @@ public class ProjectService {
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .link(dto.getLink())
+                .option(dto.getOption())
                 .img(dto.getImg())
                 .goal(dto.getGoal())
                 .enddate(dto.getEnddate())

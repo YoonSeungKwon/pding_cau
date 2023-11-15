@@ -47,6 +47,8 @@ public class Projects {
 
     private String link;
 
+    private String option;
+
     @ColumnDefault("1")
     private boolean isValid;
 
@@ -59,10 +61,11 @@ public class Projects {
 
 
     @Builder
-    public Projects(Members members, String title, String content, String link, String img, int goal, LocalDate enddate, String category){
+    public Projects(Members members, String title, String content,String option, String link, String img, int goal, LocalDate enddate, String category){
         this.members = members;
         this.title = title;
         this.content = content;
+        this.option = option;
         this.link = link;
         this.img = img;
         this.goal = goal;

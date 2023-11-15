@@ -13,6 +13,8 @@ public class ProjectDto {
 
     private String category;
 
+    private String option;
+
     private String link;
 
     private String img;
