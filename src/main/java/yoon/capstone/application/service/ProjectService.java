@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import yoon.capstone.application.domain.Friends;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Projects;
 import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.ProjectException;
+import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
 import yoon.capstone.application.vo.request.ProjectDto;
@@ -23,6 +26,7 @@ public class ProjectService {
 
     private final ProjectsRepository projectsRepository;
     private final MemberRepository memberRepository;
+    private final FriendsRepository friendsRepository;
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getIdx(), projects.getTitle(), projects.getImg(), projects.getGoal(),
@@ -34,8 +38,14 @@ public class ProjectService {
                 projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getEnddate());
     }
 
-    public ProjectResponse makeProjects(ProjectDto dto){
-        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ProjectResponse makeProjects(String email, boolean oauth, ProjectDto dto){
+        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
+
+        if(!me.equals(members))
+            throw new ProjectException(ErrorCode.PROJECT_OWNER.getStatus());
+
+
         Projects projects = Projects.builder()
                 .members(members)
                 .title(dto.getTitle())
@@ -49,10 +59,16 @@ public class ProjectService {
                 .build();
         return toResponse(projectsRepository.save(projects));
     }
-    public List<ProjectResponse> getProjectList(String email){
-        Members members = memberRepository.findMembersByEmail(email);
+    public List<ProjectResponse> getProjectList(String email, boolean oauth){
+        Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
+        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(members == null)
             throw new UsernameNotFoundException(email);
+
+        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, me.getIdx());
+
+        if(!members.equals(me) && (friends == null || !friends.isFriends()))
+            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
 
         List<Projects> list = projectsRepository.findAllByMembers(members);
         List<ProjectResponse> result = new ArrayList<>();
@@ -64,7 +80,14 @@ public class ProjectService {
         return result;
     }
 
-    public ProjectDetailResponse getProjectDetail(long idx){
+    public ProjectDetailResponse getProjectDetail(String email, boolean oauth, long idx){
+        Members me = (Members)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
+        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, me.getIdx());
+
+        if(friends == null || !friends.isFriends())
+            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
+
         Projects projects = projectsRepository.findProjectsByIdx(idx);
         return toDetailResponse(projects);
     }

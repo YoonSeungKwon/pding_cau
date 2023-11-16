@@ -23,8 +23,8 @@ public class JwtProvider {
 
     private final MemberRepository memberRepository;
 
-    private long acc_exp = 1 * 60 * 1000l;
-    private long ref_exp = 2 * 60 * 1000l;
+    private long acc_exp = 30 * 60 * 1000l;
+    private long ref_exp = 3 * 60 * 60 * 1000l;
 
 //    @Value("${jwt.secret}")
     private String SECRET_KEY = "yoonseungkwonqasbornat19981217seoulkoreathankyou";

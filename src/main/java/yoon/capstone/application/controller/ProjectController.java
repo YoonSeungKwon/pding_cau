@@ -20,22 +20,28 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping("/")
-    public ResponseEntity<List<ProjectResponse>> getList(@PathVariable String email, @PathVariable String oauth){
-        return new ResponseEntity<>(null, HttpStatus.OK);
+    public ResponseEntity<List<ProjectResponse>> getList(@PathVariable String email, @PathVariable boolean oauth){
+
+        List<ProjectResponse> result = projectService.getProjectList(email, oauth);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("/{idx}")
-    public ResponseEntity<ProjectDetailResponse> getList(@PathVariable String email, @PathVariable String oauth, @PathVariable String idx){
-        return new ResponseEntity<>(null, HttpStatus.OK);
+    public ResponseEntity<ProjectDetailResponse> getList(@PathVariable String email, @PathVariable boolean oauth, @PathVariable long idx){
+
+        ProjectDetailResponse result = projectService.getProjectDetail(email, oauth, idx);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/")
-    public ResponseEntity<ProjectResponse> makeProject(@PathVariable String email, @PathVariable String oauth,
+    public ResponseEntity<ProjectResponse> makeProject(@PathVariable String email, @PathVariable boolean oauth,
                                                              @RequestBody ProjectDto dto){
 
-        ProjectResponse response = projectService.makeProjects(dto);
+        ProjectResponse result = projectService.makeProjects(email, oauth, dto);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 }

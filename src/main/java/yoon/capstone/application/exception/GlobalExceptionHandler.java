@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({FriendsException.class})
-    public ResponseEntity<ErrorResponse> RuntimeError(FriendsException e){
+    public ResponseEntity<ErrorResponse> FriendsError(FriendsException e){
         ErrorResponse response = new ErrorResponse();
         String message = e.getMessage();
         if(message == null){
@@ -44,6 +44,9 @@ public class GlobalExceptionHandler {
         } else if (message.equals(ErrorCode.SELF_FRIENDS.getStatus())) {
             response.setStatus(ErrorCode.SELF_FRIENDS.getStatus());
             response.setMessage(ErrorCode.SELF_FRIENDS.getMessage());
+        } else if (message.equals(ErrorCode.NOT_FRIENDS.getStatus())) {
+            response.setStatus(ErrorCode.NOT_FRIENDS.getStatus());
+            response.setMessage(ErrorCode.NOT_FRIENDS.getMessage());
         }
 
         System.out.println("error: " + e);
@@ -53,7 +56,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({ProjectException.class})
-    public ResponseEntity<ErrorResponse> RuntimeError(ProjectException e){
+    public ResponseEntity<ErrorResponse> ProjectsError(ProjectException e){
         ErrorResponse response = new ErrorResponse();
         String message = e.getMessage();
         if(message == null){
