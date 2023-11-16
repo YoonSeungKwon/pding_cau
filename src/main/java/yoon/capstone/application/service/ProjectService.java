@@ -85,7 +85,7 @@ public class ProjectService {
         Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, me.getIdx());
 
-        if(friends == null || !friends.isFriends())
+        if(!members.equals(me) &&(friends == null || !friends.isFriends()))
             throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
 
         Projects projects = projectsRepository.findProjectsByIdx(idx);
