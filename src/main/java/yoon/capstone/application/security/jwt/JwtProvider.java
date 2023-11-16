@@ -22,13 +22,11 @@ import java.util.Date;
 public class JwtProvider {
 
     private final MemberRepository memberRepository;
+    private final long accExp = 30 * 60 * 1000l;
+    private final long refExp = 3 * 60 * 60 * 1000l;
+    private final String SECRET = "yoonseungkwonqasbornat19981217seoulkoreathankyou";
 
-    private long acc_exp = 30 * 60 * 1000l;
-    private long ref_exp = 3 * 60 * 60 * 1000l;
-
-//    @Value("${jwt.secret}")
-    private String SECRET_KEY = "yoonseungkwonqasbornat19981217seoulkoreathankyou";
-    final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
     private String findIdByToken(String token){
         return memberRepository.findMembersByRefreshToken(token).getEmail();
@@ -37,7 +35,7 @@ public class JwtProvider {
 
         Claims claims = Jwts.claims()
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + acc_exp));
+                .setExpiration(new Date(System.currentTimeMillis() + accExp));
 
         return  Jwts.builder()
                 .setHeaderParam("typ", "JWT")
@@ -51,7 +49,7 @@ public class JwtProvider {
 
         Claims claims = Jwts.claims()
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + ref_exp));
+                .setExpiration(new Date(System.currentTimeMillis() + refExp));
 
         return  Jwts.builder()
                 .setHeaderParam("typ", "JWT")

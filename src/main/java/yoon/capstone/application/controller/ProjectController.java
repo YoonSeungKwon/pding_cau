@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.service.annotation.GetExchange;
 import yoon.capstone.application.service.ProjectService;
 import yoon.capstone.application.vo.request.ProjectDto;
@@ -37,9 +38,9 @@ public class ProjectController {
 
     @PostMapping("/")
     public ResponseEntity<ProjectResponse> makeProject(@PathVariable String email, @PathVariable boolean oauth,
-                                                             @RequestBody ProjectDto dto){
+                                                       @RequestPart MultipartFile file, @RequestPart ProjectDto dto){
 
-        ProjectResponse result = projectService.makeProjects(email, oauth, dto);
+        ProjectResponse result = projectService.makeProjects(email, oauth, file, dto);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

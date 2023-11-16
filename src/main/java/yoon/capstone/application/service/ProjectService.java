@@ -1,9 +1,12 @@
 package yoon.capstone.application.service;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.domain.Friends;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Projects;
@@ -17,8 +20,10 @@ import yoon.capstone.application.vo.request.ProjectDto;
 import yoon.capstone.application.vo.response.ProjectDetailResponse;
 import yoon.capstone.application.vo.response.ProjectResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,8 @@ public class ProjectService {
     private final ProjectsRepository projectsRepository;
     private final MemberRepository memberRepository;
     private final FriendsRepository friendsRepository;
+    private final AmazonS3Client amazonS3Client;
+    private final String bucket = "cau-artech-capstone";
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getIdx(), projects.getTitle(), projects.getImg(), projects.getGoal(),
@@ -38,21 +45,32 @@ public class ProjectService {
                 projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getEnddate());
     }
 
-    public ProjectResponse makeProjects(String email, boolean oauth, ProjectDto dto){
+    public ProjectResponse makeProjects(String email, boolean oauth, MultipartFile file, ProjectDto dto) {
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
-
+        String url;
         if(!me.equals(members))
             throw new ProjectException(ErrorCode.PROJECT_OWNER.getStatus());
-
-
+        UUID uuid = UUID.randomUUID();
+        try {
+            String fileName = uuid + file.getOriginalFilename();
+            String fileUrl = "https://" + bucket + "/projects/" + fileName;
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(file.getContentType());
+            objectMetadata.setContentLength(file.getSize());
+            System.out.println(file.getContentType());
+            url = fileUrl;
+            amazonS3Client.putObject(bucket +"/projects", fileName, file.getInputStream(), objectMetadata);
+        } catch (Exception e){
+            throw new ProjectException(null);
+        }
         Projects projects = Projects.builder()
                 .members(members)
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .link(dto.getLink())
                 .option(dto.getOption())
-                .img(dto.getImg())
+                .img(url)
                 .goal(dto.getGoal())
                 .enddate(dto.getEnddate())
                 .category(dto.getCategory())

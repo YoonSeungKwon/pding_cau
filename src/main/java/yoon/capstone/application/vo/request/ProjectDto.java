@@ -17,8 +17,6 @@ public class ProjectDto {
 
     private String link;
 
-    private String img;
-
     private int goal;
 
     private LocalDate enddate;
