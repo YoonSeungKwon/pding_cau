@@ -11,4 +11,13 @@ public class ValidationGroup {
 
     public interface EmailFormat{};
 
+    public interface TitleBlank{};
+
+    public interface LinkBlank{};
+
+    public interface GoalBlank{};
+
+    public interface DateBlank{};
+
+
 }

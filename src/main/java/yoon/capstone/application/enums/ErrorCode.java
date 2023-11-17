@@ -33,6 +33,18 @@ public enum ErrorCode {
 
     PROJECT_OWNER("PROJECT_OWNER", "해당 기능을 이용할 권한이 없습니다."),
 
+    TITLE_NOT_BLANK("TITLE_NOT_BLANK", "제목을 작성해주세요."),
+
+    LINK_NOT_BLANK("LINK_NOT_BLANK", "상품 링크를 첨부해주세요."),
+
+    GOAL_NOT_BLANK("GOAL_NOT_BLANK", "목표 금액을 설정해주세요."),
+
+    DATE_NOT_BLANK("DATE_NOT_BLANK", "마감 기한을 설정해주세요."),
+
+
+    //Util Error
+    NOT_IMAGE_FORMAT("NOT_IMAGE_FORMAT", "이미지 파일만 업로드 할 수 있습니다."),
+
     //Server Error
 
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버가 동작하지 않습니다.");

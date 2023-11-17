@@ -3,9 +3,11 @@ package yoon.capstone.application.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.service.annotation.GetExchange;
+import yoon.capstone.application.exception.sequence.ProjectValidationSequence;
 import yoon.capstone.application.service.ProjectService;
 import yoon.capstone.application.vo.request.ProjectDto;
 import yoon.capstone.application.vo.response.ProjectDetailResponse;
@@ -38,7 +40,7 @@ public class ProjectController {
 
     @PostMapping("/")
     public ResponseEntity<ProjectResponse> makeProject(@PathVariable String email, @PathVariable boolean oauth,
-                                                       @RequestPart MultipartFile file, @RequestPart ProjectDto dto){
+                                                       @RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto){
 
         ProjectResponse result = projectService.makeProjects(email, oauth, file, dto);
 

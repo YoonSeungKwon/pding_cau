@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.exception.sequence.LoginValidationSequence;
 import yoon.capstone.application.exception.sequence.RegisterValidationSequence;
 import yoon.capstone.application.service.MemberService;
@@ -13,6 +14,7 @@ import yoon.capstone.application.vo.request.LoginDto;
 import yoon.capstone.application.vo.request.RegisterDto;
 import yoon.capstone.application.vo.response.MemberResponse;
 
+import java.io.File;
 import java.util.List;
 
 @RestController
@@ -54,6 +56,13 @@ public class MemberController {
     public ResponseEntity<String> logout(){
         memberService.logOut();
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
+    }
+
+    @PostMapping("/profile")    //프로필 이미지 변경
+    public ResponseEntity<String> uploadProfileImage(@RequestBody MultipartFile file){
+        String url = memberService.uploadProfile(file);
+
+        return new ResponseEntity<>(url, HttpStatus.OK);
     }
 
 }

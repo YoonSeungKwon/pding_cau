@@ -1,5 +1,7 @@
 package yoon.capstone.application.service;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -9,8 +11,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.domain.Members;
+import yoon.capstone.application.enums.ErrorCode;
 import yoon.capstone.application.enums.Role;
+import yoon.capstone.application.exception.ProjectException;
+import yoon.capstone.application.exception.UtilException;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.security.jwt.JwtProvider;
 import yoon.capstone.application.vo.request.LoginDto;
@@ -21,6 +27,7 @@ import yoon.capstone.application.vo.response.MemberResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +35,8 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
+    private final AmazonS3Client amazonS3Client;
+    private final String bucket = "cau-artech-capstone";
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
@@ -126,5 +135,29 @@ public class MemberService {
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication();
         members.setRefreshToken(null);
         memberRepository.save(members);
+    }
+
+    public String uploadProfile(MultipartFile file){
+        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String url;
+        UUID uuid = UUID.randomUUID();
+        if (!file.getContentType().startsWith("image")) {
+            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT.getStatus());
+        }
+        try {
+            String fileName = uuid + file.getOriginalFilename();
+            String fileUrl = "https://" + bucket + "/members/" + me.getIdx() + "/" + fileName;
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(file.getContentType());
+            objectMetadata.setContentLength(file.getSize());
+            System.out.println(file.getContentType());
+            url = fileUrl;
+            amazonS3Client.putObject(bucket +"/members/" + me.getIdx(), fileName, file.getInputStream(), objectMetadata);
+        } catch (Exception e){
+            throw new ProjectException(null);
+        }
+        me.setProfile(url);
+        memberRepository.save(me);
+        return url;
     }
 }

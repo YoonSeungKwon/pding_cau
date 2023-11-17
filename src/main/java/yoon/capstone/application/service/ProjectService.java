@@ -13,6 +13,7 @@ import yoon.capstone.application.domain.Projects;
 import yoon.capstone.application.enums.ErrorCode;
 import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.ProjectException;
+import yoon.capstone.application.exception.UtilException;
 import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
@@ -49,6 +50,9 @@ public class ProjectService {
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
         String url;
+        if (!file.getContentType().startsWith("image")) {
+            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT.getStatus());
+        }
         if(!me.equals(members))
             throw new ProjectException(ErrorCode.PROJECT_OWNER.getStatus());
         UUID uuid = UUID.randomUUID();
@@ -64,6 +68,7 @@ public class ProjectService {
         } catch (Exception e){
             throw new ProjectException(null);
         }
+
         Projects projects = Projects.builder()
                 .members(members)
                 .title(dto.getTitle())

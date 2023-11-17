@@ -66,6 +66,37 @@ public class GlobalExceptionHandler {
         } else if (message.equals(ErrorCode.PROJECT_OWNER.getStatus())) {
             response.setStatus(ErrorCode.PROJECT_OWNER.getStatus());
             response.setMessage(ErrorCode.PROJECT_OWNER.getMessage());
+        } else if (message.equals(ErrorCode.TITLE_NOT_BLANK.getStatus())) {
+            response.setStatus(ErrorCode.TITLE_NOT_BLANK.getStatus());
+            response.setMessage(ErrorCode.TITLE_NOT_BLANK.getMessage());
+        } else if (message.equals(ErrorCode.LINK_NOT_BLANK.getStatus())) {
+            response.setStatus(ErrorCode.LINK_NOT_BLANK.getStatus());
+            response.setMessage(ErrorCode.LINK_NOT_BLANK.getMessage());
+        } else if (message.equals(ErrorCode.GOAL_NOT_BLANK.getStatus())) {
+            response.setStatus(ErrorCode.GOAL_NOT_BLANK.getStatus());
+            response.setMessage(ErrorCode.GOAL_NOT_BLANK.getMessage());
+        } else if (message.equals(ErrorCode.DATE_NOT_BLANK.getStatus())) {
+            response.setStatus(ErrorCode.DATE_NOT_BLANK.getStatus());
+            response.setMessage(ErrorCode.DATE_NOT_BLANK.getMessage());
+        }
+
+        System.out.println("error: " + e);
+        System.out.println("Message: " + message);
+
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @ExceptionHandler({UtilException.class})
+    public ResponseEntity<ErrorResponse> UtilError(UtilException e){
+        ErrorResponse response = new ErrorResponse();
+        String message = e.getMessage();
+        if(message == null){
+            response.setCode(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setStatus(ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
+            response.setMessage(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        } else if (message.equals(ErrorCode.NOT_IMAGE_FORMAT.getStatus())) {
+            response.setStatus(ErrorCode.NOT_IMAGE_FORMAT.getStatus());
+            response.setMessage(ErrorCode.NOT_IMAGE_FORMAT.getMessage());
         }
 
         System.out.println("error: " + e);
