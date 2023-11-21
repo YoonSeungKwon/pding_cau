@@ -41,6 +41,7 @@ public enum ErrorCode {
 
     DATE_NOT_BLANK("DATE_NOT_BLANK", "마감 기한을 설정해주세요."),
 
+    DATE_NOT_FUTURE("DATE_NOT_FUTURE", "마감 기한을 확인해주세요."),
 
     //Util Error
     NOT_IMAGE_FORMAT("NOT_IMAGE_FORMAT", "이미지 파일만 업로드 할 수 있습니다."),

@@ -1,6 +1,8 @@
 package yoon.capstone.application.vo.request;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import yoon.capstone.application.enums.ErrorCode;
 import yoon.capstone.application.exception.sequence.ValidationGroup;
@@ -22,9 +24,9 @@ public class ProjectDto {
     @NotBlank(message = "LINK_NOT_BLANK", groups = ValidationGroup.LinkBlank.class)
     private String link;
 
-    @NotBlank(message = "GOAL_NOT_BLANK", groups = ValidationGroup.GoalBlank.class)
+    @Positive(message = "GOAL_NOT_BLANK", groups = ValidationGroup.GoalBlank.class)
     private int goal;
 
-    @NotBlank(message = "DATE_NOT_BLANK", groups = ValidationGroup.DateBlank.class)
+    @Future(message = "DATE_NOT_FUTURE", groups = ValidationGroup.DateFuture.class)
     private LocalDate enddate;
 }

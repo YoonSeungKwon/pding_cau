@@ -6,7 +6,7 @@ import jakarta.validation.GroupSequence;
         ValidationGroup.TitleBlank.class,
         ValidationGroup.LinkBlank.class,
         ValidationGroup.GoalBlank.class,
-        ValidationGroup.DateBlank.class
+        ValidationGroup.DateFuture.class
 })
 public interface ProjectValidationSequence {
 }

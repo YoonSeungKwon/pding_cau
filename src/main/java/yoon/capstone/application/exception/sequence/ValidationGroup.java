@@ -16,8 +16,7 @@ public class ValidationGroup {
     public interface LinkBlank{};
 
     public interface GoalBlank{};
-
-    public interface DateBlank{};
+    public interface DateFuture{};
 
 
 }
