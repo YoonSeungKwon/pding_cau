@@ -35,6 +35,8 @@ public class ProjectService {
     private final FriendsRepository friendsRepository;
     private final AmazonS3Client amazonS3Client;
     private final String bucket = "cau-artech-capstone";
+    private final String region = "ap-northeast-2";
+
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getIdx(), projects.getTitle(), projects.getImg(), projects.getGoal(),
@@ -58,7 +60,7 @@ public class ProjectService {
         UUID uuid = UUID.randomUUID();
         try {
             String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + "/projects/" + fileName;
+            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/projects/" + fileName;
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentType(file.getContentType());
             objectMetadata.setContentLength(file.getSize());

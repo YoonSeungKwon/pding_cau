@@ -12,7 +12,6 @@ import yoon.capstone.application.service.ProjectService;
 import yoon.capstone.application.vo.request.ProjectDto;
 import yoon.capstone.application.vo.response.ProjectDetailResponse;
 import yoon.capstone.application.vo.response.ProjectResponse;
-
 import java.util.List;
 
 @RestController

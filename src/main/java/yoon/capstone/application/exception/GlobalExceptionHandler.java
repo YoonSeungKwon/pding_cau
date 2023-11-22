@@ -1,5 +1,7 @@
 package yoon.capstone.application.exception;
 
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -83,6 +85,13 @@ public class GlobalExceptionHandler {
         System.out.println("error: " + e);
         System.out.println("Message: " + message);
 
+        return new ResponseEntity<>(response, response.getCode());
+    }
+    @ExceptionHandler({FileSizeLimitExceededException.class, SizeLimitExceededException.class})
+    public ResponseEntity<ErrorResponse> FileSizeError(){
+        ErrorResponse response = new ErrorResponse();
+        response.setStatus(ErrorCode.FILE_SIZE_EXCEEDED.getStatus());
+        response.setMessage(ErrorCode.FILE_SIZE_EXCEEDED.getMessage());
         return new ResponseEntity<>(response, response.getCode());
     }
 

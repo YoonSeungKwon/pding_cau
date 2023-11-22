@@ -37,6 +37,7 @@ public class MemberService {
     private final JwtProvider jwtProvider;
     private final AmazonS3Client amazonS3Client;
     private final String bucket = "cau-artech-capstone";
+    private final String region = "ap-northeast-2";
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
@@ -146,7 +147,7 @@ public class MemberService {
         }
         try {
             String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + "/members/" + me.getIdx() + "/" + fileName;
+            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/members/" + me.getIdx() + "/" + fileName;
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentType(file.getContentType());
             objectMetadata.setContentLength(file.getSize());

@@ -46,6 +46,8 @@ public enum ErrorCode {
     //Util Error
     NOT_IMAGE_FORMAT("NOT_IMAGE_FORMAT", "이미지 파일만 업로드 할 수 있습니다."),
 
+    FILE_SIZE_EXCEEDED("FILE_SIZE_EXCEEDED", "10MB 이하의 파일만 업로드 할 수 있습니다."),
+
     //Server Error
 
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버가 동작하지 않습니다.");
