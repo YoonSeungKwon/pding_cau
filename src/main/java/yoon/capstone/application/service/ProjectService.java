@@ -1,6 +1,7 @@
 package yoon.capstone.application.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import yoon.capstone.application.vo.response.ProjectDetailResponse;
 import yoon.capstone.application.vo.response.ProjectResponse;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -126,6 +128,38 @@ public class ProjectService {
         projectsRepository.delete(projects);
 
         return toResponse(projects);
+    }
+
+    public String changeImage(long idx, MultipartFile file){
+        String url;
+        if (!file.getContentType().startsWith("image")) {
+            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT.getStatus());
+        }
+        UUID uuid = UUID.randomUUID();
+        try {
+            String fileName = uuid + file.getOriginalFilename();
+            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/projects/" + fileName;
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(file.getContentType());
+            objectMetadata.setContentLength(file.getSize());
+            url = fileUrl;
+            amazonS3Client.putObject(bucket +"/projects", fileName, file.getInputStream(), objectMetadata);
+        } catch (Exception e){
+            throw new ProjectException(null);
+        }
+        Projects projects = projectsRepository.findProjectsByIdx(idx);
+        String prevImg = projects.getImg();
+        projects.setImg(url);
+
+        try{
+            System.out.println(prevImg);
+            System.out.println("name" + prevImg.substring(prevImg.indexOf("/projects/")+10));
+            amazonS3Client.deleteObject(new DeleteObjectRequest(bucket + "/projects", prevImg.substring(prevImg.indexOf("/projects/")+10)));
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        projectsRepository.save(projects);
+        return url;
     }
 
 }

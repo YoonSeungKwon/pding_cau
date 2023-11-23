@@ -22,7 +22,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping("/")
-    public ResponseEntity<List<ProjectResponse>> getList(@PathVariable String email, @PathVariable boolean oauth){
+    public ResponseEntity<List<ProjectResponse>> getList(@PathVariable String email, @PathVariable boolean oauth) {
 
         List<ProjectResponse> result = projectService.getProjectList(email, oauth);
 
@@ -30,7 +30,7 @@ public class ProjectController {
     }
 
     @GetMapping("/{idx}")
-    public ResponseEntity<ProjectDetailResponse> getList(@PathVariable String email, @PathVariable boolean oauth, @PathVariable long idx){
+    public ResponseEntity<ProjectDetailResponse> getList(@PathVariable String email, @PathVariable boolean oauth, @PathVariable long idx) {
 
         ProjectDetailResponse result = projectService.getProjectDetail(email, oauth, idx);
 
@@ -39,11 +39,17 @@ public class ProjectController {
 
     @PostMapping("/")
     public ResponseEntity<ProjectResponse> makeProject(@PathVariable String email, @PathVariable boolean oauth,
-                                                       @RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto){
+                                                       @RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto) {
 
         ProjectResponse result = projectService.makeProjects(email, oauth, file, dto);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @PostMapping("/{idx}")
+    public ResponseEntity<String> changeProjectImage(@PathVariable String email, @PathVariable boolean oauth, @PathVariable long idx,
+                                                     @RequestBody MultipartFile file) {
+        String url = projectService.changeImage(idx, file);
+        return new ResponseEntity<>(url, HttpStatus.OK);
+    }
 }

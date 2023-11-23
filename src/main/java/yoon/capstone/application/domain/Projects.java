@@ -42,7 +42,6 @@ public class Projects {
     @CreationTimestamp
     private LocalDateTime regdate;
 
-    @UpdateTimestamp
     private LocalDateTime enddate;
 
     private String link;
