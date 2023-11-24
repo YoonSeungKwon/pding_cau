@@ -1,13 +1,9 @@
 package yoon.capstone.application.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import yoon.capstone.application.service.PaymentService;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import yoon.capstone.application.service.OrderService;
 import yoon.capstone.application.vo.response.KakaoResultResponse;
 
 @RestController
@@ -15,12 +11,11 @@ import yoon.capstone.application.vo.response.KakaoResultResponse;
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final OrderService orderService;
 
     @GetMapping("/success")
-    public ResponseEntity<KakaoResultResponse> paymentSuccessHandler(@RequestParam("pg_token") String token){
-        KakaoResultResponse result = paymentService.kakaoPaymentAccess(token);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public void paymentSuccessHandler(@RequestParam("pg_token") String token){
+        KakaoResultResponse result = orderService.kakaoPaymentAccess(token);
     }
 
     @GetMapping("/cancel")
