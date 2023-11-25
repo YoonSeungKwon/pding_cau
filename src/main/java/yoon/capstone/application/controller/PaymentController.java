@@ -14,8 +14,9 @@ public class PaymentController {
     private final OrderService orderService;
 
     @GetMapping("/success")
-    public void paymentSuccessHandler(@RequestParam("pg_token") String token){
+    public String paymentSuccessHandler(@RequestParam("pg_token") String token){
         KakaoResultResponse result = orderService.kakaoPaymentAccess(token);
+        return "결제가 완료되었습니다. 창을 닫아주세요.";
     }
 
     @GetMapping("/cancel")

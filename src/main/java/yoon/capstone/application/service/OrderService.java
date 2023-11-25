@@ -113,6 +113,9 @@ public class OrderService {
                 KakaoResultResponse.class
         );
 
+        projects.setCurr(projects.getCurr() + payment.getTotal());
+
+        projectsRepository.save(projects);
         paymentRepository.save(payment);
         orderRepository.save(Orders.builder()
                 .members(members)
