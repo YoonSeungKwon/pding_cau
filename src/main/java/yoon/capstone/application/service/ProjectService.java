@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.domain.Friends;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.enums.Categorys;
 import yoon.capstone.application.enums.ErrorCode;
 import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.ProjectException;
@@ -42,7 +43,7 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getIdx(), projects.getTitle(), projects.getImg(), projects.getGoal(),
-                projects.getCurr(), projects.getEnddate());
+                projects.getCurr(), projects.getCategory().getValue(), projects.getEnddate());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
@@ -72,6 +73,12 @@ public class ProjectService {
         } catch (Exception e){
             throw new ProjectException(null);
         }
+        Categorys categorys;
+        if(dto.getCategory().equals(Categorys.생일.getValue())){
+            categorys = Categorys.생일;
+        }else{
+            categorys = Categorys.졸업;
+        }
 
         Projects projects = Projects.builder()
                 .members(members)
@@ -82,7 +89,7 @@ public class ProjectService {
                 .img(url)
                 .goal(dto.getGoal())
                 .enddate(dto.getEnddate())
-                .category(dto.getCategory())
+                .category(categorys)
                 .build();
         return toResponse(projectsRepository.save(projects));
     }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import yoon.capstone.application.enums.Categorys;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,11 +57,11 @@ public class Projects {
 
     private String img;
 
-    private String category;
+    private Categorys category;
 
 
     @Builder
-    public Projects(Members members, String title, String content,String option, String link, String img, int goal, LocalDate enddate, String category){
+    public Projects(Members members, String title, String content,String option, String link, String img, int goal, LocalDate enddate, Categorys category){
         this.members = members;
         this.title = title;
         this.content = content;

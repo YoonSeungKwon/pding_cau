@@ -21,6 +21,8 @@ public class ProjectResponse {
 
     private int curr;
 
+    private String category;
+
     private LocalDateTime enddate;
 
 }
