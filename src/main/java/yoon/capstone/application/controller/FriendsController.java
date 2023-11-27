@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import yoon.capstone.application.service.FriendsService;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.vo.request.FriendsDto;
+import yoon.capstone.application.vo.response.FriendsReqResponse;
 import yoon.capstone.application.vo.response.FriendsResponse;
 import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
@@ -21,9 +22,9 @@ public class FriendsController {
     private final FriendsService friendsService;
 
     @GetMapping("/")
-    public ResponseEntity<List<MemberResponse>> getRequests(){
+    public ResponseEntity<List<FriendsReqResponse>> getRequests(){
 
-        List<MemberResponse> result = friendsService.getFriendsRequest();
+        List<FriendsReqResponse> result = friendsService.getFriendsRequest();
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

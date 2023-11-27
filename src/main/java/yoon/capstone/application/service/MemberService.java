@@ -41,7 +41,7 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
-        return new MemberResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth());
+        return new MemberResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth(), members.getLastVisit());
     }
 
     public boolean existUser(String email){
@@ -118,7 +118,7 @@ public class MemberService {
         toResponse(members);
     }
 
-    public void socialLogin(String email, HttpServletResponse response){
+    public MemberResponse socialLogin(String email, HttpServletResponse response){
         Members members = memberRepository.findMembersByEmail(email);
 
         String accToken = jwtProvider.createAccessToken(members.getEmail());
@@ -129,7 +129,7 @@ public class MemberService {
         response.setHeader("X-Refresh-Token", refToken);
 
         memberRepository.save(members);
-        return;
+        return toResponse(members);
     }
 
     public void logOut(){

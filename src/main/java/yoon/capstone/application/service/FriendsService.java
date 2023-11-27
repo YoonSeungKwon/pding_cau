@@ -12,6 +12,7 @@ import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.vo.request.FriendsDto;
+import yoon.capstone.application.vo.response.FriendsReqResponse;
 import yoon.capstone.application.vo.response.FriendsResponse;
 import yoon.capstone.application.vo.response.MemberDetailResponse;
 import yoon.capstone.application.vo.response.MemberResponse;
@@ -28,7 +29,7 @@ public class FriendsService {
 
     private FriendsResponse toResponse(Friends friends){
         Members fromUser = memberRepository.findMembersByIdx(friends.getFromUser());
-        return new FriendsResponse(friends.getToUser().getUsername(), fromUser.getUsername(), friends.isFriends());
+        return new FriendsResponse(friends.getToUser().getUsername(), fromUser.getUsername(), friends.isFriends(), friends.getRegdate());
     }
 
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..
@@ -42,21 +43,22 @@ public class FriendsService {
         for(Friends f: list){
             if(f.isFriends())
                 result.add(new MemberResponse(f.getToUser().getEmail(), f.getToUser().getUsername(), f.getToUser().getProfile()
-                , f.getToUser().isOauth()));
+                , f.getToUser().isOauth(), f.getToUser().getLastVisit()));
         }
 
         return result;
     }
 
-    public List<MemberResponse> getFriendsRequest(){
+    public List<FriendsReqResponse> getFriendsRequest(){
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Friends> list = friendsRepository.findAllByToUser(members);
-        List<MemberResponse> result = new ArrayList<>();
+        List<FriendsReqResponse> result = new ArrayList<>();
 
         for(Friends f:list){
             if(!f.isFriends()) {
                 Members tempMember = memberRepository.findMembersByIdx(f.getFromUser());
-                result.add(new MemberResponse(tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile(), tempMember.isOauth()));
+                result.add(new FriendsReqResponse(tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile(), tempMember.isOauth(),
+                        f.getRegdate()));
             }
         }
 

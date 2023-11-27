@@ -22,4 +22,5 @@ public class MemberResponse {
 
     private boolean oauth;
 
+    private LocalDateTime lastVisit;
 }

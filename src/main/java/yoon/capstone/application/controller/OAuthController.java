@@ -61,12 +61,13 @@ public class OAuthController {
         Map<String, String> map = new HashMap<>();
         map.put("email", email);
         map.put("name", nickname);
+        System.out.println(token);
+        System.out.println(object);
 
         if(!memberService.existUser(email)){
             memberService.socialRegister(dto);
         }
-        memberService.socialLogin(email, response);
-        MemberResponse memberResponse = new MemberResponse(email, nickname, image, true);
+        MemberResponse memberResponse = memberService.socialLogin(email, response);
 
         return new ResponseEntity<>(memberResponse, HttpStatus.OK);
     }
