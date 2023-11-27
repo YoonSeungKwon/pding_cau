@@ -57,6 +57,7 @@ public class Projects {
 
     private String img;
 
+    @Enumerated(EnumType.STRING)
     private Categorys category;
 
 
