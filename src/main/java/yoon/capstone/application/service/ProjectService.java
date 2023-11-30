@@ -43,7 +43,7 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImg(), projects.getGoal(),
-                projects.getCurr(), projects.getCategory().getValue(), projects.getEnddate());
+                projects.getCurr(), projects.getCategory().getValue(), projects.getEnddate(), projects.getMembers().getProfile());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){

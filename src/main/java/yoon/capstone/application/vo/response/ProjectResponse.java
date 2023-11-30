@@ -27,6 +27,8 @@ public class ProjectResponse {
 
     private LocalDateTime enddate;
 
+    private String profile;
+
 }
 
 
