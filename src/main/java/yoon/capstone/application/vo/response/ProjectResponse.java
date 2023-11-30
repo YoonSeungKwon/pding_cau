@@ -13,6 +13,8 @@ public class ProjectResponse {
 
     private long idx;
 
+    private String writer;
+
     private String title;
 
     private String img;

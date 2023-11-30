@@ -42,7 +42,7 @@ public class ProjectService {
 
 
     private ProjectResponse toResponse(Projects projects){
-        return new ProjectResponse(projects.getIdx(), projects.getTitle(), projects.getImg(), projects.getGoal(),
+        return new ProjectResponse(projects.getIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImg(), projects.getGoal(),
                 projects.getCurr(), projects.getCategory().getValue(), projects.getEnddate());
     }
 
@@ -51,15 +51,12 @@ public class ProjectService {
                 projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getEnddate());
     }
 
-    public ProjectResponse makeProjects(String email, boolean oauth, MultipartFile file, ProjectDto dto) {
+    public ProjectResponse makeProjects(MultipartFile file, ProjectDto dto) {
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
         String url;
         if (!file.getContentType().startsWith("image")) {
             throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT.getStatus());
         }
-        if(!me.equals(members))
-            throw new ProjectException(ErrorCode.PROJECT_OWNER.getStatus());
         UUID uuid = UUID.randomUUID();
         try {
             String fileName = uuid + file.getOriginalFilename();
@@ -81,7 +78,7 @@ public class ProjectService {
         }
 
         Projects projects = Projects.builder()
-                .members(members)
+                .members(me)
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .link(dto.getLink())
@@ -93,19 +90,11 @@ public class ProjectService {
                 .build();
         return toResponse(projectsRepository.save(projects));
     }
-    public List<ProjectResponse> getProjectList(String email, boolean oauth){
-        Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
-        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(members == null)
-            throw new UsernameNotFoundException(email);
+    public List<ProjectResponse> getProjectList(){
+        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, me.getIdx());
-
-        if(!members.equals(me) && (friends == null || !friends.isFriends()))
-            throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
-
-        List<Projects> list = projectsRepository.findAllByMembers(members);
         List<ProjectResponse> result = new ArrayList<>();
+        List<Projects> list = projectsRepository.findAllByMembers(members);
 
         for(Projects p:list){
             result.add(toResponse(p));
@@ -114,9 +103,28 @@ public class ProjectService {
         return result;
     }
 
-    public ProjectDetailResponse getProjectDetail(String email, boolean oauth, long idx){
+    public List<ProjectResponse> getFriendsList(){
+        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<ProjectResponse> result = new ArrayList<>();
+        List<Friends> friends = friendsRepository.findAllByToUser(members);
+
+        for(Friends f: friends){
+            if(!f.isFriends()) continue;
+            Members friend = memberRepository.findMembersByIdx(f.getFromUser());
+            List<Projects> projects = projectsRepository.findAllByMembers(friend);
+            for(Projects p: projects){
+                result.add(toResponse(p));
+            }
+        }
+        return result;
+    }
+
+    public ProjectDetailResponse getProjectDetail(long idx){
         Members me = (Members)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members members = memberRepository.findMembersByEmailAndOauth(email, oauth);
+        Projects tempProject = projectsRepository.findProjectsByIdx(idx);
+        Members members = tempProject.getMembers();
+
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, me.getIdx());
 
         if(!members.equals(me) &&(friends == null || !friends.isFriends()))

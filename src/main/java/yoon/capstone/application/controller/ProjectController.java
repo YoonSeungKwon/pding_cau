@@ -15,40 +15,46 @@ import yoon.capstone.application.vo.response.ProjectResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/{email}/social={oauth}/projects")
+@RequestMapping("/api/v1/projects")
 @RequiredArgsConstructor
 public class ProjectController {
 
     private final ProjectService projectService;
 
     @GetMapping("/")
-    public ResponseEntity<List<ProjectResponse>> getList(@PathVariable String email, @PathVariable boolean oauth) {
+    public ResponseEntity<List<ProjectResponse>> getList() {
 
-        List<ProjectResponse> result = projectService.getProjectList(email, oauth);
+        List<ProjectResponse> result = projectService.getProjectList();
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/friends")
+    public ResponseEntity<List<ProjectResponse>> getFriendsList() {
+
+        List<ProjectResponse> result = projectService.getFriendsList();
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("/{idx}")
-    public ResponseEntity<ProjectDetailResponse> getList(@PathVariable String email, @PathVariable boolean oauth, @PathVariable long idx) {
+    public ResponseEntity<ProjectDetailResponse> getList(@PathVariable long idx) {
 
-        ProjectDetailResponse result = projectService.getProjectDetail(email, oauth, idx);
+        ProjectDetailResponse result = projectService.getProjectDetail(idx);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/")
-    public ResponseEntity<ProjectResponse> makeProject(@PathVariable String email, @PathVariable boolean oauth,
-                                                       @RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto) {
+    public ResponseEntity<ProjectResponse> makeProject(@RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto) {
 
-        ProjectResponse result = projectService.makeProjects(email, oauth, file, dto);
+        ProjectResponse result = projectService.makeProjects(file, dto);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/{idx}")
-    public ResponseEntity<String> changeProjectImage(@PathVariable String email, @PathVariable boolean oauth, @PathVariable long idx,
-                                                     @RequestBody MultipartFile file) {
+    public ResponseEntity<String> changeProjectImage(@PathVariable long idx, @RequestBody MultipartFile file) {
         String url = projectService.changeImage(idx, file);
         return new ResponseEntity<>(url, HttpStatus.OK);
     }
