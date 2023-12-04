@@ -14,7 +14,13 @@ public class ProjectDetailResponse {
 
     private String content;
 
+    private String writer;
+
+    private String profile;
+
     private String option;
+
+    private String category;
 
     private String img;
 
@@ -23,6 +29,8 @@ public class ProjectDetailResponse {
     private int goal;
 
     private int curr;
+
+    private LocalDateTime regdate;
 
     private LocalDateTime enddate;
 

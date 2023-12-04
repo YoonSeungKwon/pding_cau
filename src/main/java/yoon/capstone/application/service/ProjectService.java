@@ -47,8 +47,8 @@ public class ProjectService {
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
-        return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getOption(),
-                projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getEnddate());
+        return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getMembers().getUsername(), projects.getMembers().getProfile(),
+                projects.getOption(), projects.getCategory().getValue(), projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getRegdate(), projects.getEnddate());
     }
 
     public ProjectResponse makeProjects(MultipartFile file, ProjectDto dto) {
