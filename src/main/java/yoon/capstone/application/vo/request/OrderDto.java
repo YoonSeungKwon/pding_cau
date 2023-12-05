@@ -9,4 +9,6 @@ public class OrderDto {
 
     private int total;
 
+    private String message;
+
 }

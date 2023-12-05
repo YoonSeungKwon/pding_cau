@@ -29,11 +29,14 @@ public class Orders {
     @JoinColumn(name = "orders_payment")
     private Payment payment;
 
+    private String message;
+
     @Builder
-    Orders(Members members, Projects projects, Payment payment){
+    Orders(Members members, Projects projects, Payment payment, String message){
         this.members = members;
         this.projects = projects;
         this.payment = payment;
+        this.message = message;
     }
 
 }

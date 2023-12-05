@@ -41,6 +41,7 @@ public class OrderService {
 
     private Projects projects;
     private Payment payment;
+    private String message;
 
     public KakaoPayResponse kakaoPayment(OrderDto dto){
 
@@ -86,6 +87,7 @@ public class OrderService {
         this.members = members;
         this.payment = payment;
         this.projects = projects;
+        this.message = dto.getMessage();
 
         return result;
     }
@@ -121,6 +123,7 @@ public class OrderService {
                 .members(members)
                 .projects(projects)
                 .payment(payment)
+                .message(message)
                 .build());
 
         return result;
