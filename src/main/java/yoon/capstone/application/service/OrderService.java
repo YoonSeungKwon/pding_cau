@@ -79,9 +79,9 @@ public class OrderService {
         map.add("quantity", 1);
         map.add("total_amount", dto.getTotal());
         map.add("tax_free_amount", dto.getTotal());
-        map.add("approval_url", "http://localhost:8080/api/v1/payment/success");
-        map.add("cancel_url", "http://localhost:8080/api/v1/payment/cancel");
-        map.add("fail_url", "http://localhost:8080/api/v1/payment/failure");
+        map.add("approval_url", "http://13.209.154.183:8080/api/v1/payment/success");
+        map.add("cancel_url", "http://13.209.154.183:8080/api/v1/payment/cancel");
+        map.add("fail_url", "http://13.209.154.183:8080/api/v1/payment/failure");
 
         HttpEntity<MultiValueMap<String,Object>> request = new HttpEntity<>(map, headers);
         KakaoPayResponse result = restTemplate.postForObject(
