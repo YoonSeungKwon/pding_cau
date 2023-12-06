@@ -30,6 +30,8 @@ public class ProjectDetailResponse {
 
     private int curr;
 
+    private int count;
+
     private LocalDateTime regdate;
 
     private LocalDateTime enddate;

@@ -22,8 +22,8 @@ import java.util.Date;
 public class JwtProvider {
 
     private final MemberRepository memberRepository;
-    private final long accExp = 30 * 60 * 1000l;
-    private final long refExp = 3 * 60 * 60 * 1000l;
+    private final long accExp = 60 * 60 * 1000l;
+    private final long refExp = 6 * 60 * 60 * 1000l;
     private final String SECRET = "yoonseungkwonqasbornat19981217seoulkoreathankyou";
 
     final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));

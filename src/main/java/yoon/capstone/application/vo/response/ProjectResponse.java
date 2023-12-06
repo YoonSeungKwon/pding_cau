@@ -23,6 +23,8 @@ public class ProjectResponse {
 
     private int curr;
 
+    private int count;
+
     private String category;
 
     private LocalDateTime enddate;

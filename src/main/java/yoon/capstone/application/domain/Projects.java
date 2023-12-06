@@ -49,6 +49,9 @@ public class Projects {
 
     private String option;
 
+    @ColumnDefault("0")
+    private int count;
+
     @ColumnDefault("1")
     private boolean isValid;
 

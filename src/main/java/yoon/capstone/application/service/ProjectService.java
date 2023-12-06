@@ -43,12 +43,13 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImg(), projects.getGoal(),
-                projects.getCurr(), projects.getCategory().getValue(), projects.getEnddate(), projects.getMembers().getProfile());
+                projects.getCurr(), projects.getCount(), projects.getCategory().getValue(), projects.getEnddate(), projects.getMembers().getProfile());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
         return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getMembers().getUsername(), projects.getMembers().getProfile(),
-                projects.getOption(), projects.getCategory().getValue(), projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr(), projects.getRegdate(), projects.getEnddate());
+                projects.getOption(), projects.getCategory().getValue(), projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr()
+                ,projects.getCount(), projects.getRegdate(), projects.getEnddate());
     }
 
     public ProjectResponse makeProjects(MultipartFile file, ProjectDto dto) {

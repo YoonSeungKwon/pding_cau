@@ -6,10 +6,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Orders;
@@ -21,7 +19,10 @@ import yoon.capstone.application.repository.ProjectsRepository;
 import yoon.capstone.application.vo.request.OrderDto;
 import yoon.capstone.application.vo.response.KakaoPayResponse;
 import yoon.capstone.application.vo.response.KakaoResultResponse;
+import yoon.capstone.application.vo.response.OrderResponse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -42,6 +43,21 @@ public class OrderService {
     private Projects projects;
     private Payment payment;
     private String message;
+
+    private OrderResponse toResponse(Orders orders){
+        return new OrderResponse(orders.getMembers().getUsername(), orders.getMembers().getProfile(),
+                orders.getPayment().getTotal(), orders.getMessage(), orders.getPayment().getRegdate());
+    }
+
+    public List<OrderResponse> getOrderList(long idx){
+        Projects tempProject = projectsRepository.findProjectsByIdx(idx);
+        List<Orders> list = orderRepository.findAllByProjects(tempProject);
+        List<OrderResponse> result = new ArrayList<>();
+        for(Orders o:list){
+            result.add(toResponse(o));
+        }
+        return result;
+    }
 
     public KakaoPayResponse kakaoPayment(OrderDto dto){
 
@@ -92,7 +108,7 @@ public class OrderService {
         return result;
     }
 
-    public KakaoResultResponse kakaoPaymentAccess(String token){
+    public long kakaoPaymentAccess(String token){
 
         HttpHeaders headers = new HttpHeaders();
         RestTemplate restTemplate = new RestTemplate();
@@ -116,6 +132,7 @@ public class OrderService {
         );
 
         projects.setCurr(projects.getCurr() + payment.getTotal());
+        projects.setCount(projects.getCount()+1);
 
         projectsRepository.save(projects);
         paymentRepository.save(payment);
@@ -126,7 +143,7 @@ public class OrderService {
                 .message(message)
                 .build());
 
-        return result;
+        return projects.getIdx();
     }
 
 
