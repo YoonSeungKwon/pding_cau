@@ -18,7 +18,7 @@ public class PaymentController {
     public RedirectView paymentSuccessHandler(@RequestParam("pg_token") String token){
         orderService.kakaoPaymentAccess(token);
         RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("http://13.124.127.93:3000/success/");
+        redirectView.setUrl("http://15.164.205.27:8080/success/");
         return redirectView;
     }
 
