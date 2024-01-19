@@ -1,5 +1,7 @@
 package yoon.capstone.application.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +19,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/projects")
 @RequiredArgsConstructor
+@Tag(name = "펀딩 관련 API", description = "v1")
 public class ProjectController {
 
     private final ProjectService projectService;
 
     @GetMapping("/")
+    @Operation(summary = "본인의 펀딩 글 불러오기", description = "본인이 작성한 펀딩 글을 불러온다.")
     public ResponseEntity<List<ProjectResponse>> getList() {
 
         List<ProjectResponse> result = projectService.getProjectList();
@@ -30,6 +34,7 @@ public class ProjectController {
     }
 
     @GetMapping("/friends")
+    @Operation(summary = "친구들의 펀딩 글 불러오기", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
     public ResponseEntity<List<ProjectResponse>> getFriendsList() {
 
         List<ProjectResponse> result = projectService.getFriendsList();
@@ -38,6 +43,7 @@ public class ProjectController {
     }
 
     @GetMapping("/{idx}")
+    @Operation(summary = "펀딩 글 자세히 보기", description = "idx에 해당하는 프로젝트의 자세한 정보들을 반환")
     public ResponseEntity<ProjectDetailResponse> getList(@PathVariable long idx) {
 
         ProjectDetailResponse result = projectService.getProjectDetail(idx);
@@ -46,6 +52,7 @@ public class ProjectController {
     }
 
     @PostMapping("/")
+    @Operation(summary = "펀딩 글 쓰기", description = "지정된 형식의 dto와 파일을 받아서 유효성 검사 후 펀딩 글 등록")
     public ResponseEntity<ProjectResponse> makeProject(@RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto) {
 
         ProjectResponse result = projectService.makeProjects(file, dto);
@@ -54,6 +61,7 @@ public class ProjectController {
     }
 
     @PostMapping("/{idx}")
+    @Operation(summary = "펀딩 글 대표 이미지 변경", description = "file을 유효성을 검증한 후 스토리지 서버에 저장")
     public ResponseEntity<String> changeProjectImage(@PathVariable long idx, @RequestBody MultipartFile file) {
         String url = projectService.changeImage(idx, file);
         return new ResponseEntity<>(url, HttpStatus.OK);
