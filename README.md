@@ -15,10 +15,11 @@
   <ul>
     <li>협업: Figma, Notion, Git</li>
     <li>언어: Java(jdk 17.x), html/css, javascript</li>
-    <li>FE:   React, </li>
-    <li>BE:</li>
-    <li>DB:</li>
-    <li>SEVER:</li>
+    <li>FE:   React, Nginx</li>
+    <li>BE:   Spring Boot, Mybatis, Jpa</li>
+    <li>DB:   MariaDB, Redis, AWS RDS</li>
+    <li>SEVER:AWS EC2, AWS S3, Docker</li>
+    <li>API:  KAKAO Oauth2, KAKAO PAY</li>
   </ul>
 
  4. 주요 기술
