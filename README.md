@@ -13,15 +13,24 @@
 
  3. 개발 환경
   <ul>
-    <li>협업: Figma, Notion, Git</li>
-    <li>언어: Java(jdk 17.x), html/css, javascript</li>
-    <li>FE:   React, Nginx</li>
-    <li>BE:   Spring Boot, Mybatis, Jpa</li>
-    <li>DB:   MariaDB, Redis, AWS RDS</li>
-    <li>SEVER:AWS EC2, AWS S3, Docker</li>
-    <li>API:  KAKAO Oauth2, KAKAO PAY</li>
+    <li>협업:     Figma, Notion, Git, Swagger</li>
+    <li>언어:     Java(jdk 17.x), html/css, javascript</li>
+    <li>FE:       React, Nginx</li>
+    <li>BE:       Spring Boot, Mybatis, Jpa</li>
+    <li>DB:       MariaDB, Redis, AWS RDS</li>
+    <li>SEVER:    Apache Tomcat(10.1.x), AWS EC2, AWS S3, Docker</li>
+    <li>API:      KAKAO Oauth2, KAKAO PAY</li>
   </ul>
 
  4. 주요 기술
-
+  <ul>
+    <li>회원가입:</li>
+    <li>로그인:</li>
+    <li>프로필 변경:</li>
+    <li>친구신청:</li>
+    <li>친구목록:</li>
+    <li>프로젝트 생성:</li>
+    <li>펀딩하기:</li>
+  </ul>
+  
  5. 결과물
