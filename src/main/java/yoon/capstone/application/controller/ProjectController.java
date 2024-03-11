@@ -8,12 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.service.annotation.GetExchange;
 import yoon.capstone.application.exception.sequence.ProjectValidationSequence;
 import yoon.capstone.application.service.ProjectService;
 import yoon.capstone.application.vo.request.ProjectDto;
 import yoon.capstone.application.vo.response.ProjectDetailResponse;
 import yoon.capstone.application.vo.response.ProjectResponse;
+
 import java.util.List;
 
 @RestController
@@ -26,18 +26,18 @@ public class ProjectController {
 
     @GetMapping("/")
     @Operation(summary = "본인의 펀딩 글 불러오기", description = "본인이 작성한 펀딩 글을 불러온다.")
-    public ResponseEntity<List<ProjectResponse>> getList() {
+    public ResponseEntity<List<ProjectResponse>> getList(@RequestBody String email) {
 
-        List<ProjectResponse> result = projectService.getProjectList();
+        List<ProjectResponse> result = projectService.getProjectList(email);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("/friends")
     @Operation(summary = "친구들의 펀딩 글 불러오기", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
-    public ResponseEntity<List<ProjectResponse>> getFriendsList() {
+    public ResponseEntity<List<ProjectResponse>> getFriendsList(@RequestBody String email) {
 
-        List<ProjectResponse> result = projectService.getFriendsList();
+        List<ProjectResponse> result = projectService.getFriendsList(email);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -53,9 +53,10 @@ public class ProjectController {
 
     @PostMapping("/")
     @Operation(summary = "펀딩 글 쓰기", description = "지정된 형식의 dto와 파일을 받아서 유효성 검사 후 펀딩 글 등록")
-    public ResponseEntity<ProjectResponse> makeProject(@RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto) {
+    public ResponseEntity<List<ProjectResponse>> makeProject(@RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto,
+                                                             @RequestBody String email) {
 
-        ProjectResponse result = projectService.makeProjects(file, dto);
+        List<ProjectResponse> result = projectService.makeProjects(file, dto, email);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -63,7 +64,9 @@ public class ProjectController {
     @PostMapping("/{idx}")
     @Operation(summary = "펀딩 글 대표 이미지 변경", description = "file을 유효성을 검증한 후 스토리지 서버에 저장")
     public ResponseEntity<String> changeProjectImage(@PathVariable long idx, @RequestBody MultipartFile file) {
+
         String url = projectService.changeImage(idx, file);
+
         return new ResponseEntity<>(url, HttpStatus.OK);
     }
 }

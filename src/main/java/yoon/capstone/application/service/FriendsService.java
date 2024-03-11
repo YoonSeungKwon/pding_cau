@@ -1,8 +1,11 @@
 package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import yoon.capstone.application.domain.Friends;
@@ -33,8 +36,8 @@ public class FriendsService {
     }
 
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..
-
-    public List<MemberResponse> getFriendsList(){
+    @Cacheable(value = "friendsList", key = "#email")
+    public List<MemberResponse> getFriendsList(String email){
         System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Friends> list = friendsRepository.findAllByFromUser(members.getIdx());
@@ -94,7 +97,8 @@ public class FriendsService {
         return toResponse(friendsRepository.save(friends));
     }
 
-    public FriendsResponse acceptFriends(FriendsDto dto){  //친구 요청 수락
+    @CachePut(value = "friendsList", key = "#email")
+    public List<FriendsResponse> acceptFriends(FriendsDto dto, String email){  //친구 요청 수락
         Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
 
@@ -113,10 +117,17 @@ public class FriendsService {
         temp.setFriends(true);
 
         friendsRepository.save(temp);   //수락한 쪽도 친구로 등록
-        return toResponse(friendsRepository.save(friends));
+        friendsRepository.save(friends);
+
+        List<Friends> list = friendsRepository.findAllByToUser(toUser);
+        List<FriendsResponse> result = new ArrayList<>();
+        for(Friends f : list){
+            result.add(toResponse(f));
+        }
+        return result;
     }
 
-    public FriendsResponse declineFriends(FriendsDto dto){ //친구 요청 거절
+    public List<FriendsResponse> declineFriends(FriendsDto dto){ //친구 요청 거절
         Members toUser = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
 
@@ -125,10 +136,18 @@ public class FriendsService {
             throw new FriendsException(ErrorCode.NOT_FRIENDS.getStatus());
         friendsRepository.delete(friends);
 
-        return toResponse(friends);
+        List<Friends> list = friendsRepository.findAllByToUser(toUser);
+        List<FriendsResponse> result = new ArrayList<>();
+        for(Friends f : list){
+            result.add(toResponse(f));
+        }
+
+
+        return result;
     }
 
-    public FriendsResponse deleteFriends(FriendsDto dto){  //친구 목록 삭제
+    @CachePut(value = "friendsList", key = "#email")
+    public List<FriendsResponse> deleteFriends(FriendsDto dto, String email){  //친구 목록 삭제
         Members members = memberRepository.findMembersByEmailAndOauth(dto.getToUserEmail(), dto.isOauth());
         if(members == null)
             throw new UsernameNotFoundException(dto.getToUserEmail());
@@ -143,7 +162,13 @@ public class FriendsService {
         Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(me, members.getIdx());
         friendsRepository.delete(tempFriends);
 
-        return toResponse(friends);
+        List<Friends> list = friendsRepository.findAllByFromUser(me.getIdx());
+        List<FriendsResponse> result = new ArrayList<>();
+        for(Friends f : list){
+            result.add(toResponse(f));
+        }
+
+        return result;
     }
 
 }

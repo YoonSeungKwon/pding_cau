@@ -4,8 +4,9 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.domain.Friends;
@@ -23,8 +24,6 @@ import yoon.capstone.application.vo.request.ProjectDto;
 import yoon.capstone.application.vo.response.ProjectDetailResponse;
 import yoon.capstone.application.vo.response.ProjectResponse;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -52,7 +51,8 @@ public class ProjectService {
                 ,projects.getCount(), projects.getRegdate(), projects.getEnddate());
     }
 
-    public ProjectResponse makeProjects(MultipartFile file, ProjectDto dto) {
+    @CachePut(value = "myProjectList", key = "#email")
+    public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto, String email) {
         Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String url;
         if (!file.getContentType().startsWith("image")) {
@@ -89,9 +89,17 @@ public class ProjectService {
                 .enddate(dto.getEnddate())
                 .category(categorys)
                 .build();
-        return toResponse(projectsRepository.save(projects));
+        projectsRepository.save(projects);
+
+        List<ProjectResponse> result = new ArrayList<>();
+        List<Projects> list = projectsRepository.findAllByMembers(me);
+        for(Projects p: list){
+            result.add(toResponse(p));
+        }
+        return result;
     }
-    public List<ProjectResponse> getProjectList(){
+    @Cacheable(value = "myProjectList", key = "#email")
+    public List<ProjectResponse> getProjectList(String email){
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         List<ProjectResponse> result = new ArrayList<>();
@@ -104,7 +112,8 @@ public class ProjectService {
         return result;
     }
 
-    public List<ProjectResponse> getFriendsList(){
+    @Cacheable(value = "projectList", key = "#email")
+    public List<ProjectResponse> getFriendsList(String email){
         Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         List<ProjectResponse> result = new ArrayList<>();
