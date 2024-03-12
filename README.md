@@ -25,7 +25,7 @@
  4. 주요 기술
   <ul>
     <li>회원가입: 사용자가 간편한 소셜 로그인을 원하거나, 소규모로 아는 사람끼리 친구 추가가 가능한 폼로그인을 원할 수 있다고 생각하여, 카카오의 Oauth2를 이용한 소셜 회원가입과, Spring Security의 폼 회원가입을 구현하였다.</li>
-    <li>로그인: jjwt의 라이브러리를 활용하여 Access Token은 Authorization Header, Refresh Token은 커스텀 헤더에 </li>
+    <li>로그인: jjwt의 라이브러리를 활용하여 Access Token은 Authorization Header, Refresh Token은 커스텀 헤더에 전달한다. </li>
     <li>프로필 변경:</li>
     <li>친구신청:</li>
     <li>친구목록:</li>
