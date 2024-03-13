@@ -9,22 +9,19 @@
 2023.10.15 ~ 2023-12.14 2개월
 
 ## 3. 팀 구성 (3인)
-  <ul>
-    <li>팀장 윤상희: 기획, 프론트엔드 개발</li>
-    <li>팀원 기나연: UX/UI 디자인</li>
-    <li>팀원 윤승권: 프론트엔드, 백엔드 개발</li>
-  </ul> 
+  + **팀장 윤상희**: 기획, 프론트엔드 개발
+  + **팀원 기나연**: UX/UI 디자인
+  + **팀원 윤승권**: 프론트엔드, 백엔드 개발 
 
  ## 4. 개발 환경 및 기술
-  <ul>
-    <li>협업:     Figma, Notion, Git, Swagger</li>
-    <li>언어:     Java(jdk 17.x), html/css, javascript</li>
-    <li>FE:       React, Nginx</li>
-    <li>BE:       Spring Boot, Mybatis, Jpa</li>
-    <li>DB:       MariaDB, Redis, AWS RDS</li>
-    <li>SEVER:    Apache Tomcat(10.1.x), AWS EC2, AWS S3, Docker</li>
-    <li>API:      KAKAO Oauth2, KAKAO PAY</li>
-  </ul>
+  + **협업** :     Figma, Notion, Git, Swagger
+  + **언어** :     Java(jdk 17.x), html/css, javascript
+  + **FE** :       React, Nginx
+  + **BE** :       Spring Boot, Mybatis, Jpa
+  + **DB** :       MariaDB, Redis, AWS RDS
+  + **SEVER** :    Apache Tomcat(10.1.x), AWS EC2, AWS S3, Docker
+  + **API** :      KAKAO Oauth2, KAKAO PAY
+
 
  ## 5. 주요 기술 구현
 
@@ -53,3 +50,6 @@
 ![데이터베이스](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding3.png)
 
 ## 7. 결과물
+
+![경진대회](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding6.png)
+![과제전](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding7.png)
