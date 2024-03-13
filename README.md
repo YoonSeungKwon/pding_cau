@@ -6,14 +6,14 @@
 
 2. 개발 기간 2023-09 ~ 2023-12 3개월
 
-2. 팀 구성 (3인)
+3. 팀 구성 (3인)
   <ul>
     <li>팀장 윤상희: 기획, 프론트엔드 개발</li>
     <li>팀원 기나연: UX/UI 디자인</li>
     <li>팀원 윤승권: 프론트엔드, 백엔드 개발</li>
   </ul> 
 
- 3. 개발 환경 및 기술
+ 4. 개발 환경 및 기술
   <ul>
     <li>협업:     Figma, Notion, Git, Swagger</li>
     <li>언어:     Java(jdk 17.x), html/css, javascript</li>
@@ -24,7 +24,7 @@
     <li>API:      KAKAO Oauth2, KAKAO PAY</li>
   </ul>
 
- 4. 주요 기술 구현
+ 5. 주요 기술 구현
   <ul>
     <li>회원가입: 폼 회원가입은 dto에 validation을 적용하여 무결성에 문제가 일어나지 않도록 하였고, validation 그룹들을 시퀀스를 통하여 순서상 문제가 일어나지 않도록 관리하였다. 비밀번호는 암호화를 통하여 DB에 저장하고 프로필은 아마존 S3에 사용자 개별의 디렉토리에 저장한다.</li>
     <li>로그인: 폼 로그인은 jjwt의 라이브러리를 활용하여 Access 토큰은 Authorization Header, Refresh 토큰은 커스텀 헤더에 전달한다. 프론트 엔드에서 request 인터셉터를 이용하여 api요청 헤더에 Access 토큰을 전달하고, 만료되었을 경우 인증 필터 앞에 위치한 JwtException필터에서 프론트로 401에러를 전달하면 다시 프론트엔드에서 Refresh토큰을 Access토큰과 같이 전달하여 새로운 Access 토큰을 발급 받는다. 소셜 로그인의 경우 KAKAO인증이 완료되면 KAKAO로 Access 토큰을 보내 사용자의 정보를 받아와 DB에 저장한다. 인증이 성공하면 SecurityContextHolder에 UsernamePasswordAuthenticationToken을 저장하여 서비스에서 사용할 수 있도록 한다.</li>
@@ -35,4 +35,4 @@
     <li>펀딩하기: 펀딩하기는 더 나은 사용자 경험을 위하여 KAKAO PAY의 간편 결제 API를 이용하였고, 사업자 번호를 등록하지 않은 버전으로 결제 준비 과정과 결제 승인 과정을 공식문서에 따라서 올바른 절차로 진행되고, 상태에 따라 올바른 페이지로 리다이렉트 되도록 설계하였다.</li>
   </ul>
   
- 5. 결과물
+ 6. 결과물
