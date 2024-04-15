@@ -1,26 +1,23 @@
-package yoon.capstone.application.vo.response;
+package yoon.capstone.application.dto.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
-public class MemberDetailResponse {
+public class MemberResponse {
 
     private String email;
 
-    private String username;
+    private String name;
 
     private String profile;
 
     private boolean oauth;
 
-    private LocalDateTime regdate;
-
     private LocalDateTime lastVisit;
-
-    private String phone;
-
 }

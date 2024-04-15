@@ -15,11 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.exception.sequence.LoginValidationSequence;
 import yoon.capstone.application.exception.sequence.RegisterValidationSequence;
 import yoon.capstone.application.service.MemberService;
-import yoon.capstone.application.vo.request.LoginDto;
-import yoon.capstone.application.vo.request.RegisterDto;
-import yoon.capstone.application.vo.response.MemberResponse;
+import yoon.capstone.application.dto.request.LoginDto;
+import yoon.capstone.application.dto.request.RegisterDto;
+import yoon.capstone.application.dto.response.MemberResponse;
 
-import java.io.File;
 import java.util.List;
 
 @RestController
@@ -47,7 +46,7 @@ public class MemberController {
 
         MemberResponse result = memberService.formRegister(dto);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @GetMapping("/{email}")
@@ -68,9 +67,9 @@ public class MemberController {
 
     @GetMapping("/logout")
     @Operation(summary = "로그아웃", description = "유저 테이블에서 저장된 Refresh Token을 제거")
-    public ResponseEntity<String> logout(){
+    public ResponseEntity<?> logout(){
         memberService.logOut();
-        return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/profile")    //프로필 이미지 변경

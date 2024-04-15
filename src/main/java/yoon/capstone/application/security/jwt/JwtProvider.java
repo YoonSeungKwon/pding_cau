@@ -25,10 +25,12 @@ import java.util.Date;
 public class JwtProvider {
 
     private final MemberRepository memberRepository;
-    private final long accExp = 60 * 60 * 1000l;
-    private final long refExp = 6 * 60 * 60 * 1000l;
 
-    @Value("${jwt.secret}")
+    @Value("${JWT_ACCESS_EXP}")
+    private long accExp;
+    @Value("${JWT_REFRESH_EXP}")
+    private long refExp;
+    @Value("${JWT_SECRET}")
     private String SECRET;
 
     public SecretKey getKey() {

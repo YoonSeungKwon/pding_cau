@@ -1,4 +1,4 @@
-package yoon.capstone.application.vo.request;
+package yoon.capstone.application.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

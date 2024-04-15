@@ -1,4 +1,4 @@
-package yoon.capstone.application.vo.response;
+package yoon.capstone.application.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,16 +7,20 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class FriendsReqResponse {
+public class MemberDetailResponse {
 
     private String email;
 
-    private String name;
+    private String username;
 
     private String profile;
 
     private boolean oauth;
 
     private LocalDateTime regdate;
+
+    private LocalDateTime lastVisit;
+
+    private String phone;
 
 }

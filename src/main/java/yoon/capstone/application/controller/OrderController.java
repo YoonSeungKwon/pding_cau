@@ -3,12 +3,11 @@ package yoon.capstone.application.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import yoon.capstone.application.service.OrderService;
-import yoon.capstone.application.vo.request.OrderDto;
-import yoon.capstone.application.vo.response.KakaoPayResponse;
-import yoon.capstone.application.vo.response.OrderResponse;
+import yoon.capstone.application.dto.request.OrderDto;
+import yoon.capstone.application.dto.response.KakaoPayResponse;
+import yoon.capstone.application.dto.response.OrderResponse;
 
 import java.util.List;
 

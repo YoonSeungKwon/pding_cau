@@ -1,4 +1,4 @@
-package yoon.capstone.application.vo.request;
+package yoon.capstone.application.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

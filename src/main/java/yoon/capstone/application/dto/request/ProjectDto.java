@@ -1,10 +1,9 @@
-package yoon.capstone.application.vo.request;
+package yoon.capstone.application.dto.request;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
-import yoon.capstone.application.enums.ErrorCode;
 import yoon.capstone.application.exception.sequence.ValidationGroup;
 
 import java.time.LocalDate;

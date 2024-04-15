@@ -1,11 +1,10 @@
 package yoon.capstone.application.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import yoon.capstone.application.service.OrderService;
-import yoon.capstone.application.vo.response.KakaoResultResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,11 +13,14 @@ public class PaymentController {
 
     private final OrderService orderService;
 
+    @Value("${PAYMENT_SUCCESS_URL}")
+    private String redirectUrl;
+
     @GetMapping("/success")
     public RedirectView paymentSuccessHandler(@RequestParam("pg_token") String token){
         orderService.kakaoPaymentAccess(token);
         RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("http://15.164.205.27:8080/success/");
+        redirectView.setUrl(redirectUrl);
         return redirectView;
     }
 

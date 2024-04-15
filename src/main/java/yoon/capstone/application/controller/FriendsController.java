@@ -7,12 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yoon.capstone.application.service.FriendsService;
-import yoon.capstone.application.service.MemberService;
-import yoon.capstone.application.vo.request.FriendsDto;
-import yoon.capstone.application.vo.response.FriendsReqResponse;
-import yoon.capstone.application.vo.response.FriendsResponse;
-import yoon.capstone.application.vo.response.MemberDetailResponse;
-import yoon.capstone.application.vo.response.MemberResponse;
+import yoon.capstone.application.dto.request.FriendsDto;
+import yoon.capstone.application.dto.response.FriendsReqResponse;
+import yoon.capstone.application.dto.response.FriendsResponse;
+import yoon.capstone.application.dto.response.MemberDetailResponse;
+import yoon.capstone.application.dto.response.MemberResponse;
 
 import java.util.List;
 
@@ -57,7 +56,7 @@ public class FriendsController {
 
         FriendsResponse result = friendsService.requestFriends(dto);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @PostMapping("/answer/{status}")                     //친구 요청 응답

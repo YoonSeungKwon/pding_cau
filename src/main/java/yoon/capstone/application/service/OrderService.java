@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -13,13 +15,15 @@ import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Orders;
 import yoon.capstone.application.domain.Payment;
 import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.dto.request.OrderDto;
+import yoon.capstone.application.dto.response.KakaoPayResponse;
+import yoon.capstone.application.dto.response.KakaoResultResponse;
+import yoon.capstone.application.dto.response.OrderResponse;
+import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.repository.OrderRepository;
 import yoon.capstone.application.repository.PaymentRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
-import yoon.capstone.application.vo.request.OrderDto;
-import yoon.capstone.application.vo.response.KakaoPayResponse;
-import yoon.capstone.application.vo.response.KakaoResultResponse;
-import yoon.capstone.application.vo.response.OrderResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +33,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
 
-    @Value("${kakao.pay.key}")
+    @Value("${KAKAOPAY_KEY}")
     private String admin_key;
+    @Value("${SERVICE_URL}")
+    private String serviceUrl;
 
     private final OrderRepository orderRepository;
 
@@ -65,7 +71,14 @@ public class OrderService {
         RestTemplate restTemplate = new RestTemplate();
 
         String orderId = UUID.randomUUID().toString();
-        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+
+        Members currentMember = (Members) authentication.getPrincipal();
+
         Projects projects = projectsRepository.findProjectsByIdx(dto.getProjectIdx());
 
         headers.set("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -79,9 +92,9 @@ public class OrderService {
         map.add("quantity", 1);
         map.add("total_amount", dto.getTotal());
         map.add("tax_free_amount", dto.getTotal());
-        map.add("approval_url", "http://13.209.154.183:8080/api/v1/payment/success");
-        map.add("cancel_url", "http://13.209.154.183:8080/api/v1/payment/cancel");
-        map.add("fail_url", "http://13.209.154.183:8080/api/v1/payment/failure");
+        map.add("approval_url", serviceUrl + "/api/v1/payment/success");
+        map.add("cancel_url", serviceUrl + "/api/v1/payment/cancel");
+        map.add("fail_url", serviceUrl + "/api/v1/payment/failure");
 
         HttpEntity<MultiValueMap<String,Object>> request = new HttpEntity<>(map, headers);
         KakaoPayResponse result = restTemplate.postForObject(
@@ -100,7 +113,7 @@ public class OrderService {
                 .regdate(result.getCreated_at())
                 .build();
 
-        this.members = members;
+        this.members = currentMember;
         this.payment = payment;
         this.projects = projects;
         this.message = dto.getMessage();

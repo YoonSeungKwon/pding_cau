@@ -4,6 +4,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,13 +18,14 @@ import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.enums.ErrorCode;
 import yoon.capstone.application.enums.Role;
 import yoon.capstone.application.exception.ProjectException;
+import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.exception.UtilException;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.security.jwt.JwtProvider;
-import yoon.capstone.application.vo.request.LoginDto;
-import yoon.capstone.application.vo.request.OAuthDto;
-import yoon.capstone.application.vo.request.RegisterDto;
-import yoon.capstone.application.vo.response.MemberResponse;
+import yoon.capstone.application.dto.request.LoginDto;
+import yoon.capstone.application.dto.request.OAuthDto;
+import yoon.capstone.application.dto.request.RegisterDto;
+import yoon.capstone.application.dto.response.MemberResponse;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,8 +39,13 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final AmazonS3Client amazonS3Client;
+
+    @Value("${S3_URL}")
+    private String s3Url;
     private final String bucket = "cau-artech-capstone";
     private final String region = "ap-northeast-2";
+
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private MemberResponse toResponse(Members members){
@@ -92,7 +100,7 @@ public class MemberService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .username(dto.getName())
-                .profile("https://cau-artech-capstone.s3.ap-northeast-2.amazonaws.com/static/icon.png")
+                .profile(s3Url + "/static/icon.png")
                 .role(Role.USER)
                 .oauth(false)
                 .build();
@@ -133,32 +141,42 @@ public class MemberService {
     }
 
     public void logOut(){
-        Members members = (Members) SecurityContextHolder.getContext().getAuthentication();
-        members.setRefreshToken(null);
-        memberRepository.save(members);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+
+        Members currentMember = (Members) authentication.getPrincipal();
+        currentMember.setRefreshToken(null);
+        memberRepository.save(currentMember);
     }
 
     public String uploadProfile(MultipartFile file){
-        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+
+        Members currentMember = (Members) authentication.getPrincipal();
         String url;
         UUID uuid = UUID.randomUUID();
         if (!file.getContentType().startsWith("image")) {
-            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT.getStatus());
+            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT);
         }
         try {
             String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/members/" + me.getIdx() + "/" + fileName;
+            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/members/" + currentMember.getIdx() + "/" + fileName;
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentType(file.getContentType());
             objectMetadata.setContentLength(file.getSize());
             System.out.println(file.getContentType());
             url = fileUrl;
-            amazonS3Client.putObject(bucket +"/members/" + me.getIdx(), fileName, file.getInputStream(), objectMetadata);
+            amazonS3Client.putObject(bucket +"/members/" + currentMember.getIdx(), fileName, file.getInputStream(), objectMetadata);
         } catch (Exception e){
-            throw new ProjectException(null);
+            throw new ProjectException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
-        me.setProfile(url);
-        memberRepository.save(me);
+        currentMember.setProfile(url);
+        memberRepository.save(currentMember);
         return url;
     }
 }

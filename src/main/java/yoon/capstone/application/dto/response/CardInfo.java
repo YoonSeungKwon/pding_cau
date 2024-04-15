@@ -1,4 +1,4 @@
-package yoon.capstone.application.vo.response;
+package yoon.capstone.application.dto.response;
 
 public class CardInfo {
 

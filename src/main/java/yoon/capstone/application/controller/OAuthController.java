@@ -10,8 +10,8 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import yoon.capstone.application.service.MemberService;
-import yoon.capstone.application.vo.request.OAuthDto;
-import yoon.capstone.application.vo.response.MemberResponse;
+import yoon.capstone.application.dto.request.OAuthDto;
+import yoon.capstone.application.dto.response.MemberResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +23,10 @@ public class OAuthController {
 
     private final MemberService memberService;
 
-    @Value("${kakao.oauth.key}")
+    @Value("${KAKAO_OAUTH2_KEY}")
     private String kakaoKey;
 
-    @Value("${kakao.oauth.uri}")
+    @Value("${KAKAO_OAUTH2_URL}")
     private String kakaoUri;
 
     @GetMapping("/kakao")

@@ -1,18 +1,20 @@
 package yoon.capstone.application.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import yoon.capstone.application.domain.Members;
+import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.service.MemberService;
-import yoon.capstone.application.vo.request.RegisterDto;
+import yoon.capstone.application.dto.request.RegisterDto;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/admin")
 public class MainController {
-
-    private final MemberService memberService;
 
     @GetMapping("/")
     public String mainPage(){
@@ -21,8 +23,15 @@ public class MainController {
 
     @GetMapping("/user")
     public String userTestPage(){
-        Members members = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return members.getEmail();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+
+        Members currentMember = (Members) authentication.getPrincipal();
+
+        return currentMember.getEmail();
     }
 
     @PostMapping("/test")

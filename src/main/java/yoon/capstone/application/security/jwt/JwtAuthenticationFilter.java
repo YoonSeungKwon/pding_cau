@@ -1,6 +1,5 @@
 package yoon.capstone.application.security.jwt;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.exception.UnauthorizedException;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         else if(acc_token != null){
             String ref_token = jwtProvider.resolveRefreshToken(request);
             if(ref_token == null)
-                throw new JwtException(ErrorCode.ACCESS_TOKEN_EXPIRED.getStatus());
+                throw new UnauthorizedException(ErrorCode.ACCESS_TOKEN_EXPIRED);
             if(jwtProvider.validateToken(ref_token)){
                 String new_token = jwtProvider.createNewToken(ref_token);
                 Authentication authentication = jwtProvider.getAuthentication(new_token);
@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.setHeader("Authorization", new_token);
             }
             else{
-                throw new JwtException(ErrorCode.REFRESH_TOKEN_EXPIRED.getStatus());
+                throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_EXPIRED);
             }
         }
 

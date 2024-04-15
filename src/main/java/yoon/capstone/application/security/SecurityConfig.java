@@ -1,6 +1,7 @@
 package yoon.capstone.application.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import yoon.capstone.application.enums.Role;
 import yoon.capstone.application.security.jwt.JwtAuthenticationFilter;
 import yoon.capstone.application.security.jwt.JwtExceptionFilter;
 import yoon.capstone.application.security.jwt.JwtProvider;
@@ -28,6 +30,8 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final JwtExceptionFilter jwtExceptionFilter;
 
+    @Value("${ALLOW_ORIGIN}")
+    private String allowOrigin;
 
     @Bean
     protected SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,7 +42,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth->{
-                    auth.requestMatchers("/api/v1/user").hasRole("USER");
+                    auth.requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.getRoleKey());
+                    auth.requestMatchers("/api/v1/friends/**").hasAnyRole(Role.USER.getRoleKey(), Role.ADMIN.getRoleKey());
+                    auth.requestMatchers("/api/v1/projects/**").hasAnyRole(Role.USER.getRoleKey(), Role.ADMIN.getRoleKey());
+                    auth.requestMatchers("/api/v1/payment/**").hasAnyRole(Role.USER.getRoleKey(), Role.ADMIN.getRoleKey());
                     auth.anyRequest().permitAll();
                 })
 
@@ -54,7 +61,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", "http://15.164.205.27:3000", "http://15.164.205.27:8080"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", allowOrigin));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("*"));

@@ -7,12 +7,12 @@ import yoon.capstone.application.enums.ErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class UtilException extends RuntimeException{
+public class UnauthorizedException extends RuntimeException{
 
     private String message;
     private HttpStatus status;
 
-    public UtilException(ErrorCode errorCode){
+    public UnauthorizedException(ErrorCode errorCode){
         this.message = errorCode.getMessage();
         this.status = errorCode.getStatus();
     }

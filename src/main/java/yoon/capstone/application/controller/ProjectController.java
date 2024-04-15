@@ -8,11 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import yoon.capstone.application.dto.request.ProjectDto;
+import yoon.capstone.application.dto.response.ProjectDetailResponse;
+import yoon.capstone.application.dto.response.ProjectResponse;
 import yoon.capstone.application.exception.sequence.ProjectValidationSequence;
 import yoon.capstone.application.service.ProjectService;
-import yoon.capstone.application.vo.request.ProjectDto;
-import yoon.capstone.application.vo.response.ProjectDetailResponse;
-import yoon.capstone.application.vo.response.ProjectResponse;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class ProjectController {
 
         List<ProjectResponse> result = projectService.makeProjects(file, dto, email);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @PostMapping("/{idx}")
