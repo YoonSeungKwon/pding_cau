@@ -17,7 +17,7 @@
   + **협업** :     Figma, Notion, Git, Swagger
   + **언어** :     Java(jdk 17.x), html/css, javascript
   + **FE** :       React, Nginx
-  + **BE** :       Spring Boot, Mybatis, Jpa
+  + **BE** :       Spring Boot, Jpa
   + **DB** :       MariaDB, Redis, AWS RDS
   + **SEVER** :    Apache Tomcat(10.1.x), AWS EC2, AWS S3, Docker
   + **API** :      KAKAO Oauth2, KAKAO PAY
