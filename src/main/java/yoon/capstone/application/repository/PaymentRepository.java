@@ -6,4 +6,7 @@ import yoon.capstone.application.domain.Payment;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+
+    Payment findPaymentByOrderId(String orderId);
+
 }

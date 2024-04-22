@@ -16,21 +16,23 @@ public class PaymentController {
     @Value("${PAYMENT_SUCCESS_URL}")
     private String redirectUrl;
 
-    @GetMapping("/success")
-    public RedirectView paymentSuccessHandler(@RequestParam("pg_token") String token){
-        orderService.kakaoPaymentAccess(token);
+    @GetMapping("/success/{id}")
+    public RedirectView paymentSuccessHandler(@PathVariable String id, @RequestParam("pg_token") String token){
+        orderService.kakaoPaymentAccess(id, token);
         RedirectView redirectView = new RedirectView();
         redirectView.setUrl(redirectUrl);
         return redirectView;
     }
 
-    @GetMapping("/cancel")
-    public String paymentCancelHandler(){
+    @GetMapping("/cancel/{id}")
+    public String paymentCancelHandler(@PathVariable String id){
+        orderService.cancelOrder(id);
         return "canceled";
     }
 
-    @GetMapping("/failure")
-    public String paymentFailureHandler(){
+    @GetMapping("/failure/{id}")
+    public String paymentFailureHandler(@PathVariable String id){
+        orderService.cancelOrder(id);
         return "failed";
     }
 

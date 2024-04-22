@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.enums.ExceptionCode;
 
 import java.io.IOException;
 
@@ -27,18 +27,18 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
     public void setErrorResponse(HttpServletResponse response, JwtException e) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
 
-        ErrorCode errorCode;
+        ExceptionCode exceptionCode;
 
-        if(e.getMessage().equals(ErrorCode.ACCESS_TOKEN_EXPIRED.getMessage())){
-            errorCode = ErrorCode.ACCESS_TOKEN_EXPIRED;
+        if(e.getMessage().equals(ExceptionCode.ACCESS_TOKEN_EXPIRED.getMessage())){
+            exceptionCode = ExceptionCode.ACCESS_TOKEN_EXPIRED;
         }
-        else if(e.getMessage().equals(ErrorCode.REFRESH_TOKEN_EXPIRED.getMessage())){
-            errorCode = ErrorCode.REFRESH_TOKEN_EXPIRED;
+        else if(e.getMessage().equals(ExceptionCode.REFRESH_TOKEN_EXPIRED.getMessage())){
+            exceptionCode = ExceptionCode.REFRESH_TOKEN_EXPIRED;
         }
         else{
-            errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+            exceptionCode = ExceptionCode.INTERNAL_SERVER_ERROR;
         }
-        response.setStatus(errorCode.getStatus().value());
-        mapper.writeValue(response.getOutputStream(), errorCode.getMessage());
+        response.setStatus(exceptionCode.getStatus().value());
+        mapper.writeValue(response.getOutputStream(), exceptionCode.getMessage());
     }
 }

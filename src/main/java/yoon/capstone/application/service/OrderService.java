@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -19,7 +20,8 @@ import yoon.capstone.application.dto.request.OrderDto;
 import yoon.capstone.application.dto.response.KakaoPayResponse;
 import yoon.capstone.application.dto.response.KakaoResultResponse;
 import yoon.capstone.application.dto.response.OrderResponse;
-import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.enums.ExceptionCode;
+import yoon.capstone.application.exception.OrderException;
 import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.repository.OrderRepository;
 import yoon.capstone.application.repository.PaymentRepository;
@@ -44,12 +46,6 @@ public class OrderService {
 
     private final ProjectsRepository projectsRepository;
 
-    private Members members;
-
-    private Projects projects;
-    private Payment payment;
-    private String message;
-
     private OrderResponse toResponse(Orders orders){
         return new OrderResponse(orders.getMembers().getUsername(), orders.getMembers().getProfile(),
                 orders.getPayment().getTotal(), orders.getMessage(), orders.getPayment().getRegdate());
@@ -65,6 +61,7 @@ public class OrderService {
         return result;
     }
 
+    @Transactional
     public KakaoPayResponse kakaoPayment(OrderDto dto){
 
         HttpHeaders headers = new HttpHeaders();
@@ -75,7 +72,7 @@ public class OrderService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
 
@@ -87,14 +84,14 @@ public class OrderService {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("cid", "TC0ONETIME");
         map.add("partner_order_id", orderId);
-        map.add("partner_user_id", members.getUsername());
+        map.add("partner_user_id", currentMember.getUsername());
         map.add("item_name", projects.getTitle());
         map.add("quantity", 1);
         map.add("total_amount", dto.getTotal());
         map.add("tax_free_amount", dto.getTotal());
-        map.add("approval_url", serviceUrl + "/api/v1/payment/success");
-        map.add("cancel_url", serviceUrl + "/api/v1/payment/cancel");
-        map.add("fail_url", serviceUrl + "/api/v1/payment/failure");
+        map.add("approval_url", serviceUrl + "/api/v1/payment/success/"+orderId);
+        map.add("cancel_url", serviceUrl + "/api/v1/payment/cancel/"+orderId);
+        map.add("fail_url", serviceUrl + "/api/v1/payment/failure/"+orderId);
 
         HttpEntity<MultiValueMap<String,Object>> request = new HttpEntity<>(map, headers);
         KakaoPayResponse result = restTemplate.postForObject(
@@ -105,7 +102,7 @@ public class OrderService {
 
         Payment payment = Payment.builder()
                 .orderId(orderId)
-                .members(members)
+                .members(currentMember)
                 .itemName(projects.getTitle())
                 .quantity(1)
                 .total(dto.getTotal())
@@ -113,15 +110,21 @@ public class OrderService {
                 .regdate(result.getCreated_at())
                 .build();
 
-        this.members = currentMember;
-        this.payment = payment;
-        this.projects = projects;
-        this.message = dto.getMessage();
+        Orders orders = Orders.builder()
+                .projects(projects)
+                .members(currentMember)
+                .payment(payment)
+                .message(dto.getMessage())
+                .build();
+
+        paymentRepository.save(payment);
+        orderRepository.save(orders);
 
         return result;
     }
 
-    public long kakaoPaymentAccess(String token){
+    @Transactional
+    public long kakaoPaymentAccess(String id, String token){
 
         HttpHeaders headers = new HttpHeaders();
         RestTemplate restTemplate = new RestTemplate();
@@ -129,6 +132,15 @@ public class OrderService {
         headers.set("Authorization", "KakaoAK " + admin_key);
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+
+        Payment payment = paymentRepository.findPaymentByOrderId(id);
+        if(payment == null) {
+            throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
+        }
+        Projects projects = projectsRepository.findProjectsByTitle(payment.getItemName());
+        if(projects == null) {
+            throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
+        }
 
         map.add("cid","TC0ONETIME");
         map.add("tid", payment.getTid());
@@ -144,19 +156,27 @@ public class OrderService {
                 KakaoResultResponse.class
         );
 
+
         projects.setCurr(projects.getCurr() + payment.getTotal());
         projects.setCount(projects.getCount()+1);
 
         projectsRepository.save(projects);
-        paymentRepository.save(payment);
-        orderRepository.save(Orders.builder()
-                .members(members)
-                .projects(projects)
-                .payment(payment)
-                .message(message)
-                .build());
 
         return projects.getIdx();
+    }
+
+    @Transactional
+    public void cancelOrder(String orderId){
+        Payment payment = paymentRepository.findPaymentByOrderId(orderId);
+        Orders orders = orderRepository.findOrdersByPayment(payment);
+
+        if(orders!= null){
+            orderRepository.delete(orders);
+            if(payment != null)
+                paymentRepository.delete(payment);
+        }
+
+
     }
 
 

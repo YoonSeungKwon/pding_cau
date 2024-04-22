@@ -13,9 +13,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.domain.Members;
-import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.enums.Role;
 import yoon.capstone.application.exception.ProjectException;
 import yoon.capstone.application.exception.UnauthorizedException;
@@ -68,6 +69,7 @@ public class MemberService {
         return response;
     }
 
+    @Transactional
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){
 
         String email = dto.getEmail();
@@ -94,6 +96,7 @@ public class MemberService {
         return toResponse(memberRepository.save(members));
     }
 
+    @Transactional
     public MemberResponse formRegister(RegisterDto dto){
 
         Members members = Members.builder()
@@ -109,6 +112,7 @@ public class MemberService {
         return toResponse(members);
     }
 
+    @Transactional
     public void socialRegister(OAuthDto dto){
 
         Members members = Members.builder()
@@ -126,6 +130,7 @@ public class MemberService {
         toResponse(members);
     }
 
+    @Transactional
     public MemberResponse socialLogin(String email, HttpServletResponse response){
         Members members = memberRepository.findMembersByEmail(email);
 
@@ -140,28 +145,30 @@ public class MemberService {
         return toResponse(members);
     }
 
+    @Transactional
     public void logOut(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
         currentMember.setRefreshToken(null);
         memberRepository.save(currentMember);
     }
 
+    @Transactional
     public String uploadProfile(MultipartFile file){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
         String url;
         UUID uuid = UUID.randomUUID();
         if (!file.getContentType().startsWith("image")) {
-            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT);
+            throw new UtilException(ExceptionCode.NOT_IMAGE_FORMAT);
         }
         try {
             String fileName = uuid + file.getOriginalFilename();
@@ -173,7 +180,7 @@ public class MemberService {
             url = fileUrl;
             amazonS3Client.putObject(bucket +"/members/" + currentMember.getIdx(), fileName, file.getInputStream(), objectMetadata);
         } catch (Exception e){
-            throw new ProjectException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new ProjectException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }
         currentMember.setProfile(url);
         memberRepository.save(currentMember);

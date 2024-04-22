@@ -10,12 +10,13 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import yoon.capstone.application.domain.Friends;
 import yoon.capstone.application.domain.Members;
 import yoon.capstone.application.domain.Projects;
 import yoon.capstone.application.enums.Categorys;
-import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.ProjectException;
 import yoon.capstone.application.exception.UnauthorizedException;
@@ -56,18 +57,19 @@ public class ProjectService {
     }
 
     @CachePut(value = "myProjectList", key = "#email")
+    @Transactional
     public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto, String email) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
 
         String url;
         if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
-            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT);
+            throw new UtilException(ExceptionCode.NOT_IMAGE_FORMAT);
         }
         UUID uuid = UUID.randomUUID();
         try {
@@ -80,7 +82,7 @@ public class ProjectService {
             url = fileUrl;
             amazonS3Client.putObject(bucket +"/projects", fileName, file.getInputStream(), objectMetadata);
         } catch (Exception e){
-            throw new ProjectException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new ProjectException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }
         Categorys categorys;
         if(dto.getCategory().equals(Categorys.생일.getValue())){
@@ -115,7 +117,7 @@ public class ProjectService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
 
@@ -135,7 +137,7 @@ public class ProjectService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
 
@@ -158,7 +160,7 @@ public class ProjectService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
 
@@ -168,33 +170,35 @@ public class ProjectService {
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, currentMember.getIdx());
 
         if(!members.equals(currentMember) &&(friends == null || !friends.isFriends()))
-            throw new FriendsException(ErrorCode.NOT_FRIENDS);
+            throw new FriendsException(ExceptionCode.NOT_FRIENDS);
 
         Projects projects = projectsRepository.findProjectsByIdx(idx);
         return toDetailResponse(projects);
     }
 
+    @Transactional
     public void deleteProjects(long idx){
         Projects projects = projectsRepository.findProjectsByIdx(idx);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         Members currentMember = (Members) authentication.getPrincipal();
 
         if(!projects.getMembers().equals(currentMember))
-            throw new ProjectException(ErrorCode.PROJECT_OWNER);
+            throw new ProjectException(ExceptionCode.PROJECT_OWNER);
 
         projectsRepository.delete(projects);
 
     }
 
+    @Transactional
     public String changeImage(long idx, MultipartFile file){
         String url;
         if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
-            throw new UtilException(ErrorCode.NOT_IMAGE_FORMAT);
+            throw new UtilException(ExceptionCode.NOT_IMAGE_FORMAT);
         }
         UUID uuid = UUID.randomUUID();
         try {

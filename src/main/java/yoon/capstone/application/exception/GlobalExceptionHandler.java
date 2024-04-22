@@ -9,7 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import yoon.capstone.application.enums.ErrorCode;
+import yoon.capstone.application.enums.ExceptionCode;
 
 import java.util.Objects;
 
@@ -17,14 +17,14 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
     @ExceptionHandler({UsernameNotFoundException.class})    //로그인 이메일 에러
     public ResponseEntity<String> UserNameNotFoundError(){
-        ErrorCode errorCode = ErrorCode.MEMBER_EMAIL_NOTFOUND;
-        return new ResponseEntity<>(errorCode.getMessage(), errorCode.getStatus());
+        ExceptionCode exceptionCode = ExceptionCode.MEMBER_EMAIL_NOTFOUND;
+        return new ResponseEntity<>(exceptionCode.getMessage(), exceptionCode.getStatus());
     }
 
     @ExceptionHandler({BadCredentialsException.class})      //로그인 비밀번호 에러
     public ResponseEntity<String> BadCredentialError(){
-        ErrorCode errorCode = ErrorCode.MEMBER_PASSWORD_INVALID;
-        return new ResponseEntity<>(errorCode.getMessage(), errorCode.getStatus());
+        ExceptionCode exceptionCode = ExceptionCode.MEMBER_PASSWORD_INVALID;
+        return new ResponseEntity<>(exceptionCode.getMessage(), exceptionCode.getStatus());
     }
 
     @ExceptionHandler({FriendsException.class})
@@ -38,8 +38,8 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler({FileSizeLimitExceededException.class, SizeLimitExceededException.class})
     public ResponseEntity<String> FileSizeError(){
-        ErrorCode errorCode = ErrorCode.FILE_SIZE_EXCEEDED;
-        return new ResponseEntity<>(errorCode.getMessage(), errorCode.getStatus());
+        ExceptionCode exceptionCode = ExceptionCode.FILE_SIZE_EXCEEDED;
+        return new ResponseEntity<>(exceptionCode.getMessage(), exceptionCode.getStatus());
     }
 
     @ExceptionHandler({UtilException.class})
@@ -52,19 +52,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> ValidationError(MethodArgumentNotValidException e){
         BindingResult bindingResult = e.getBindingResult();
         String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
-        ErrorCode errorCode;
-        if (Objects.requireNonNull(message).equals(ErrorCode.MEMBER_EMAIL_BLANK.getMessage())) {    //이메일 빈칸
-            errorCode = ErrorCode.MEMBER_EMAIL_BLANK;
-        } else if (message.equals(ErrorCode.MEMBER_EMAIL_FORMAT.getMessage())) {   //이메일 형식
-            errorCode = ErrorCode.MEMBER_EMAIL_FORMAT;
-        } else if (message.equals(ErrorCode.MEMBER_PASSWORD_BLANK.getMessage())) { //비밀번호 빈칸
-            errorCode = ErrorCode.MEMBER_PASSWORD_BLANK;
-        } else if (message.equals(ErrorCode.MEMBER_USERNAME_BLANK.getMessage())) { //이름 빈칸
-            errorCode = ErrorCode.MEMBER_USERNAME_BLANK;
+        ExceptionCode exceptionCode;
+        if (Objects.requireNonNull(message).equals(ExceptionCode.MEMBER_EMAIL_BLANK.getMessage())) {    //이메일 빈칸
+            exceptionCode = ExceptionCode.MEMBER_EMAIL_BLANK;
+        } else if (message.equals(ExceptionCode.MEMBER_EMAIL_FORMAT.getMessage())) {   //이메일 형식
+            exceptionCode = ExceptionCode.MEMBER_EMAIL_FORMAT;
+        } else if (message.equals(ExceptionCode.MEMBER_PASSWORD_BLANK.getMessage())) { //비밀번호 빈칸
+            exceptionCode = ExceptionCode.MEMBER_PASSWORD_BLANK;
+        } else if (message.equals(ExceptionCode.MEMBER_USERNAME_BLANK.getMessage())) { //이름 빈칸
+            exceptionCode = ExceptionCode.MEMBER_USERNAME_BLANK;
         } else{
-            errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+            exceptionCode = ExceptionCode.INTERNAL_SERVER_ERROR;
         }
-        return new ResponseEntity<>(errorCode.getMessage(), errorCode.getStatus());
+        return new ResponseEntity<>(exceptionCode.getMessage(), exceptionCode.getStatus());
     }
 
 }
