@@ -22,7 +22,7 @@ public class Friends {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long idx;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_user")
     private Members toUser;
 
