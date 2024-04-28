@@ -56,6 +56,8 @@ public enum ExceptionCode {
 
     ORDER_NOT_FOUND("주문정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
+    ORDER_LOCK_TIMEOUT("요청이 많아서 취소되었습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.LOCKED),
+
     //Server Exception
 
     INTERNAL_SERVER_ERROR("서버에서 에러가 발생하였습니다. 문의해주세요.", HttpStatus.INTERNAL_SERVER_ERROR);

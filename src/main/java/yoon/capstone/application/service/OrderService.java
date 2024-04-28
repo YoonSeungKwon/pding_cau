@@ -1,5 +1,7 @@
 package yoon.capstone.application.service;
 
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.PessimisticLockException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -29,6 +31,7 @@ import yoon.capstone.application.repository.ProjectsRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -133,36 +136,44 @@ public class OrderService {
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 
+
         Payment payment = paymentRepository.findPaymentByOrderId(id);
         if(payment == null) {
             throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
         }
-        Projects projects = projectsRepository.findProjectsByTitle(payment.getItemName());
-        if(projects == null) {
-            throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
+        try {
+            Projects projects = projectsRepository.findProjectsByTitle(payment.getItemName());
+            if (projects == null) {
+                throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
+            }
+
+
+            map.add("cid", "TC0ONETIME");
+            map.add("tid", payment.getTid());
+            map.add("partner_order_id", payment.getOrderId());
+            map.add("partner_user_id", payment.getMembers().getUsername());
+            map.add("pg_token", token);
+
+
+
+            projects.setCurr(projects.getCurr() + payment.getTotal());  //Lock  필요
+            projects.setCount(projects.getCount() + 1);                   //Lock  필요
+
+            projectsRepository.save(projects);
+
+            HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers); //Lock 처리 후 결제완료 요청
+
+            KakaoResultResponse result = restTemplate.postForObject(
+                    "https://kapi.kakao.com/v1/payment/approve",
+                    request,
+                    KakaoResultResponse.class
+            );
+
+            return projects.getIdx();
+
+        }catch (LockTimeoutException e){
+            throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
         }
-
-        map.add("cid","TC0ONETIME");
-        map.add("tid", payment.getTid());
-        map.add("partner_order_id", payment.getOrderId());
-        map.add("partner_user_id", payment.getMembers().getUsername());
-        map.add("pg_token", token);
-
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
-
-        KakaoResultResponse result = restTemplate.postForObject(
-                "https://kapi.kakao.com/v1/payment/approve",
-                request,
-                KakaoResultResponse.class
-        );
-
-
-        projects.setCurr(projects.getCurr() + payment.getTotal());
-        projects.setCount(projects.getCount()+1);
-
-        projectsRepository.save(projects);
-
-        return projects.getIdx();
     }
 
     @Transactional
