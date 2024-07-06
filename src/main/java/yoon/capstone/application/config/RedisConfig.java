@@ -1,4 +1,4 @@
-package yoon.capstone.application.security;
+package yoon.capstone.application.config;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;

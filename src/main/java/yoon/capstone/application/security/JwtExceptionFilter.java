@@ -1,4 +1,4 @@
-package yoon.capstone.application.security.jwt;
+package yoon.capstone.application.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;

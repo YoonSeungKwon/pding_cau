@@ -12,9 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.domain.Friends;
-import yoon.capstone.application.domain.Members;
-import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.entity.Friends;
+import yoon.capstone.application.entity.Members;
+import yoon.capstone.application.entity.Projects;
 import yoon.capstone.application.enums.Categorys;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.FriendsException;
@@ -41,19 +41,19 @@ public class ProjectService {
     private final MemberRepository memberRepository;
     private final FriendsRepository friendsRepository;
     private final AmazonS3Client amazonS3Client;
-    private final String bucket = "cau-artech-capstone";
+    private final String bucket = "pding-storage";
     private final String region = "ap-northeast-2";
 
 
     private ProjectResponse toResponse(Projects projects){
-        return new ProjectResponse(projects.getIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImg(), projects.getGoal(),
-                projects.getCurr(), projects.getCount(), projects.getCategory().getValue(), projects.getEnddate(), projects.getMembers().getProfile());
+        return new ProjectResponse(projects.getProjectIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImg(), projects.getGoalAmount(),
+                projects.getCurrentAmount(), projects.getCount(), projects.getCategory().getValue(), projects.getFinishAt(), projects.getMembers().getProfile());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
         return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getMembers().getUsername(), projects.getMembers().getProfile(),
-                projects.getOption(), projects.getCategory().getValue(), projects.getImg(), projects.getLink(), projects.getGoal(), projects.getCurr()
-                ,projects.getCount(), projects.getRegdate(), projects.getEnddate());
+                projects.getOption(), projects.getCategory().getValue(), projects.getImg(), projects.getLink(), projects.getGoalAmount(), projects.getCurrentAmount()
+                ,projects.getCount(), projects.getCreatedAt(), projects.getFinishAt());
     }
 
     @CachePut(value = "myProjectList", key = "#email")
@@ -99,7 +99,7 @@ public class ProjectService {
                 .option(dto.getOption())
                 .img(url)
                 .goal(dto.getGoal())
-                .enddate(dto.getEnddate())
+                .finishAt(dto.getEnddate())
                 .category(categorys)
                 .build();
         projectsRepository.save(projects);
@@ -146,7 +146,7 @@ public class ProjectService {
 
         for(Friends f: friends){
             if(!f.isFriends()) continue;
-            Members friend = memberRepository.findMembersByIdx(f.getFromUser());
+            Members friend = memberRepository.findMembersByMemberIdx(f.getFromUser());
             List<Projects> projects = projectsRepository.findAllByMembers(friend);
             for(Projects p: projects){
                 result.add(toResponse(p));
@@ -167,7 +167,7 @@ public class ProjectService {
         Projects tempProject = projectsRepository.findProjectsByIdx(idx);
         Members members = tempProject.getMembers();
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, currentMember.getIdx());
+        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, currentMember.getMemberIdx());
 
         if(!members.equals(currentMember) &&(friends == null || !friends.isFriends()))
             throw new FriendsException(ExceptionCode.NOT_FRIENDS);

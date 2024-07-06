@@ -2,9 +2,9 @@ package yoon.capstone.application.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import yoon.capstone.application.domain.Orders;
-import yoon.capstone.application.domain.Payment;
-import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.entity.Orders;
+import yoon.capstone.application.entity.Payment;
+import yoon.capstone.application.entity.Projects;
 
 import java.util.List;
 

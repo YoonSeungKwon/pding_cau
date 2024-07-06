@@ -1,4 +1,4 @@
-package yoon.capstone.application.security.jwt;
+package yoon.capstone.application.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

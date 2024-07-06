@@ -1,4 +1,4 @@
-package yoon.capstone.application.security;
+package yoon.capstone.application.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -11,10 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class S3Config {
 
-    @Value("${AWS_ACCESS_KEY}")
+    @Value("${S3_ACCESS}")
     private String accessKey;
 
-    @Value("${AWS_SECRET_KEY}")
+    @Value("${S3_SECRET}")
     private String secretKey;
 
     @Value("${cloud.aws.region.static}")

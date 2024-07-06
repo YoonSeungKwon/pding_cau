@@ -1,4 +1,4 @@
-package yoon.capstone.application.security;
+package yoon.capstone.application.config;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;

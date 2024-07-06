@@ -1,4 +1,4 @@
-package yoon.capstone.application.domain;
+package yoon.capstone.application.entity;
 
 
 import jakarta.persistence.*;
@@ -26,44 +26,60 @@ public class Members {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long idx;
+    @Column(name = "MEMBER_ID")
+    private long memberIdx;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "MEMBER_EMAIL", nullable = false, length = 50)
     private String email;
 
-    @Column(nullable = false, length = 250)
+    @Column(name = "MEMBER_PASSWORD",nullable = false, length = 250)
     private String password;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "MEMBER_NAME",nullable = false, length = 50)
     private String username;
 
     @ColumnDefault("false")
-    private boolean oauth;
+    @Column(name = "MEMBER_IS_OAUTH")
+    private boolean isOauth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "MEMBER_OAUTH_PROVIDER")
+    private String provider;
 
     @CreationTimestamp
-    private LocalDateTime regdate;
+    @Column(name = "MEMBER_CREATED_AT")
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    private LocalDateTime updated;
+    @Column(name = "MEMBER_UPDATED_AT")
+    private LocalDateTime updatedAt;
 
+    @Column(name = "MEMBER_LAST_VISIT")
     private LocalDateTime lastVisit;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "MEMBER_ROLE")
     private Role role;
 
+    @Column(name = "MEMBER_PROFILE")
     private String profile;
 
+    @Column(name = "MEMBER_ADDRESS")
     private String address;
 
+    @Column(name = "MEMBER_REFRESH_TOKEN",length = 250)
     private String refreshToken;
 
+    @Column(name = "MEMBER_PHONE", length = 250, nullable = true)
     private String phone;
 
     @ColumnDefault("false")
+    @Column(name = "MEMBER_IS_DENIED")
     private boolean isDenied;
 
     @ColumnDefault("false")
-    private boolean isSleep;
+    @Column(name = "MEMBER_IS_DORMANT")
+    private boolean isDormant;
 
     @Builder
     Members(String email, String password, String username, String profile, Role role, boolean oauth){
@@ -72,7 +88,7 @@ public class Members {
         this.username = username;
         this.profile = profile;
         this.role = role;
-        this.oauth = oauth;
+        this.isOauth = oauth;
     }
 
     public Collection<GrantedAuthority> getAuthority(){

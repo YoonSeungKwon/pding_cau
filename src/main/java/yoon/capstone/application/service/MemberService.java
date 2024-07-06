@@ -15,14 +15,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.domain.Members;
+import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.enums.Role;
 import yoon.capstone.application.exception.ProjectException;
 import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.exception.UtilException;
 import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.security.jwt.JwtProvider;
+import yoon.capstone.application.security.JwtProvider;
 import yoon.capstone.application.dto.request.LoginDto;
 import yoon.capstone.application.dto.request.OAuthDto;
 import yoon.capstone.application.dto.request.RegisterDto;
@@ -41,8 +41,6 @@ public class MemberService {
     private final JwtProvider jwtProvider;
     private final AmazonS3Client amazonS3Client;
 
-    @Value("${S3_URL}")
-    private String s3Url;
     private final String bucket = "cau-artech-capstone";
     private final String region = "ap-northeast-2";
 
@@ -103,7 +101,7 @@ public class MemberService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .username(dto.getName())
-                .profile(s3Url + "/static/icon.png")
+                .profile("https://pding-storage.s3.ap-northeast-2.amazonaws.com/members/icon.png")
                 .role(Role.USER)
                 .oauth(false)
                 .build();
@@ -172,13 +170,13 @@ public class MemberService {
         }
         try {
             String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/members/" + currentMember.getIdx() + "/" + fileName;
+            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/members/" + currentMember.getMemberIdx() + "/" + fileName;
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentType(file.getContentType());
             objectMetadata.setContentLength(file.getSize());
             System.out.println(file.getContentType());
             url = fileUrl;
-            amazonS3Client.putObject(bucket +"/members/" + currentMember.getIdx(), fileName, file.getInputStream(), objectMetadata);
+            amazonS3Client.putObject(bucket +"/members/" + currentMember.getMemberIdx(), fileName, file.getInputStream(), objectMetadata);
         } catch (Exception e){
             throw new ProjectException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }

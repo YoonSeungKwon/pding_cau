@@ -2,8 +2,8 @@ package yoon.capstone.application.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import yoon.capstone.application.domain.Friends;
-import yoon.capstone.application.domain.Members;
+import yoon.capstone.application.entity.Friends;
+import yoon.capstone.application.entity.Members;
 
 import java.util.List;
 

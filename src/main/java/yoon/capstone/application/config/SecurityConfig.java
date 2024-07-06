@@ -1,4 +1,4 @@
-package yoon.capstone.application.security;
+package yoon.capstone.application.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,9 +16,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import yoon.capstone.application.enums.Role;
-import yoon.capstone.application.security.jwt.JwtAuthenticationFilter;
-import yoon.capstone.application.security.jwt.JwtExceptionFilter;
-import yoon.capstone.application.security.jwt.JwtProvider;
+import yoon.capstone.application.security.JwtAuthenticationFilter;
+import yoon.capstone.application.security.JwtExceptionFilter;
+import yoon.capstone.application.security.JwtProvider;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package yoon.capstone.application.domain;
+package yoon.capstone.application.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,33 +15,37 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name="freinds")
+@Table(name="friends")
 public class Friends {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long idx;
+    @Column(name = "FRIEND_ID")
+    private long friendIdx;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "to_user")
+    @JoinColumn(name = "FRIEND_TO_USER")
     private Members toUser;
 
-    @Column(nullable = false, length = 1)
+    @Column(name = "FRIEND_FROM_USER", nullable = false, length = 1)
     private long fromUser;
 
     @ColumnDefault("0")
+    @Column(name = "IS_FRIEND")
     private boolean isFriends;
 
     @CreationTimestamp
-    private LocalDateTime regdate;
+    @Column(name = "FRIEND_CREATED_AT")
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    private LocalDateTime updated;
+    @Column(name = "FRIEND_UPDATED_AT")
+    private LocalDateTime updatedAt;
 
 
     @Builder
     Friends(Members toUser, Members fromUser){
         this.toUser = toUser;
-        this.fromUser = fromUser.getIdx();
+        this.fromUser = fromUser.getMemberIdx();
     }
 }

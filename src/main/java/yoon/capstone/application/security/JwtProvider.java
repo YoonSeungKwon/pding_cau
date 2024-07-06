@@ -1,4 +1,4 @@
-package yoon.capstone.application.security.jwt;
+package yoon.capstone.application.security;
 
 
 import io.jsonwebtoken.Claims;
@@ -12,7 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import yoon.capstone.application.domain.Members;
+import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.repository.MemberRepository;
 
 import javax.crypto.SecretKey;
@@ -26,9 +26,9 @@ public class JwtProvider {
 
     private final MemberRepository memberRepository;
 
-    @Value("${JWT_ACCESS_EXP}")
+    @Value("${JWT_ACCESS}")
     private long accExp;
-    @Value("${JWT_REFRESH_EXP}")
+    @Value("${JWT_REFRESH}")
     private long refExp;
     @Value("${JWT_SECRET}")
     private String SECRET;

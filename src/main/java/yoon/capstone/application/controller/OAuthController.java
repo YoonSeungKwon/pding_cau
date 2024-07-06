@@ -23,19 +23,6 @@ public class OAuthController {
 
     private final MemberService memberService;
 
-    @Value("${KAKAO_OAUTH2_KEY}")
-    private String kakaoKey;
-
-    @Value("${KAKAO_OAUTH2_URL}")
-    private String kakaoUri;
-
-    @GetMapping("/kakao")
-    public ResponseEntity<Map<String, String>> kakaoAPI(){
-        Map<String, String> map = new HashMap<>();
-        map.put("key", kakaoKey);
-        map.put("uri", kakaoUri);
-        return ResponseEntity.ok(map);
-    }
 
     @PostMapping("/kakao")
     public ResponseEntity<MemberResponse> kakaoLogin(@RequestBody String token, HttpServletResponse response) throws ParseException {

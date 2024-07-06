@@ -4,11 +4,10 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
-import yoon.capstone.application.domain.Members;
-import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.entity.Members;
+import yoon.capstone.application.entity.Projects;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ProjectsRepository extends JpaRepository<Projects, Long> {

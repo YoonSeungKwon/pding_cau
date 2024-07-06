@@ -1,7 +1,6 @@
 package yoon.capstone.application.service;
 
 import jakarta.persistence.LockTimeoutException;
-import jakarta.persistence.PessimisticLockException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -14,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import yoon.capstone.application.domain.Members;
-import yoon.capstone.application.domain.Orders;
-import yoon.capstone.application.domain.Payment;
-import yoon.capstone.application.domain.Projects;
+import yoon.capstone.application.entity.Members;
+import yoon.capstone.application.entity.Orders;
+import yoon.capstone.application.entity.Payment;
+import yoon.capstone.application.entity.Projects;
 import yoon.capstone.application.dto.request.OrderDto;
 import yoon.capstone.application.dto.response.KakaoPayResponse;
 import yoon.capstone.application.dto.response.KakaoResultResponse;
@@ -31,7 +30,6 @@ import yoon.capstone.application.repository.ProjectsRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -51,7 +49,7 @@ public class OrderService {
 
     private OrderResponse toResponse(Orders orders){
         return new OrderResponse(orders.getMembers().getUsername(), orders.getMembers().getProfile(),
-                orders.getPayment().getTotal(), orders.getMessage(), orders.getPayment().getRegdate());
+                orders.getPayment().getTotal(), orders.getMessage(), orders.getPayment().getCreatedAt());
     }
 
     public List<OrderResponse> getOrderList(long idx){
@@ -70,7 +68,7 @@ public class OrderService {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate restTemplate = new RestTemplate();
 
-        String orderId = UUID.randomUUID().toString();
+        String paymentCode = UUID.randomUUID().toString();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -86,15 +84,15 @@ public class OrderService {
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("cid", "TC0ONETIME");
-        map.add("partner_order_id", orderId);
+        map.add("partner_order_id", paymentCode);
         map.add("partner_user_id", currentMember.getUsername());
         map.add("item_name", projects.getTitle());
         map.add("quantity", 1);
         map.add("total_amount", dto.getTotal());
         map.add("tax_free_amount", dto.getTotal());
-        map.add("approval_url", serviceUrl + "/api/v1/payment/success/"+orderId);
-        map.add("cancel_url", serviceUrl + "/api/v1/payment/cancel/"+orderId);
-        map.add("fail_url", serviceUrl + "/api/v1/payment/failure/"+orderId);
+        map.add("approval_url", serviceUrl + "/api/v1/payment/success/"+paymentCode);
+        map.add("cancel_url", serviceUrl + "/api/v1/payment/cancel/"+paymentCode);
+        map.add("fail_url", serviceUrl + "/api/v1/payment/failure/"+paymentCode);
 
         HttpEntity<MultiValueMap<String,Object>> request = new HttpEntity<>(map, headers);
         KakaoPayResponse result = restTemplate.postForObject(
@@ -104,13 +102,13 @@ public class OrderService {
         );
 
         Payment payment = Payment.builder()
-                .orderId(orderId)
+                .paymentCode(paymentCode)
                 .members(currentMember)
                 .itemName(projects.getTitle())
                 .quantity(1)
                 .total(dto.getTotal())
                 .tid(result.getTid())
-                .regdate(result.getCreated_at())
+                .createdAt(result.getCreated_at())
                 .build();
 
         Orders orders = Orders.builder()
@@ -150,13 +148,13 @@ public class OrderService {
 
             map.add("cid", "TC0ONETIME");
             map.add("tid", payment.getTid());
-            map.add("partner_order_id", payment.getOrderId());
+            map.add("partner_order_id", payment.getPaymentCode());
             map.add("partner_user_id", payment.getMembers().getUsername());
             map.add("pg_token", token);
 
 
 
-            projects.setCurr(projects.getCurr() + payment.getTotal());  //Lock  필요
+            projects.setCurrentAmount(projects.getCurrentAmount() + payment.getTotal());  //Lock  필요
             projects.setCount(projects.getCount() + 1);                   //Lock  필요
 
             projectsRepository.save(projects);
@@ -169,7 +167,7 @@ public class OrderService {
                     KakaoResultResponse.class
             );
 
-            return projects.getIdx();
+            return projects.getProjectIdx();
 
         }catch (LockTimeoutException e){
             throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
