@@ -5,10 +5,10 @@ import lombok.Getter;
 @Getter
 public enum Provider {
 
-    GOOGLE("google"),
-    NAVER("naver"),
-    KAKAO("kakao"),
-    NULL("null");
+    GOOGLE("GOOGLE"),
+    NAVER("NAVER"),
+    KAKAO("KAKAO"),
+    NULL("NULL");
 
     private final String provider;
 

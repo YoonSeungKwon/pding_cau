@@ -7,34 +7,53 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yoon.capstone.application.entity.Friends;
-import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.dto.request.FriendsDto;
 import yoon.capstone.application.dto.response.FriendsReqResponse;
 import yoon.capstone.application.dto.response.FriendsResponse;
 import yoon.capstone.application.dto.response.MemberDetailResponse;
 import yoon.capstone.application.dto.response.MemberResponse;
+import yoon.capstone.application.entity.Friends;
+import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class FriendsService {
 
-    private final FriendsRepository friendsRepository;
+    private final AesBytesEncryptor aesBytesEncryptor;
+
     private final MemberRepository memberRepository;
+
+    private final FriendsRepository friendsRepository;
 
     private FriendsResponse toResponse(Friends friends){
         Members fromUser = memberRepository.findMembersByMemberIdx(friends.getFromUser());
         return new FriendsResponse(friends.getToUser().getUsername(), fromUser.getUsername(), friends.isFriends(), friends.getCreatedAt());
+    }
+
+    private MemberResponse toMemberResponse(Members members){
+        byte[] bytePhone = Base64.getDecoder().decode(members.getPhone());
+        String phone = new String(aesBytesEncryptor.decrypt(bytePhone), StandardCharsets.UTF_8);
+        return new MemberResponse(members.getEmail(), members.getUsername(), phone, members.getProfile(), members.isOauth(), members.getLastVisit());
+    }
+
+    private MemberDetailResponse toMemberDetailResponse(Members members){
+        byte[] bytePhone = Base64.getDecoder().decode(members.getPhone());
+        String phone = new String(aesBytesEncryptor.decrypt(bytePhone), StandardCharsets.UTF_8);
+        return new MemberDetailResponse(members.getEmail(), members.getUsername(), phone, members.getProfile(), members.isOauth()
+                ,members.getCreatedAt(), members.getLastVisit());
     }
 
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..
@@ -53,8 +72,7 @@ public class FriendsService {
 
         for(Friends f: list){
             if(f.isFriends())
-                result.add(new MemberResponse(f.getToUser().getEmail(), f.getToUser().getUsername(), f.getToUser().getProfile()
-                , f.getToUser().isOauth(), f.getToUser().getLastVisit()));
+                result.add(toMemberResponse(f.getToUser()));
         }
 
         return result;
@@ -92,16 +110,15 @@ public class FriendsService {
 
         Members currentMember = (Members) authentication.getPrincipal();
 
-        Members members = memberRepository.findMembersByEmailAndOauth(dto.getToUserEmail(), dto.isOauth());
+        Members members = memberRepository.findMembersWithOauth(dto.getToUserEmail(), dto.isOauth());
         if(!friendsRepository.existsByToUserAndFromUser(currentMember, members.getMemberIdx()))
             throw new FriendsException(ExceptionCode.NOT_FRIENDS);
-        return new MemberDetailResponse(members.getEmail(), members.getUsername(), members.getProfile(), members.isOauth(),
-                members.getCreatedAt(), members.getLastVisit(), members.getPhone());
+        return toMemberDetailResponse(members);
     }
 
     @Transactional
     public FriendsResponse requestFriends(FriendsDto dto){ //친구 요청
-        Members members = memberRepository.findMembersByEmailAndOauth(dto.getToUserEmail(), dto.isOauth());
+        Members members = memberRepository.findMembersWithOauth(dto.getToUserEmail(), dto.isOauth());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -136,7 +153,7 @@ public class FriendsService {
 
         Members currentMember = (Members) authentication.getPrincipal();
 
-        Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
+        Members fromUser = memberRepository.findMembersWithOauth(dto.getFromUserEmail(), dto.isOauth());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(currentMember, fromUser.getMemberIdx());
         if(friends == null)
@@ -164,7 +181,7 @@ public class FriendsService {
 
         Members currentMember = (Members) authentication.getPrincipal();
 
-        Members fromUser = memberRepository.findMembersByEmailAndOauth(dto.getFromUserEmail(), dto.isOauth());
+        Members fromUser = memberRepository.findMembersWithOauth(dto.getFromUserEmail(), dto.isOauth());
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(currentMember, fromUser.getMemberIdx());
         if(friends == null)

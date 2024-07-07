@@ -4,12 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.keygen.BytesKeyGenerator;
+import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -20,6 +25,10 @@ import yoon.capstone.application.security.JwtAuthenticationFilter;
 import yoon.capstone.application.security.JwtExceptionFilter;
 import yoon.capstone.application.security.JwtProvider;
 
+import javax.xml.bind.DatatypeConverter;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 @Configuration
@@ -32,6 +41,9 @@ public class SecurityConfig {
 
     @Value("${ALLOW_ORIGIN}")
     private String allowOrigin;
+
+    @Value("${AES_SECRET}")
+    private String secret;
 
     @Bean
     protected SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -61,7 +73,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", allowOrigin));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", allowOrigin));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("*"));
@@ -77,5 +89,12 @@ public class SecurityConfig {
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    @Scope("prototype")
+    public AesBytesEncryptor aesBytesEncryptor(){
+        return new AesBytesEncryptor(secret, "19981217");
+    }
+
 
 }

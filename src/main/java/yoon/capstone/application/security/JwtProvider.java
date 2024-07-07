@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.repository.MemberRepository;
@@ -20,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
-@Lazy
 @RequiredArgsConstructor
 public class JwtProvider {
 
@@ -44,7 +44,7 @@ public class JwtProvider {
 
         Claims claims = Jwts.claims()
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accExp));
+                .setExpiration(new Date(System.currentTimeMillis() + accExp * 60 * 1000l));
 
         return  Jwts.builder()
                 .setHeaderParam("typ", "JWT")
@@ -58,7 +58,7 @@ public class JwtProvider {
 
         Claims claims = Jwts.claims()
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refExp));
+                .setExpiration(new Date(System.currentTimeMillis() + refExp * 60 * 60 * 1000l));
 
         return  Jwts.builder()
                 .setHeaderParam("typ", "JWT")

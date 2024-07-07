@@ -15,6 +15,8 @@ public class MemberResponse {
 
     private String name;
 
+    private String phone;
+
     private String profile;
 
     private boolean oauth;

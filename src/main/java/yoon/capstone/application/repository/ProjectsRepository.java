@@ -14,7 +14,7 @@ public interface ProjectsRepository extends JpaRepository<Projects, Long> {
 
     List<Projects> findAllByMembers(Members members);
 
-    Projects findProjectsByIdx(long idx);
+    Projects findProjectsByProjectIdx(long idx);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Projects findProjectsByTitle(String title);

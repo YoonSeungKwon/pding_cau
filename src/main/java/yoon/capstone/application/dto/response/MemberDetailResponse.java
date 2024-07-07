@@ -13,6 +13,8 @@ public class MemberDetailResponse {
 
     private String username;
 
+    private String phone;
+
     private String profile;
 
     private boolean oauth;
@@ -21,6 +23,5 @@ public class MemberDetailResponse {
 
     private LocalDateTime lastVisit;
 
-    private String phone;
 
 }

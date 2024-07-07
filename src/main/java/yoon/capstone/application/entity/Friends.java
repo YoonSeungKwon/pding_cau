@@ -30,8 +30,7 @@ public class Friends {
     @Column(name = "FRIEND_FROM_USER", nullable = false, length = 1)
     private long fromUser;
 
-    @ColumnDefault("0")
-    @Column(name = "IS_FRIEND")
+    @Column(name = "IS_FRIEND", columnDefinition = "boolean default false")
     private boolean isFriends;
 
     @CreationTimestamp

@@ -28,8 +28,8 @@ public class Payment {
     @JoinColumn(name = "MEMBER_ID")
     private Members members;
 
-    @Column(name = "PAYMENT_ITEM_NAME", nullable = false, length = 250)
-    private String itemName;
+    @Column(name = "PAYMENT_PRODUCT", nullable = false, length = 250)
+    private String product;
 
     @Column(name = "PAYMENT_QUANTITY", nullable = false)
     private int quantity;
@@ -45,10 +45,10 @@ public class Payment {
     private LocalDateTime createdAt;
 
     @Builder
-    Payment(String paymentCode, Members members, String itemName, int quantity, int total, String tid, LocalDateTime createdAt){
+    Payment(String paymentCode, Members members, String product, int quantity, int total, String tid, LocalDateTime createdAt){
         this.paymentCode = paymentCode;
         this.members = members;
-        this.itemName = itemName;
+        this.product = product;
         this.quantity = quantity;
         this.total = total;
         this.tid = tid;

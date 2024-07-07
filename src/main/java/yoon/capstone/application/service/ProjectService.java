@@ -46,14 +46,14 @@ public class ProjectService {
 
 
     private ProjectResponse toResponse(Projects projects){
-        return new ProjectResponse(projects.getProjectIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImg(), projects.getGoalAmount(),
-                projects.getCurrentAmount(), projects.getCount(), projects.getCategory().getValue(), projects.getFinishAt(), projects.getMembers().getProfile());
+        return new ProjectResponse(projects.getProjectIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImage(), projects.getGoalAmount(),
+                projects.getCurrentAmount(), projects.getParticipantsCount(), projects.getCategory().getValue(), projects.getFinishAt(), projects.getMembers().getProfile());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
         return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getMembers().getUsername(), projects.getMembers().getProfile(),
-                projects.getOption(), projects.getCategory().getValue(), projects.getImg(), projects.getLink(), projects.getGoalAmount(), projects.getCurrentAmount()
-                ,projects.getCount(), projects.getCreatedAt(), projects.getFinishAt());
+                projects.getOption(), projects.getCategory().getValue(), projects.getImage(), projects.getLink(), projects.getGoalAmount(), projects.getCurrentAmount()
+                ,projects.getParticipantsCount(), projects.getCreatedAt(), projects.getFinishAt());
     }
 
     @CachePut(value = "myProjectList", key = "#email")
@@ -97,7 +97,7 @@ public class ProjectService {
                 .content(dto.getContent())
                 .link(dto.getLink())
                 .option(dto.getOption())
-                .img(url)
+                .image(url)
                 .goal(dto.getGoal())
                 .finishAt(dto.getEnddate())
                 .category(categorys)
@@ -111,6 +111,7 @@ public class ProjectService {
         }
         return result;
     }
+    @Transactional(readOnly = true)
     @Cacheable(value = "myProjectList", key = "#email")
     public List<ProjectResponse> getProjectList(String email){
 
@@ -122,7 +123,7 @@ public class ProjectService {
         Members currentMember = (Members) authentication.getPrincipal();
 
         List<ProjectResponse> result = new ArrayList<>();
-        List<Projects> list = projectsRepository.findAllByMembers(currentMember);
+        List<Projects> list = currentMember.getProjects();
 
         for(Projects p:list){
             result.add(toResponse(p));
@@ -164,7 +165,7 @@ public class ProjectService {
 
         Members currentMember = (Members) authentication.getPrincipal();
 
-        Projects tempProject = projectsRepository.findProjectsByIdx(idx);
+        Projects tempProject = projectsRepository.findProjectsByProjectIdx(idx);
         Members members = tempProject.getMembers();
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, currentMember.getMemberIdx());
@@ -172,13 +173,13 @@ public class ProjectService {
         if(!members.equals(currentMember) &&(friends == null || !friends.isFriends()))
             throw new FriendsException(ExceptionCode.NOT_FRIENDS);
 
-        Projects projects = projectsRepository.findProjectsByIdx(idx);
+        Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
         return toDetailResponse(projects);
     }
 
     @Transactional
     public void deleteProjects(long idx){
-        Projects projects = projectsRepository.findProjectsByIdx(idx);
+        Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -212,9 +213,9 @@ public class ProjectService {
         } catch (Exception e){
             throw new ProjectException(null);
         }
-        Projects projects = projectsRepository.findProjectsByIdx(idx);
-        String prevImg = projects.getImg();
-        projects.setImg(url);
+        Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
+        String prevImg = projects.getImage();
+        projects.setImage(url);
 
         try{
             System.out.println(prevImg);

@@ -24,7 +24,7 @@ public class Projects {
     @Column(name = "PROJECT_ID")
     private long projectIdx;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MEMBER_ID")
     private Members members;
 
@@ -41,45 +41,44 @@ public class Projects {
     private String option;
 
     @Column(name = "PROJECT_IMAGE")
-    private String img;
+    private String image;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "PROJECT_CATEGORY")
     private Categorys category;
 
-    @Column(name = "GOAL_AMOUNT", nullable = false)
+    @Column(name = "PROJECT_GOAL_AMOUNT", nullable = false)
     private int goalAmount;
 
-    @Column(name = "CURRENT_AMOUNT", nullable = false)
+    @Column(name = "PROJECT_CURRENT_AMOUNT", nullable = false)
     private int currentAmount;
 
-    //Query 참여자 수
-    private int count;
+    //Query를 통한 계산 or 프로시저나 트리거 or 서비스 계층의 연산  -> p = 성능 비교 + 동시성 이슈
+    @Column(name = "PROJECT_PARTICIPANTS_COUNT")
+    private int participantsCount;
 
     @CreationTimestamp
-    @Column(name = "CREATED_AT")
+    @Column(name = "PROJECT_CREATED_AT")
     private LocalDateTime createdAt;
 
-    @Column(name = "FINISH_AT")
+    @Column(name = "PROJECT_FINISH_AT")
     private LocalDateTime finishAt;
 
-    @ColumnDefault("1")
-    @Column(name = "IS_VALID")
+    @Column(name = "PROJECT_IS_VALID", columnDefinition = "boolean default true")
     private boolean isValid;
 
-    @ColumnDefault("0")
-    @Column(name = "IS_HIDED")
+    @Column(name = "PROJECT_IS_HIDED", columnDefinition = "boolean default false")
     private boolean isHided;
 
 
     @Builder
-    public Projects(Members members, String title, String content,String option, String link, String img, int goal, LocalDate finishAt, Categorys category){
+    public Projects(Members members, String title, String content,String option, String link, String image, int goal, LocalDate finishAt, Categorys category){
         this.members = members;
         this.title = title;
         this.content = content;
         this.option = option;
         this.link = link;
-        this.img = img;
+        this.image = image;
         this.goalAmount = goal;
         this.currentAmount = 0;
         this.finishAt = finishAt.atStartOfDay();

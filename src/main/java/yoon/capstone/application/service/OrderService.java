@@ -53,7 +53,7 @@ public class OrderService {
     }
 
     public List<OrderResponse> getOrderList(long idx){
-        Projects tempProject = projectsRepository.findProjectsByIdx(idx);
+        Projects tempProject = projectsRepository.findProjectsByProjectIdx(idx);
         List<Orders> list = orderRepository.findAllByProjects(tempProject);
         List<OrderResponse> result = new ArrayList<>();
         for(Orders o:list){
@@ -77,7 +77,7 @@ public class OrderService {
 
         Members currentMember = (Members) authentication.getPrincipal();
 
-        Projects projects = projectsRepository.findProjectsByIdx(dto.getProjectIdx());
+        Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
 
         headers.set("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
         headers.set("Authorization", "KakaoAK " + admin_key);
@@ -104,7 +104,7 @@ public class OrderService {
         Payment payment = Payment.builder()
                 .paymentCode(paymentCode)
                 .members(currentMember)
-                .itemName(projects.getTitle())
+                .product(projects.getTitle())
                 .quantity(1)
                 .total(dto.getTotal())
                 .tid(result.getTid())
@@ -135,12 +135,12 @@ public class OrderService {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 
 
-        Payment payment = paymentRepository.findPaymentByOrderId(id);
+        Payment payment = paymentRepository.findPaymentByPaymentCode(id);
         if(payment == null) {
             throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
         }
         try {
-            Projects projects = projectsRepository.findProjectsByTitle(payment.getItemName());
+            Projects projects = projectsRepository.findProjectsByTitle(payment.getProduct());
             if (projects == null) {
                 throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
             }
@@ -155,7 +155,7 @@ public class OrderService {
 
 
             projects.setCurrentAmount(projects.getCurrentAmount() + payment.getTotal());  //Lock  필요
-            projects.setCount(projects.getCount() + 1);                   //Lock  필요
+            projects.setParticipantsCount(projects.getParticipantsCount() + 1);                   //Lock  필요
 
             projectsRepository.save(projects);
 
@@ -176,7 +176,7 @@ public class OrderService {
 
     @Transactional
     public void cancelOrder(String orderId){
-        Payment payment = paymentRepository.findPaymentByOrderId(orderId);
+        Payment payment = paymentRepository.findPaymentByPaymentCode(orderId);
         Orders orders = orderRepository.findOrdersByPayment(payment);
 
         if(orders!= null){
