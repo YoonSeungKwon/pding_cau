@@ -5,7 +5,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import yoon.capstone.application.dto.request.MemberSecurityDto;
+import yoon.capstone.application.enums.ExceptionCode;
+import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.service.FriendsService;
 import yoon.capstone.application.dto.request.FriendsDto;
 import yoon.capstone.application.dto.response.FriendsReqResponse;
@@ -43,9 +49,9 @@ public class FriendsController {
 
     @GetMapping("/lists")                      //친구 목록 불러오기
     @Operation(summary = "친구 목록 불러오기", description = "본인이 친구 목록을 가져온다. 신청중인 친구 제외")
-    public ResponseEntity<List<MemberResponse>> getFriendsList(@RequestBody String email){
+    public ResponseEntity<List<MemberResponse>> getFriendsList(){
 
-        List<MemberResponse> result = friendsService.getFriendsList(email);
+        List<MemberResponse> result = friendsService.getFriendsList(getCacheIndex());
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -61,13 +67,12 @@ public class FriendsController {
 
     @PostMapping("/answer/{status}")                     //친구 요청 응답
     @Operation(summary = "친구 요청 응답", description = "status에 따라서 친구요청 수락 혹은 거절 가능")
-    public ResponseEntity<List<FriendsResponse>> responseFriends(@PathVariable String status, @RequestBody FriendsDto dto,
-                                                           @RequestBody String email){
+    public ResponseEntity<List<FriendsResponse>> responseFriends(@PathVariable String status, @RequestBody FriendsDto dto){
 
         List<FriendsResponse> result;
 
         if(status.equals("ok")){
-            result = friendsService.acceptFriends(dto, email);
+            result = friendsService.acceptFriends(dto, getCacheIndex());
         }else{
             result = friendsService.declineFriends(dto);
         }
@@ -77,13 +82,22 @@ public class FriendsController {
 
     @DeleteMapping("/unlink")             //친구 삭제
     @Operation(summary = "친구 삭제")
-    public ResponseEntity<?> deleteFriends(@RequestBody FriendsDto dto, @RequestBody String email){
+    public ResponseEntity<?> deleteFriends(@RequestBody FriendsDto dto){
 
-        friendsService.deleteFriends(dto, email);
+        friendsService.deleteFriends(dto, getCacheIndex());
 
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
 
+    private long getCacheIndex(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        return memberDto.getMemberIdx();
+    }
 
 }

@@ -27,7 +27,7 @@ public class ProjectResponse {
 
     private String category;
 
-    private LocalDateTime enddate;
+    private String enddate;
 
     private String profile;
 

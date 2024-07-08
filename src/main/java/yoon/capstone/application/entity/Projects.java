@@ -72,7 +72,7 @@ public class Projects {
 
 
     @Builder
-    public Projects(Members members, String title, String content,String option, String link, String image, int goal, LocalDate finishAt, Categorys category){
+    public Projects(Members members, String title, String content,String option, String link, String image, int goal, LocalDateTime finishAt, Categorys category){
         this.members = members;
         this.title = title;
         this.content = content;
@@ -81,7 +81,7 @@ public class Projects {
         this.image = image;
         this.goalAmount = goal;
         this.currentAmount = 0;
-        this.finishAt = finishAt.atStartOfDay();
+        this.finishAt = finishAt;
         this.category = category;
     }
 

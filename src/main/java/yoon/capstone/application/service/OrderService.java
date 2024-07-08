@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import yoon.capstone.application.dto.request.MemberSecurityDto;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.entity.Orders;
 import yoon.capstone.application.entity.Payment;
@@ -24,6 +25,7 @@ import yoon.capstone.application.dto.response.OrderResponse;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.OrderException;
 import yoon.capstone.application.exception.UnauthorizedException;
+import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.repository.OrderRepository;
 import yoon.capstone.application.repository.PaymentRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
@@ -40,6 +42,8 @@ public class OrderService {
     private String admin_key;
     @Value("${SERVICE_URL}")
     private String serviceUrl;
+
+    private final MemberRepository memberRepository;
 
     private final OrderRepository orderRepository;
 
@@ -75,7 +79,8 @@ public class OrderService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
 
@@ -85,7 +90,7 @@ public class OrderService {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("cid", "TC0ONETIME");
         map.add("partner_order_id", paymentCode);
-        map.add("partner_user_id", currentMember.getUsername());
+        map.add("partner_user_id", memberDto.getEmail());
         map.add("item_name", projects.getTitle());
         map.add("quantity", 1);
         map.add("total_amount", dto.getTotal());

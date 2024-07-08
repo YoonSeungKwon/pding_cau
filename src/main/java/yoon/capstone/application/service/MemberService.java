@@ -16,6 +16,7 @@ import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import yoon.capstone.application.dto.request.MemberSecurityDto;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.enums.Provider;
@@ -171,7 +172,9 @@ public class MemberService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto dto = (MemberSecurityDto) authentication.getPrincipal();
+        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx());
+
         currentMember.setRefreshToken(null);
         memberRepository.save(currentMember);
     }
@@ -183,7 +186,9 @@ public class MemberService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto dto = (MemberSecurityDto) authentication.getPrincipal();
+        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx());
+
         String url;
         UUID uuid = UUID.randomUUID();
         if (!file.getContentType().startsWith("image")) {

@@ -32,8 +32,8 @@ public class ProjectDetailResponse {
 
     private int count;
 
-    private LocalDateTime regdate;
+    private String regdate;
 
-    private LocalDateTime enddate;
+    private String enddate;
 
 }

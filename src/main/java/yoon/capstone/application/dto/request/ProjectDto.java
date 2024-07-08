@@ -7,6 +7,7 @@ import lombok.Getter;
 import yoon.capstone.application.exception.sequence.ValidationGroup;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 public class ProjectDto {
@@ -27,5 +28,5 @@ public class ProjectDto {
     private int goal;
 
     @Future(message = "DATE_NOT_FUTURE", groups = ValidationGroup.DateFuture.class)
-    private LocalDate enddate;
+    private LocalDateTime enddate;
 }

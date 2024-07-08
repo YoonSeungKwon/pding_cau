@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import yoon.capstone.application.dto.request.MemberSecurityDto;
 import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.entity.Projects;
@@ -47,25 +48,26 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getProjectIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImage(), projects.getGoalAmount(),
-                projects.getCurrentAmount(), projects.getParticipantsCount(), projects.getCategory().getValue(), projects.getFinishAt(), projects.getMembers().getProfile());
+                projects.getCurrentAmount(), projects.getParticipantsCount(), projects.getCategory().getValue(), projects.getFinishAt().toString(), projects.getMembers().getProfile());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
         return new ProjectDetailResponse(projects.getTitle(), projects.getContent(), projects.getMembers().getUsername(), projects.getMembers().getProfile(),
                 projects.getOption(), projects.getCategory().getValue(), projects.getImage(), projects.getLink(), projects.getGoalAmount(), projects.getCurrentAmount()
-                ,projects.getParticipantsCount(), projects.getCreatedAt(), projects.getFinishAt());
+                ,projects.getParticipantsCount(), projects.getCreatedAt().toString(), projects.getFinishAt().toString());
     }
 
-    @CachePut(value = "myProjectList", key = "#email")
+    @CachePut(value = "myProjectList", key = "#cacheIndex")
     @Transactional
-    public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto, String email) {
+    public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto, long cacheIndex) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         String url;
         if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
@@ -112,15 +114,16 @@ public class ProjectService {
         return result;
     }
     @Transactional(readOnly = true)
-    @Cacheable(value = "myProjectList", key = "#email")
-    public List<ProjectResponse> getProjectList(String email){
+    @Cacheable(value = "myProjectList", key = "#cacheIndex")
+    public List<ProjectResponse> getProjectList(long cacheIndex){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         List<ProjectResponse> result = new ArrayList<>();
         List<Projects> list = currentMember.getProjects();
@@ -132,18 +135,18 @@ public class ProjectService {
         return result;
     }
 
-    @Cacheable(value = "projectList", key = "#email")
-    public List<ProjectResponse> getFriendsList(String email){
+    @Cacheable(value = "projectList", key = "#cacheIndex")
+    public List<ProjectResponse> getFriendsList(long cacheIndex){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
 
         List<ProjectResponse> result = new ArrayList<>();
-        List<Friends> friends = friendsRepository.findAllByToUser(currentMember);
+        List<Friends> friends = friendsRepository.findAllByFromUser(memberDto.getMemberIdx());
 
         for(Friends f: friends){
             if(!f.isFriends()) continue;
@@ -163,14 +166,14 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
 
         Projects tempProject = projectsRepository.findProjectsByProjectIdx(idx);
         Members members = tempProject.getMembers();
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, currentMember.getMemberIdx());
+        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, memberDto.getMemberIdx());
 
-        if(!members.equals(currentMember) &&(friends == null || !friends.isFriends()))
+        if(members.getMemberIdx() != memberDto.getMemberIdx() &&(friends == null || !friends.isFriends()))
             throw new FriendsException(ExceptionCode.NOT_FRIENDS);
 
         Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
@@ -186,9 +189,9 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        Members currentMember = (Members) authentication.getPrincipal();
+        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
 
-        if(!projects.getMembers().equals(currentMember))
+        if(projects.getMembers().getMemberIdx() != memberDto.getMemberIdx())
             throw new ProjectException(ExceptionCode.PROJECT_OWNER);
 
         projectsRepository.delete(projects);

@@ -1,6 +1,8 @@
 package yoon.capstone.application.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
@@ -17,4 +19,8 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
     boolean existsByToUserAndFromUser(Members toUser, long fromUser);
 
     List<Friends> findAllByToUser(Members toUser);
+
+    @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :index")
+    List<Friends> findAllWithToUserIndex(@Param("index") long idx);
+
 }
