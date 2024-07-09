@@ -49,8 +49,6 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    private final ProjectsRepository projectsRepository;
-
     private final AesBytesEncryptor aesBytesEncryptor;
 
     private final String bucket = "cau-artech-capstone";

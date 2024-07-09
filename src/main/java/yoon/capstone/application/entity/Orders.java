@@ -22,30 +22,30 @@ public class Orders {
     private long orderIdx;
 
     @ManyToOne
-    @JoinColumn(name = "MEMBER_ID")
+    @JoinColumn(name = "MEMBER_ID", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Members members;
 
     @ManyToOne
-    @JoinColumn(name = "PROJECT_ID")
+    @JoinColumn(name = "PROJECT_ID", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Projects projects;
 
-    @OneToOne
+    @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "PAYMENT_ID")
     private Payment payment;
 
-    @Column(name = "ORDER_MESSAGE")
-    private String message;
+    @OneToOne(mappedBy = "orders", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "COMMENT_ID")
+    private Comments comments;
 
     @CreationTimestamp
     @Column(name = "ORDER_CREATED_AT")
     private LocalDateTime createdAt;
 
     @Builder
-    Orders(Members members, Projects projects, Payment payment, String message){
+    Orders(Members members, Projects projects, Payment payment){
         this.members = members;
         this.projects = projects;
         this.payment = payment;
-        this.message = message;
     }
 
 }

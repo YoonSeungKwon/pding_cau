@@ -8,16 +8,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import yoon.capstone.application.dto.request.MemberSecurityDto;
-import yoon.capstone.application.entity.Members;
-import yoon.capstone.application.entity.Orders;
-import yoon.capstone.application.entity.Payment;
-import yoon.capstone.application.entity.Projects;
+import yoon.capstone.application.entity.*;
 import yoon.capstone.application.dto.request.OrderDto;
 import yoon.capstone.application.dto.response.KakaoPayResponse;
 import yoon.capstone.application.dto.response.KakaoResultResponse;
@@ -30,7 +28,9 @@ import yoon.capstone.application.repository.OrderRepository;
 import yoon.capstone.application.repository.PaymentRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +43,8 @@ public class OrderService {
     @Value("${SERVICE_URL}")
     private String serviceUrl;
 
+    private final AesBytesEncryptor aesBytesEncryptor;
+
     private final MemberRepository memberRepository;
 
     private final OrderRepository orderRepository;
@@ -53,7 +55,7 @@ public class OrderService {
 
     private OrderResponse toResponse(Orders orders){
         return new OrderResponse(orders.getMembers().getUsername(), orders.getMembers().getProfile(),
-                orders.getPayment().getTotal(), orders.getMessage(), orders.getPayment().getCreatedAt());
+                orders.getPayment().getCost(), orders.getComments().getContent(), orders.getPayment().getCreatedAt());
     }
 
     public List<OrderResponse> getOrderList(long idx){
@@ -106,31 +108,36 @@ public class OrderService {
                 KakaoPayResponse.class
         );
 
+        byte[] encryptByte = aesBytesEncryptor.encrypt(result.getTid().getBytes(StandardCharsets.UTF_8));
+        String tid = Base64.getEncoder().encodeToString(encryptByte);
+
         Payment payment = Payment.builder()
                 .paymentCode(paymentCode)
-                .members(currentMember)
-                .product(projects.getTitle())
-                .quantity(1)
-                .total(dto.getTotal())
-                .tid(result.getTid())
+                .tid(tid)
+                .cost(dto.getTotal())
                 .createdAt(result.getCreated_at())
+                .build();
+
+        Comments comments = Comments.builder()
+                .content(dto.getMessage())
                 .build();
 
         Orders orders = Orders.builder()
                 .projects(projects)
                 .members(currentMember)
                 .payment(payment)
-                .message(dto.getMessage())
                 .build();
 
-        paymentRepository.save(payment);
+
+        comments.setOrders(orders);
+
         orderRepository.save(orders);
 
         return result;
     }
 
     @Transactional
-    public long kakaoPaymentAccess(String id, String token){
+    public void kakaoPaymentAccess(String id, String token){
 
         HttpHeaders headers = new HttpHeaders();
         RestTemplate restTemplate = new RestTemplate();
@@ -145,7 +152,8 @@ public class OrderService {
             throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
         }
         try {
-            Projects projects = projectsRepository.findProjectsByTitle(payment.getProduct());
+            Orders orders = payment.getOrders();
+            Projects projects = projectsRepository.findProjectsByProjectIdxWithLock(orders.getProjects().getProjectIdx()); //Lock
             if (projects == null) {
                 throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
             }
@@ -154,13 +162,12 @@ public class OrderService {
             map.add("cid", "TC0ONETIME");
             map.add("tid", payment.getTid());
             map.add("partner_order_id", payment.getPaymentCode());
-            map.add("partner_user_id", payment.getMembers().getUsername());
+            map.add("partner_user_id", payment.getOrders().getMembers().getUsername());
             map.add("pg_token", token);
 
 
+            projects.addAmount(payment.getCost());
 
-            projects.setCurrentAmount(projects.getCurrentAmount() + payment.getTotal());  //Lock  필요
-            projects.setParticipantsCount(projects.getParticipantsCount() + 1);                   //Lock  필요
 
             projectsRepository.save(projects);
 
@@ -172,9 +179,8 @@ public class OrderService {
                     KakaoResultResponse.class
             );
 
-            return projects.getProjectIdx();
-
         }catch (LockTimeoutException e){
+            orderRepository.delete(payment.getOrders());    //주문 정보 삭제
             throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
         }
     }
@@ -182,12 +188,10 @@ public class OrderService {
     @Transactional
     public void cancelOrder(String orderId){
         Payment payment = paymentRepository.findPaymentByPaymentCode(orderId);
-        Orders orders = orderRepository.findOrdersByPayment(payment);
+        Orders orders = payment.getOrders();
 
         if(orders!= null){
             orderRepository.delete(orders);
-            if(payment != null)
-                paymentRepository.delete(payment);
         }
 
 

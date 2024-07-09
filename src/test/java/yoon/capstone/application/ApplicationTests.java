@@ -12,8 +12,7 @@ import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.enums.Provider;
 import yoon.capstone.application.enums.Role;
-import yoon.capstone.application.repository.FriendsRepository;
-import yoon.capstone.application.repository.MemberRepository;
+import yoon.capstone.application.repository.*;
 import yoon.capstone.application.security.JwtProvider;
 
 import java.util.List;
@@ -27,6 +26,14 @@ class ApplicationTests {
 	@Autowired
 	FriendsRepository friendsRepository;
 
+	@Autowired
+	ProjectsRepository projectsRepository;
+
+	@Autowired
+	OrderRepository orderRepository;
+
+	@Autowired
+	PaymentRepository paymentRepository;
 
 	@Autowired
 	JwtProvider jwtProvider;

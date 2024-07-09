@@ -3,6 +3,8 @@ package yoon.capstone.application.repository;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.entity.Projects;
@@ -17,6 +19,7 @@ public interface ProjectsRepository extends JpaRepository<Projects, Long> {
     Projects findProjectsByProjectIdx(long idx);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Projects findProjectsByTitle(String title);
+    @Query("SELECT p FROM Projects p WHERE p.projectIdx = :idx")
+    Projects findProjectsByProjectIdxWithLock(@Param("idx") long idx);
 
 }

@@ -85,4 +85,10 @@ public class Projects {
         this.category = category;
     }
 
+    public void addAmount(int cost){
+        currentAmount += cost;
+        participantsCount += 1;
+    }
+
+
 }
