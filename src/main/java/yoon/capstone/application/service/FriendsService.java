@@ -11,7 +11,6 @@ import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yoon.capstone.application.dto.request.FriendsDto;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
 import yoon.capstone.application.dto.response.FriendsReqResponse;
 import yoon.capstone.application.dto.response.FriendsResponse;
 import yoon.capstone.application.dto.response.MemberDetailResponse;
@@ -23,6 +22,7 @@ import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
+import yoon.capstone.application.security.JwtAuthentication;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class FriendsService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto dto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
 
         List<Friends> list = friendsRepository.findAllByFromUser(dto.getMemberIdx());
         List<MemberResponse> result = new ArrayList<>();
@@ -86,7 +86,7 @@ public class FriendsService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto dto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
 
         List<Friends> list = friendsRepository.findAllWithToUserIndex(dto.getMemberIdx());
         List<FriendsReqResponse> result = new ArrayList<>();
@@ -110,7 +110,7 @@ public class FriendsService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         Members members = memberRepository.findMembersWithOauth(dto.getToUserEmail(), dto.isOauth());
@@ -128,7 +128,7 @@ public class FriendsService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         if(members == null)
@@ -155,7 +155,7 @@ public class FriendsService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         Members fromUser = memberRepository.findMembersWithOauth(dto.getFromUserEmail(), dto.isOauth());
@@ -184,7 +184,7 @@ public class FriendsService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
 
@@ -223,7 +223,7 @@ public class FriendsService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         if(currentMember == null)

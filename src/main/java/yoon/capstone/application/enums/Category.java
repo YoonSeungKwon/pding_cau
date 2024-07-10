@@ -3,7 +3,7 @@ package yoon.capstone.application.enums;
 import lombok.Getter;
 
 @Getter
-public enum Categorys {
+public enum Category {
 
     졸업("졸업", 1),
 
@@ -13,7 +13,7 @@ public enum Categorys {
 
     private int key;
 
-    Categorys(String value, int key){
+    Category(String value, int key){
         this.value = value;
         this.key = key;
     }

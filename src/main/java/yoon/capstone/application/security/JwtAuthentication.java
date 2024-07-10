@@ -1,11 +1,10 @@
-package yoon.capstone.application.dto.request;
+package yoon.capstone.application.security;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import yoon.capstone.application.enums.Role;
 
 @Getter
-public class MemberSecurityDto {
+public class JwtAuthentication {
 
     private long memberIdx;
 
@@ -15,7 +14,7 @@ public class MemberSecurityDto {
 
     private Role role;
 
-    public MemberSecurityDto(long idx, String email, String token, Role role){
+    public JwtAuthentication(long idx, String email, String token, Role role){
         this.memberIdx = idx;
         this.email = email;
         this.refreshToken = token;

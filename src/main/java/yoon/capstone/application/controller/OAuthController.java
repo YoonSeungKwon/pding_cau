@@ -5,13 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.dto.request.OAuthDto;
 import yoon.capstone.application.dto.response.MemberResponse;
+import yoon.capstone.application.service.MemberService;
 
 import java.util.HashMap;
 import java.util.Map;

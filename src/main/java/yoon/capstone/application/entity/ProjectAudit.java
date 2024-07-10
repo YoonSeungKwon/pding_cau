@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import yoon.capstone.application.enums.Categorys;
+import yoon.capstone.application.enums.Category;
 
 import java.time.LocalDateTime;
 
@@ -44,7 +44,7 @@ public class ProjectAudit {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "AUDIT_PROJECT_CATEGORY")
-    private Categorys category;
+    private Category category;
 
     @Column(name = "AUDIT_GOAL_AMOUNT")
     private int goalAmount;

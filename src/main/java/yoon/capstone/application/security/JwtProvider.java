@@ -7,16 +7,11 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
-import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.repository.MemberRepository;
 
 import javax.crypto.SecretKey;
@@ -77,10 +72,10 @@ public class JwtProvider {
     }
 
     public Authentication getAuthentication(String token){
-        MemberSecurityDto dto  = memberRepository.findMemberDtoWithEmail(getEmail(token));
+        JwtAuthentication dto  = memberRepository.findMemberDtoWithEmail(getEmail(token));
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(dto.getRole().getRoleKey()));
-        return new UsernamePasswordAuthenticationToken(dto, null, authorities);
+        return new JwtAuthenticationToken(dto, null, authorities);
     }
 
     public String getEmail(String token){

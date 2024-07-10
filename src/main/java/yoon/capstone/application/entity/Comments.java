@@ -22,7 +22,6 @@ public class Comments {
     private long commentIdx;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @Column(name = "ORDER_ID")
     private Orders orders;
 
     @Column(name = "COMMENT_CONTENT")

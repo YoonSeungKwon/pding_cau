@@ -4,10 +4,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,7 +14,10 @@ import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
+import yoon.capstone.application.dto.request.LoginDto;
+import yoon.capstone.application.dto.request.OAuthDto;
+import yoon.capstone.application.dto.request.RegisterDto;
+import yoon.capstone.application.dto.response.MemberResponse;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.enums.Provider;
@@ -25,12 +26,8 @@ import yoon.capstone.application.exception.ProjectException;
 import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.exception.UtilException;
 import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.repository.ProjectsRepository;
+import yoon.capstone.application.security.JwtAuthentication;
 import yoon.capstone.application.security.JwtProvider;
-import yoon.capstone.application.dto.request.LoginDto;
-import yoon.capstone.application.dto.request.OAuthDto;
-import yoon.capstone.application.dto.request.RegisterDto;
-import yoon.capstone.application.dto.response.MemberResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -170,7 +167,7 @@ public class MemberService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto dto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx());
 
         currentMember.setRefreshToken(null);
@@ -184,7 +181,7 @@ public class MemberService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto dto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx());
 
         String url;

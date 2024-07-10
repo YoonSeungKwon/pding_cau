@@ -12,12 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.exception.sequence.LoginValidationSequence;
-import yoon.capstone.application.exception.sequence.RegisterValidationSequence;
-import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.dto.request.LoginDto;
 import yoon.capstone.application.dto.request.RegisterDto;
 import yoon.capstone.application.dto.response.MemberResponse;
+import yoon.capstone.application.exception.sequence.LoginValidationSequence;
+import yoon.capstone.application.exception.sequence.RegisterValidationSequence;
+import yoon.capstone.application.service.MemberService;
 
 import java.util.List;
 

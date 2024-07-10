@@ -11,13 +11,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
 import yoon.capstone.application.dto.request.ProjectDto;
 import yoon.capstone.application.dto.response.ProjectDetailResponse;
 import yoon.capstone.application.dto.response.ProjectResponse;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.UnauthorizedException;
 import yoon.capstone.application.exception.sequence.ProjectValidationSequence;
+import yoon.capstone.application.security.JwtAuthentication;
 import yoon.capstone.application.service.ProjectService;
 
 import java.util.List;
@@ -82,7 +82,7 @@ public class ProjectController {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         return memberDto.getMemberIdx();
     }
 

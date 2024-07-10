@@ -5,11 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
-import yoon.capstone.application.enums.Categorys;
+import yoon.capstone.application.enums.Category;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -45,7 +43,7 @@ public class Projects {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "PROJECT_CATEGORY")
-    private Categorys category;
+    private Category category;
 
     @Column(name = "PROJECT_GOAL_AMOUNT", nullable = false)
     private int goalAmount;
@@ -72,7 +70,7 @@ public class Projects {
 
 
     @Builder
-    public Projects(Members members, String title, String content,String option, String link, String image, int goal, LocalDateTime finishAt, Categorys category){
+    public Projects(Members members, String title, String content,String option, String link, String image, int goal, LocalDateTime finishAt, Category category){
         this.members = members;
         this.title = title;
         this.content = content;

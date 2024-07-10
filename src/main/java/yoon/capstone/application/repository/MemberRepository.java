@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
 import yoon.capstone.application.entity.Members;
+import yoon.capstone.application.security.JwtAuthentication;
 
 import java.util.List;
 
@@ -22,11 +22,11 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
 
 
     //Security Dto
-    @Query("SELECT new yoon.capstone.application.dto.request.MemberSecurityDto(m.memberIdx, m.email, m.refreshToken, m.role) FROM Members m WHERE m.email = :email")
-    MemberSecurityDto findMemberDtoWithEmail(@Param("email") String email);
+    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) FROM Members m WHERE m.email = :email")
+    JwtAuthentication findMemberDtoWithEmail(@Param("email") String email);
 
-    @Query("SELECT new yoon.capstone.application.dto.request.MemberSecurityDto(m.memberIdx, m.email, m.refreshToken, m.role) FROM Members m WHERE m.refreshToken = :token")
-    MemberSecurityDto findMemberDtoWithToken(@Param("token") String token);
+    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) FROM Members m WHERE m.refreshToken = :token")
+    JwtAuthentication findMemberDtoWithToken(@Param("token") String token);
 
 
 }

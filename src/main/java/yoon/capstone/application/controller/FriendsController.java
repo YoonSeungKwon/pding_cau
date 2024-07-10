@@ -9,15 +9,15 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
-import yoon.capstone.application.enums.ExceptionCode;
-import yoon.capstone.application.exception.UnauthorizedException;
-import yoon.capstone.application.service.FriendsService;
 import yoon.capstone.application.dto.request.FriendsDto;
 import yoon.capstone.application.dto.response.FriendsReqResponse;
 import yoon.capstone.application.dto.response.FriendsResponse;
 import yoon.capstone.application.dto.response.MemberDetailResponse;
 import yoon.capstone.application.dto.response.MemberResponse;
+import yoon.capstone.application.enums.ExceptionCode;
+import yoon.capstone.application.exception.UnauthorizedException;
+import yoon.capstone.application.security.JwtAuthentication;
+import yoon.capstone.application.service.FriendsService;
 
 import java.util.List;
 
@@ -96,7 +96,7 @@ public class FriendsController {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         return memberDto.getMemberIdx();
     }
 

@@ -14,12 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
-import yoon.capstone.application.entity.*;
 import yoon.capstone.application.dto.request.OrderDto;
 import yoon.capstone.application.dto.response.KakaoPayResponse;
 import yoon.capstone.application.dto.response.KakaoResultResponse;
 import yoon.capstone.application.dto.response.OrderResponse;
+import yoon.capstone.application.entity.*;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.OrderException;
 import yoon.capstone.application.exception.UnauthorizedException;
@@ -27,6 +26,7 @@ import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.repository.OrderRepository;
 import yoon.capstone.application.repository.PaymentRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
+import yoon.capstone.application.security.JwtAuthentication;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public class OrderService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());

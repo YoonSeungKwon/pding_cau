@@ -22,7 +22,6 @@ public class Payment {
     private long paymentIdx;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @Column(name = "ORDER_ID")
     private Orders orders;
 
     @Column(name = "PAYMENT_CODE", nullable = false, length = 100)

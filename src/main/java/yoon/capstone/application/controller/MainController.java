@@ -5,10 +5,10 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import yoon.capstone.application.dto.request.RegisterDto;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.UnauthorizedException;
-import yoon.capstone.application.dto.request.RegisterDto;
 
 @RestController
 @RequiredArgsConstructor

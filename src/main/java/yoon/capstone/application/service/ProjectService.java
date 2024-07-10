@@ -12,11 +12,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.dto.request.MemberSecurityDto;
+import yoon.capstone.application.dto.request.ProjectDto;
+import yoon.capstone.application.dto.response.ProjectDetailResponse;
+import yoon.capstone.application.dto.response.ProjectResponse;
 import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.entity.Projects;
-import yoon.capstone.application.enums.Categorys;
+import yoon.capstone.application.enums.Category;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.FriendsException;
 import yoon.capstone.application.exception.ProjectException;
@@ -25,9 +27,7 @@ import yoon.capstone.application.exception.UtilException;
 import yoon.capstone.application.repository.FriendsRepository;
 import yoon.capstone.application.repository.MemberRepository;
 import yoon.capstone.application.repository.ProjectsRepository;
-import yoon.capstone.application.dto.request.ProjectDto;
-import yoon.capstone.application.dto.response.ProjectDetailResponse;
-import yoon.capstone.application.dto.response.ProjectResponse;
+import yoon.capstone.application.security.JwtAuthentication;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         String url;
@@ -86,11 +86,11 @@ public class ProjectService {
         } catch (Exception e){
             throw new ProjectException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }
-        Categorys categorys;
-        if(dto.getCategory().equals(Categorys.생일.getValue())){
-            categorys = Categorys.생일;
+        Category category;
+        if(dto.getCategory().equals(Category.생일.getValue())){
+            category = Category.생일;
         }else{
-            categorys = Categorys.졸업;
+            category = Category.졸업;
         }
 
         Projects projects = Projects.builder()
@@ -102,7 +102,7 @@ public class ProjectService {
                 .image(url)
                 .goal(dto.getGoal())
                 .finishAt(dto.getEnddate())
-                .category(categorys)
+                .category(category)
                 .build();
         projectsRepository.save(projects);
 
@@ -122,7 +122,7 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
         List<ProjectResponse> result = new ArrayList<>();
@@ -143,7 +143,7 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
         List<ProjectResponse> result = new ArrayList<>();
         List<Friends> friends = friendsRepository.findAllByFromUser(memberDto.getMemberIdx());
@@ -166,7 +166,7 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
         Projects tempProject = projectsRepository.findProjectsByProjectIdx(idx);
         Members members = tempProject.getMembers();
@@ -189,7 +189,7 @@ public class ProjectService {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        MemberSecurityDto memberDto = (MemberSecurityDto) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
         if(projects.getMembers().getMemberIdx() != memberDto.getMemberIdx())
             throw new ProjectException(ExceptionCode.PROJECT_OWNER);
