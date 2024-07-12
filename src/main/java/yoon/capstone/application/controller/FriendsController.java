@@ -65,26 +65,27 @@ public class FriendsController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
-    @PostMapping("/answer/{status}")                     //친구 요청 응답
+    @PostMapping("/answer/{idx}/{status}")                     //친구 요청 응답
     @Operation(summary = "친구 요청 응답", description = "status에 따라서 친구요청 수락 혹은 거절 가능")
-    public ResponseEntity<List<FriendsResponse>> responseFriends(@PathVariable String status, @RequestBody FriendsDto dto){
+    public ResponseEntity<?> responseFriends(@PathVariable String status, @PathVariable long friendIdx){
 
         List<FriendsResponse> result;
 
         if(status.equals("ok")){
-            result = friendsService.acceptFriends(dto, getCacheIndex());
+            result = friendsService.acceptFriends(friendIdx, getCacheIndex());
+            return new ResponseEntity<>(result, HttpStatus.OK);
         }else{
-            result = friendsService.declineFriends(dto);
+            friendsService.declineFriends(friendIdx);
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         }
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @DeleteMapping("/unlink")             //친구 삭제
+    @DeleteMapping("/unlink/{idx}")             //친구 삭제
     @Operation(summary = "친구 삭제")
-    public ResponseEntity<?> deleteFriends(@RequestBody FriendsDto dto){
+    public ResponseEntity<?> deleteFriends(@PathVariable long friendIdx){
 
-        friendsService.deleteFriends(dto, getCacheIndex());
+        friendsService.deleteFriends(friendIdx, getCacheIndex());
 
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }

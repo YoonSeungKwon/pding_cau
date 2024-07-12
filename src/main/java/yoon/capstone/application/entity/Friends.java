@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name="friends")
+@Table(name="friends", indexes = {
+        @Index(name = "idx_friend_to_user", columnList = "FRIEND_TO_USER"),
+        @Index(name = "idx_friend_from_user", columnList = "FRIEND_FROM_USER")})
 public class Friends {
 
     @Id
@@ -42,8 +44,8 @@ public class Friends {
 
 
     @Builder
-    Friends(Members toUser, Members fromUser){
+    Friends(Members toUser, long fromUser){
         this.toUser = toUser;
-        this.fromUser = fromUser.getMemberIdx();
+        this.fromUser = fromUser;
     }
 }

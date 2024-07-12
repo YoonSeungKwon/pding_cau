@@ -22,7 +22,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="members")
+@Table(name="members", indexes = {
+        @Index(name = "members_member_email", columnList = "MEMBER_EMAIL")
+})
 public class Members {
 
     @Id

@@ -82,7 +82,7 @@ public class OrderService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
 

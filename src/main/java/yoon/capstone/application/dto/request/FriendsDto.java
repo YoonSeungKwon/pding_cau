@@ -9,5 +9,4 @@ public class FriendsDto {
 
     private String fromUserEmail;
 
-    private boolean oauth;
 }

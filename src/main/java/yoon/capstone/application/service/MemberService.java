@@ -82,7 +82,7 @@ public class MemberService {
 
         String email = dto.getEmail();
         String password = dto.getPassword();
-        Members members = memberRepository.findMembersByEmail(email);
+        Members members = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
 
         if(members == null || members.isOauth())
             throw new UsernameNotFoundException(email);
@@ -147,7 +147,7 @@ public class MemberService {
 
     @Transactional
     public MemberResponse socialLogin(String email, HttpServletResponse response){
-        Members members = memberRepository.findMembersByEmail(email);
+        Members members = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
 
         String accToken = jwtProvider.createAccessToken(members.getEmail());
         String refToken = jwtProvider.createRefreshToken();
@@ -168,7 +168,7 @@ public class MemberService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         currentMember.setRefreshToken(null);
         memberRepository.save(currentMember);
@@ -182,7 +182,7 @@ public class MemberService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         String url;
         UUID uuid = UUID.randomUUID();

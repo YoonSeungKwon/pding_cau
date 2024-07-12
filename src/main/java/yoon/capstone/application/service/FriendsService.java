@@ -40,8 +40,8 @@ public class FriendsService {
     private final FriendsRepository friendsRepository;
 
     private FriendsResponse toResponse(Friends friends){
-        Members fromUser = memberRepository.findMembersByMemberIdx(friends.getFromUser());
-        return new FriendsResponse(friends.getToUser().getUsername(), fromUser.getUsername(), friends.isFriends(), friends.getCreatedAt());
+        Members fromUser = memberRepository.findMembersByMemberIdx(friends.getFromUser()).orElseThrow(()->new UsernameNotFoundException(null));
+        return new FriendsResponse(friends.getFriendIdx(), friends.getToUser().getUsername(), fromUser.getUsername(), friends.isFriends(), friends.getCreatedAt());
     }
 
     private MemberResponse toMemberResponse(Members members){
@@ -93,7 +93,7 @@ public class FriendsService {
 
         for(Friends f:list){
             if(!f.isFriends()) {
-                Members tempMember = memberRepository.findMembersByMemberIdx(f.getFromUser());
+                Members tempMember = memberRepository.findMembersByMemberIdx(f.getFromUser()).orElseThrow(()->new UsernameNotFoundException(null));
                 result.add(new FriendsReqResponse(tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile(), tempMember.isOauth(),
                         f.getCreatedAt()));
             }
@@ -103,44 +103,40 @@ public class FriendsService {
     }
 
     public MemberDetailResponse friendsDetail(FriendsDto dto){
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
-        Members members = memberRepository.findMembersWithOauth(dto.getToUserEmail(), dto.isOauth());
-        if(!friendsRepository.existsByToUserAndFromUser(currentMember, members.getMemberIdx()))
+        Members members = memberRepository.findMembersByEmail(dto.getToUserEmail()).orElseThrow(()->new UsernameNotFoundException(dto.getToUserEmail()));
+        if(!friendsRepository.existsByToUserAndFromUser(members, memberDto.getMemberIdx()))
             throw new FriendsException(ExceptionCode.NOT_FRIENDS);
         return toMemberDetailResponse(members);
     }
 
     @Transactional
     public FriendsResponse requestFriends(FriendsDto dto){ //친구 요청
-        Members members = memberRepository.findMembersWithOauth(dto.getToUserEmail(), dto.isOauth());
+        Members toUser = memberRepository.findMembersByEmail(dto.getToUserEmail()).orElseThrow(()->new UsernameNotFoundException(dto.getToUserEmail()));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
+        JwtAuthentication fromUser = (JwtAuthentication) authentication.getPrincipal();
 
-        if(members == null)
+        if(toUser == null)
             throw new UsernameNotFoundException(dto.getToUserEmail());
-        if(members.getMemberIdx() != memberDto.getMemberIdx())
+        if(toUser.getMemberIdx() != fromUser.getMemberIdx())
             throw new FriendsException(ExceptionCode.SELF_FRIENDS);
-        if(friendsRepository.existsByToUserAndFromUser(members, memberDto.getMemberIdx()))
+        if(friendsRepository.existsByToUserAndFromUser(toUser, fromUser.getMemberIdx()))
             throw new FriendsException(ExceptionCode.ALREADY_FRIENDS);        // 이미 친구로 등록되어 있거나 친구 요청을 보냄
 
         Friends friends = Friends.builder()
-                .toUser(members)
-                .fromUser(currentMember)
+                .toUser(toUser)
+                .fromUser(fromUser.getMemberIdx())
                 .build();
 
         //소켓 통신으로 친구 요청 알림 보내기
@@ -148,7 +144,7 @@ public class FriendsService {
         return toResponse(friendsRepository.save(friends));
     }
 
-    public List<FriendsResponse> declineFriends(FriendsDto dto){ //친구 요청 거절
+    public void declineFriends(long friendIdx) { //친구 요청 거절
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -156,28 +152,16 @@ public class FriendsService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
 
-        Members fromUser = memberRepository.findMembersWithOauth(dto.getFromUserEmail(), dto.isOauth());
+        Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(() -> new FriendsException(ExceptionCode.NOT_FRIENDS));
+        if(!memberDto.getEmail().equals(friends.getToUser().getEmail())) throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS);
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(currentMember, fromUser.getMemberIdx());
-        if(friends == null)
-            throw new FriendsException(ExceptionCode.NOT_FRIENDS);
         friendsRepository.delete(friends);
-
-        List<Friends> list = friendsRepository.findAllByToUser(currentMember);
-        List<FriendsResponse> result = new ArrayList<>();
-        for(Friends f : list){
-            result.add(toResponse(f));
-        }
-
-
-        return result;
     }
 
     @CachePut(value = "friendsList", key = "#cacheIndex")
     @Transactional
-    public List<FriendsResponse> acceptFriends(FriendsDto dto, long cacheIndex){  //친구 요청 수락
+    public List<FriendsResponse> acceptFriends(long friendIdx, long cacheIndex){  //친구 요청 수락
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -185,21 +169,19 @@ public class FriendsService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
+        Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
-        Members fromUser = memberRepository.findMembersWithOauth(dto.getFromUserEmail(), dto.isOauth());
+        Members fromUser = memberRepository.findMembersByMemberIdx(friends.getFromUser()).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(currentMember, fromUser.getMemberIdx());
-        if(friends == null)
-            throw new FriendsException(ExceptionCode.NOT_FRIENDS);
         if(friends.isFriends())
             throw new FriendsException(ExceptionCode.ALREADY_FRIENDS);
 
         friends.setFriends(true);
 
         Friends temp = Friends.builder()
-                .fromUser(currentMember)
+                .fromUser(currentMember.getMemberIdx())
                 .toUser(fromUser)
                 .build();
         temp.setFriends(true);
@@ -207,7 +189,7 @@ public class FriendsService {
         friendsRepository.save(temp);   //수락한 쪽도 친구로 등록
         friendsRepository.save(friends);
 
-        List<Friends> list = friendsRepository.findAllByToUser(currentMember);
+        List<Friends> list = friendsRepository.findAllByFromUser(currentMember.getMemberIdx());
         List<FriendsResponse> result = new ArrayList<>();
         for(Friends f : list){
             result.add(toResponse(f));
@@ -217,26 +199,20 @@ public class FriendsService {
 
     @CachePut(value = "friendsList", key = "#cacheIndex")
     @Transactional
-    public void deleteFriends(FriendsDto dto, long cacheIndex){  //친구 목록 삭제
+    public void deleteFriends(long friendIdx, long cacheIndex){  //친구 목록 삭제
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
-        if(currentMember == null)
-            throw new UsernameNotFoundException(dto.getToUserEmail());
+        Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
-        Members me = (Members) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(currentMember, me.getMemberIdx());
-        if(friends == null)
-            throw new FriendsException(ExceptionCode.NOT_FRIENDS);
         friendsRepository.delete(friends);
 
-        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(me, currentMember.getMemberIdx());
+        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(friends.getToUser(), currentMember.getMemberIdx());
         friendsRepository.delete(tempFriends);
 
     }

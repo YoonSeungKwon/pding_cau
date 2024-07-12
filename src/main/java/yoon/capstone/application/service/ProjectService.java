@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,7 +68,7 @@ public class ProjectService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         String url;
         if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
@@ -123,7 +124,7 @@ public class ProjectService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx());
+        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         List<ProjectResponse> result = new ArrayList<>();
         List<Projects> list = currentMember.getProjects();
@@ -150,7 +151,7 @@ public class ProjectService {
 
         for(Friends f: friends){
             if(!f.isFriends()) continue;
-            Members friend = memberRepository.findMembersByMemberIdx(f.getFromUser());
+            Members friend = memberRepository.findMembersByMemberIdx(f.getFromUser()).orElseThrow(()->new UsernameNotFoundException(null));
             List<Projects> projects = projectsRepository.findAllByMembers(friend);
             for(Projects p: projects){
                 result.add(toResponse(p));

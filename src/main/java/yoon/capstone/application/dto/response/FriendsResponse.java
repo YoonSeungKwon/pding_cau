@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class FriendsResponse {
 
+    private long friendIdx;
+
     private String toUser;
 
     private String fromUser;

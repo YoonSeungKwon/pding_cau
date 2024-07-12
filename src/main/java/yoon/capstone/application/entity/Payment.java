@@ -10,10 +10,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="payment")
-@Data
+@Table(name="payment", indexes = {
+        @Index(name = "payment_payment_code", columnList = "PAYMENT_CODE")
+})
 public class Payment {
 
     @Id

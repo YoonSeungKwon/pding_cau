@@ -12,9 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
-import org.springframework.security.crypto.encrypt.Encryptors;
-import org.springframework.security.crypto.keygen.BytesKeyGenerator;
-import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -25,10 +22,6 @@ import yoon.capstone.application.security.JwtAuthenticationFilter;
 import yoon.capstone.application.security.JwtExceptionFilter;
 import yoon.capstone.application.security.JwtProvider;
 
-import javax.xml.bind.DatatypeConverter;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 @Configuration

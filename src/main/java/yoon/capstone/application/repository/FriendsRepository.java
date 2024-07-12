@@ -8,17 +8,18 @@ import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FriendsRepository extends JpaRepository<Friends, Long> {
 
     Friends findFriendsByToUserAndFromUser(Members toUser, long fromUser);
 
+    Optional<Friends> findFriendsByFriendIdx(long friendIdx);
+
     List<Friends> findAllByFromUser(long fromUser);
 
     boolean existsByToUserAndFromUser(Members toUser, long fromUser);
-
-    List<Friends> findAllByToUser(Members toUser);
 
     @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :index")
     List<Friends> findAllWithToUserIndex(@Param("index") long idx);

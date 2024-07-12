@@ -8,15 +8,13 @@ import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.security.JwtAuthentication;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Members, Long> {
 
-    Members findMembersByMemberIdx(long idx);
-    Members findMembersByEmail(String email);
-    Members findMembersByRefreshToken(String token);
-    @Query("SELECT m FROM Members m WHERE m.email = :email AND m.isOauth = :oauth")
-    Members findMembersWithOauth(@Param("email") String email, @Param("oauth") boolean isOauth);
+    Optional<Members> findMembersByMemberIdx(long idx);
+    Optional<Members> findMembersByEmail(String email);
     List<Members> findAllByEmail(String email);
     boolean existsByEmail(String email);
 
