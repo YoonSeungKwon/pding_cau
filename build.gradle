@@ -50,6 +50,8 @@ dependencies {
 	//Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	//AssertJ
+	testImplementation 'org.assertj:assertj-core:3.26.3'
 
 
 

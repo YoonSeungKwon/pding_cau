@@ -51,8 +51,11 @@ public class MemberController {
 
     @GetMapping("/{email}")
     @Operation(summary = "유저 검색", description = "친구 신청을 위하여 email을 통하여 유저 검색, 만약 소셜 계정과 폼 계정이 중복되는 계정이 있으면 두 개다 반환")
-    public ResponseEntity<List<MemberResponse>> findMemberByEmail(@PathVariable String email){
-        return new ResponseEntity<>(memberService.findMember(email), HttpStatus.OK);
+    public ResponseEntity<MemberResponse> findMemberByEmail(@PathVariable String email){
+
+        MemberResponse result = memberService.findMember(email);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/login")

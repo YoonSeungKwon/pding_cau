@@ -3,10 +3,12 @@ package yoon.capstone.application.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import yoon.capstone.application.exception.sequence.ValidationGroup;
 
 @Getter
+@AllArgsConstructor
 public class RegisterDto {
 
     @Email(message = "MEMBER_EMAIL_FORMAT", groups = ValidationGroup.EmailFormat.class)

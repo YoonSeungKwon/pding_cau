@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -68,15 +69,8 @@ public class FriendsService {
 
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
 
-        List<Friends> list = friendsRepository.findAllByFromUser(dto.getMemberIdx());
-        List<MemberResponse> result = new ArrayList<>();
-
-        for(Friends f: list){
-            if(f.isFriends())
-                result.add(toMemberResponse(f.getToUser()));
-        }
-
-        return result;
+        return memberRepository.findAllWithFromUser(
+                dto.getMemberIdx()).stream().map(this::toMemberResponse).toList();
     }
 
     public List<FriendsReqResponse> getFriendsRequest(){
@@ -212,7 +206,9 @@ public class FriendsService {
 
         friendsRepository.delete(friends);
 
-        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(friends.getToUser(), currentMember.getMemberIdx());
+        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(friends.getToUser(), currentMember.getMemberIdx()).orElseThrow(
+                ()->new FriendsException(ExceptionCode.NOT_FRIENDS));
+
         friendsRepository.delete(tempFriends);
 
     }

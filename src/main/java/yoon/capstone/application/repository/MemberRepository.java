@@ -15,16 +15,20 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
 
     Optional<Members> findMembersByMemberIdx(long idx);
     Optional<Members> findMembersByEmail(String email);
-    List<Members> findAllByEmail(String email);
+    //Unique Column
     boolean existsByEmail(String email);
-
-
-    //Security Dto
-    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) FROM Members m WHERE m.email = :email")
+    //Test
+    @Query("SELECT m FROM Members m JOIN FETCH m.projects")
+    List<Members> findAllWithJoinFetch();
+    //Security DTO Authentication
+    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) " +
+            "FROM Members m WHERE m.email = :email")
     JwtAuthentication findMemberDtoWithEmail(@Param("email") String email);
-
-    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) FROM Members m WHERE m.refreshToken = :token")
+    //Security DTO Refresh Token
+    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) " +
+            "FROM Members m WHERE m.refreshToken = :token")
     JwtAuthentication findMemberDtoWithToken(@Param("token") String token);
-
-
+    //Members By Friends.FromUser
+    @Query("SELECT m FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.fromUser = :fromUser")
+    List<Members> findAllWithFromUser(@Param("fromUser") long fromUser);
 }

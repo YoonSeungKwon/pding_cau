@@ -65,16 +65,11 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberResponse> findMember(String email){
+    public MemberResponse findMember(String email){
 
-        List<Members> result = memberRepository.findAllByEmail(email);
-        List<MemberResponse> response = new ArrayList<>();
+        Members result = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
 
-        for(Members m:result){
-            response.add(toResponse(m));
-        }
-
-        return response;
+        return toResponse(result);
     }
 
     @Transactional

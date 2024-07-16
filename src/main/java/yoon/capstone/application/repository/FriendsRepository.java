@@ -13,15 +13,11 @@ import java.util.Optional;
 @Repository
 public interface FriendsRepository extends JpaRepository<Friends, Long> {
 
-    Friends findFriendsByToUserAndFromUser(Members toUser, long fromUser);
-
     Optional<Friends> findFriendsByFriendIdx(long friendIdx);
-
+    Optional<Friends> findFriendsByToUserAndFromUser(Members toUser, long fromUser);
     List<Friends> findAllByFromUser(long fromUser);
-
+    //Duplication Check
     boolean existsByToUserAndFromUser(Members toUser, long fromUser);
-
     @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :index")
     List<Friends> findAllWithToUserIndex(@Param("index") long idx);
-
 }
