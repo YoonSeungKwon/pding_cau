@@ -59,8 +59,7 @@ public class OrderService {
     }
 
     public List<OrderResponse> getOrderList(long idx){
-        Projects tempProject = projectsRepository.findProjectsByProjectIdx(idx);
-        List<Orders> list = orderRepository.findAllByProjects(tempProject);
+        List<Orders> list = orderRepository.findAllByProjectsIndex(idx);
         List<OrderResponse> result = new ArrayList<>();
         for(Orders o:list){
             result.add(toResponse(o));
@@ -146,27 +145,23 @@ public class OrderService {
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 
+        Orders orders = orderRepository.findOrdersByPaymentCodeWithFetch(id).orElseThrow(()->new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(),
+                ExceptionCode.ORDER_NOT_FOUND.getStatus()));
 
-        Payment payment = paymentRepository.findPaymentByPaymentCode(id);
-        if(payment == null) {
-            throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
-        }
         try {
-            Orders orders = payment.getOrders();
-            Projects projects = projectsRepository.findProjectsByProjectIdxWithLock(orders.getProjects().getProjectIdx()); //Lock
-            if (projects == null) {
-                throw new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus());
-            }
 
+            Projects projects = projectsRepository.findProjectsByOrderIndexWithLock(orders.getOrderIdx()).orElseThrow(
+                    ()-> new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(), ExceptionCode.ORDER_NOT_FOUND.getStatus())
+            ); //Lock
 
             map.add("cid", "TC0ONETIME");
-            map.add("tid", payment.getTid());
-            map.add("partner_order_id", payment.getPaymentCode());
-            map.add("partner_user_id", payment.getOrders().getMembers().getUsername());
+            map.add("tid", orders.getPayment().getTid());
+            map.add("partner_order_id", orders.getPayment().getPaymentCode());
+            map.add("partner_user_id", orders.getMembers().getUsername());
             map.add("pg_token", token);
 
 
-            projects.addAmount(payment.getCost());
+            projects.addAmount(orders.getPayment().getCost());
 
 
             projectsRepository.save(projects);
@@ -180,21 +175,14 @@ public class OrderService {
             );
 
         }catch (LockTimeoutException e){
-            orderRepository.delete(payment.getOrders());    //주문 정보 삭제
+            orderRepository.delete(orders);    //주문 정보 삭제
             throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
         }
     }
 
     @Transactional
-    public void cancelOrder(String orderId){
-        Payment payment = paymentRepository.findPaymentByPaymentCode(orderId);
-        Orders orders = payment.getOrders();
-
-        if(orders!= null){
-            orderRepository.delete(orders);
-        }
-
-
+    public void cancelOrder(String paymentCode){
+        orderRepository.deleteOrdersWithPaymentCode(paymentCode);
     }
 
 

@@ -23,7 +23,7 @@ public class Payment {
     @Column(name = "PAYMENT_ID")
     private long paymentIdx;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     private Orders orders;
 
     @Column(name = "PAYMENT_CODE", nullable = false, length = 100)

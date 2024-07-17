@@ -10,6 +10,7 @@ import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.entity.Projects;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProjectsRepository extends JpaRepository<Projects, Long> {
@@ -18,8 +19,9 @@ public interface ProjectsRepository extends JpaRepository<Projects, Long> {
 
     Projects findProjectsByProjectIdx(long idx);
 
+    //Projects 의 총금액과 인원수를 업데이트 동시성 이슈
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Projects p WHERE p.projectIdx = :idx")
-    Projects findProjectsByProjectIdxWithLock(@Param("idx") long idx);
+    @Query("SELECT p FROM Projects p JOIN Orders o ON p.projectIdx = o.projects.projectIdx WHERE o.orderIdx = :orderIndex")
+    Optional<Projects> findProjectsByOrderIndexWithLock(@Param("orderIndex") long orderIndex);
 
 }
