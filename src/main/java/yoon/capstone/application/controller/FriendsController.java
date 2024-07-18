@@ -9,7 +9,6 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import yoon.capstone.application.dto.request.FriendsDto;
 import yoon.capstone.application.dto.response.FriendsReqResponse;
 import yoon.capstone.application.dto.response.FriendsResponse;
 import yoon.capstone.application.dto.response.MemberDetailResponse;
@@ -30,7 +29,7 @@ public class FriendsController {
     private final FriendsService friendsService;
 
     @GetMapping("/")
-    @Operation(summary = "벋은 친구 요청 불러오기")
+    @Operation(summary = "받은 친구 요청 불러오기")
     public ResponseEntity<List<FriendsReqResponse>> getRequests(){
 
         List<FriendsReqResponse> result = friendsService.getFriendsRequest();
@@ -38,11 +37,11 @@ public class FriendsController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @GetMapping("/info")                        //친구 정보, 상태 보기
+    @GetMapping("/info/{memberIndex}")                        //친구 정보, 상태 보기
     @Operation(summary = "친구 정보 불러오기")
-    public ResponseEntity<MemberDetailResponse> getFriends(@RequestBody FriendsDto dto){
+    public ResponseEntity<MemberDetailResponse> getFriends(@PathVariable long memberIndex){
 
-        MemberDetailResponse result = friendsService.friendsDetail(dto);
+        MemberDetailResponse result = friendsService.friendsDetail(memberIndex);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }//친구만 정보를 볼 수 있게 수정
@@ -56,11 +55,11 @@ public class FriendsController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping("/link")                       //친구 요청 보내기
+    @PostMapping("/link/{memberIndex}")                       //친구 요청 보내기
     @Operation(summary = "친구 신청하기")
-    public ResponseEntity<FriendsResponse> requestFriends(@RequestBody FriendsDto dto){
+    public ResponseEntity<FriendsResponse> requestFriends(@PathVariable long memberIndex){
 
-        FriendsResponse result = friendsService.requestFriends(dto);
+        FriendsResponse result = friendsService.requestFriends(memberIndex);
 
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }

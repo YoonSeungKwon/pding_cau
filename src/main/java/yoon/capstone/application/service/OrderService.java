@@ -58,8 +58,10 @@ public class OrderService {
                 orders.getPayment().getCost(), orders.getComments().getContent(), orders.getPayment().getCreatedAt());
     }
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getOrderList(long idx){
-        List<Orders> list = orderRepository.findAllByProjectsIndex(idx);
+        //Eagle Loading
+        List<Orders> list = orderRepository.findAllByProjectsIndexWithFetchJoin(idx);
         List<OrderResponse> result = new ArrayList<>();
         for(Orders o:list){
             result.add(toResponse(o));
@@ -81,6 +83,7 @@ public class OrderService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        //Lazy Loading
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
@@ -145,7 +148,7 @@ public class OrderService {
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 
-        Orders orders = orderRepository.findOrdersByPaymentCodeWithFetch(id).orElseThrow(()->new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(),
+        Orders orders = orderRepository.findOrdersByPaymentCodeWithFetchJoin(id).orElseThrow(()->new OrderException(ExceptionCode.ORDER_NOT_FOUND.getMessage(),
                 ExceptionCode.ORDER_NOT_FOUND.getStatus()));
 
         try {

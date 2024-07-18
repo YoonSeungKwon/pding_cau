@@ -79,7 +79,7 @@ public class ProjectQueryTest {
             projectsRepository.saveAll(projectList);
 
             Members members = Members.builder().email("test" + i + "@test.com").password("abcd1234")
-                    .username("tester" + i).oauth(false).provider(Provider.NULL).role(Role.USER).build();
+                    .username("tester" + i).oauth(false).provider(Provider.DEFAULT).role(Role.USER).build();
             byte[] encryptPhone = aesBytesEncryptor.encrypt(phone.getBytes(StandardCharsets.UTF_8));
             String phone = Base64.getEncoder().encodeToString(encryptPhone);
             members.setPhone(phone);

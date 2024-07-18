@@ -15,11 +15,14 @@ import java.util.Optional;
 @Repository
 public interface ProjectsRepository extends JpaRepository<Projects, Long> {
 
-    List<Projects> findAllByMembers(Members members);
-
+    //Lazy Loading
     Projects findProjectsByProjectIdx(long idx);
 
-    //Projects 의 총금액과 인원수를 업데이트 동시성 이슈
+    //Eagle Loading
+    @Query("SELECT p FROM Projects p JOIN FETCH p.members WHERE p.projectIdx = :projectIndex")
+    Projects findProjectsByProjectIdxWithFetchJoin(@Param("projectIndex") long projectIndex);
+
+    //Cost, Total Pessimistic Lock
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Projects p JOIN Orders o ON p.projectIdx = o.projects.projectIdx WHERE o.orderIdx = :orderIndex")
     Optional<Projects> findProjectsByOrderIndexWithLock(@Param("orderIndex") long orderIndex);

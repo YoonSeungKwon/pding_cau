@@ -56,7 +56,7 @@ public class MemberQueryTest {
 
         for (int i = 0; i < testSet; i++) {
             Members members = Members.builder().email("test" + i + "@test.com").password("abcd1234")
-                    .username("tester" + i).oauth(false).provider(Provider.NULL).role(Role.USER).build();
+                    .username("tester" + i).oauth(false).provider(Provider.DEFAULT).role(Role.USER).build();
             byte[] encryptPhone = aesBytesEncryptor.encrypt(phone.getBytes(StandardCharsets.UTF_8));
             String phone = Base64.getEncoder().encodeToString(encryptPhone);
             members.setPhone(phone);

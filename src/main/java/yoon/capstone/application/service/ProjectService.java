@@ -68,7 +68,10 @@ public class ProjectService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
+
+        //Eagle Loading
+        Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
+                .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         String url;
         if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
@@ -105,11 +108,12 @@ public class ProjectService {
                 .finishAt(dto.getEnddate())
                 .category(category)
                 .build();
-        projectsRepository.save(projects);
+
+        currentMember.getProjects().add(projects);
+        memberRepository.save(currentMember);
 
         List<ProjectResponse> result = new ArrayList<>();
-        List<Projects> list = projectsRepository.findAllByMembers(currentMember);
-        for(Projects p: list){
+        for(Projects p: currentMember.getProjects()){
             result.add(toResponse(p));
         }
         return result;
@@ -124,7 +128,9 @@ public class ProjectService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
+        //Eagle Loading
+        Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
+                .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         List<ProjectResponse> result = new ArrayList<>();
         List<Projects> list = currentMember.getProjects();
@@ -146,21 +152,13 @@ public class ProjectService {
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
-        List<ProjectResponse> result = new ArrayList<>();
-        List<Friends> friends = friendsRepository.findAllByFromUser(memberDto.getMemberIdx());
+        //Eagle Loading
+        List<Members> list = memberRepository.findAllByFromUserWithFetchJoin(memberDto.getMemberIdx());
 
-        for(Friends f: friends){
-            if(!f.isFriends()) continue;
-            Members friend = memberRepository.findMembersByMemberIdx(f.getFromUser()).orElseThrow(()->new UsernameNotFoundException(null));
-            List<Projects> projects = projectsRepository.findAllByMembers(friend);
-            for(Projects p: projects){
-                result.add(toResponse(p));
-            }
-        }
-        return result;
+        return list.stream().flatMap((members)->members.getProjects().stream().map(this::toResponse)).toList();
     }
 
-    public ProjectDetailResponse getProjectDetail(long idx){
+    public ProjectDetailResponse getProjectDetail(long projectsIdx){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -169,22 +167,23 @@ public class ProjectService {
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
-        Projects tempProject = projectsRepository.findProjectsByProjectIdx(idx);
-        Members members = tempProject.getMembers();
+        //Eagle Loading
+        Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(projectsIdx);
+        Members members = projects.getMembers();
 
         Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, memberDto.getMemberIdx()).orElseThrow(
                 ()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
-        if(members.getMemberIdx() != memberDto.getMemberIdx() &&(friends == null || !friends.isFriends()))
+        if(members.getMemberIdx() != memberDto.getMemberIdx() && !friends.isFriends())
             throw new FriendsException(ExceptionCode.NOT_FRIENDS);
 
-        Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
         return toDetailResponse(projects);
     }
 
     @Transactional
     public void deleteProjects(long idx){
-        Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
+        //Eagle Loading
+        Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(idx);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -218,6 +217,7 @@ public class ProjectService {
         } catch (Exception e){
             throw new ProjectException(null);
         }
+        //Lazy Loading
         Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
         String prevImg = projects.getImage();
         projects.setImage(url);

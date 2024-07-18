@@ -13,11 +13,22 @@ import java.util.Optional;
 @Repository
 public interface FriendsRepository extends JpaRepository<Friends, Long> {
 
+    //Lazy Loading
     Optional<Friends> findFriendsByFriendIdx(long friendIdx);
+
+    //Eagle Loading
+    @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.friendIdx = :friendIndex")
+    Optional<Friends> findFriendsByFriendIdxWithFetchJoin(@Param("friendIndex") long friendIndex);
+
+    //Lazy Loading
     Optional<Friends> findFriendsByToUserAndFromUser(Members toUser, long fromUser);
+
+    //Lazy Loading
     List<Friends> findAllByFromUser(long fromUser);
+
     //Duplication Check
     boolean existsByToUserAndFromUser(Members toUser, long fromUser);
-    @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :index")
-    List<Friends> findAllWithToUserIndex(@Param("index") long idx);
+
+    @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :memberIndex")
+    List<Friends> findAllWithToUserIndex(@Param("memberIndex") long memberIndex);
 }

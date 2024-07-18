@@ -13,11 +13,23 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Members, Long> {
 
+    //Lazy Loading
     Optional<Members> findMembersByMemberIdx(long idx);
 
+    //Eagle Loading
+    @Query("SELECT DISTINCT m FROM Members m JOIN FETCH m.projects WHERE m.memberIdx = :memberIndex")
+    Optional<Members> findMembersByMemberIdxWithFetchJoin(@Param("memberIndex") long idx);
+
+    //Lazy Loading
     Optional<Members> findMembersByEmail(String email);
 
-    //Unique Column
+    //Eagle Loading Members By FromUser
+    @Query("SELECT m FROM (" +
+            "SELECT m FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.fromUser = :fromUser" +
+            ") m JOIN FETCH m.projects")
+    List<Members> findAllByFromUserWithFetchJoin(@Param("fromUser") long fromUser);
+
+    //Boolean
     boolean existsByEmail(String email);
 
     //Security DTO Authentication
@@ -30,10 +42,5 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
             "FROM Members m WHERE m.refreshToken = :token")
     JwtAuthentication findMemberDtoWithToken(@Param("token") String token);
 
-    //Members By Friends.FromUser
-    @Query("SELECT m FROM (" +
-            "SELECT m FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.fromUser = :fromUser" +
-            ") m JOIN FETCH m.projects")
-    List<Members> findAllWithFromUser(@Param("fromUser") long fromUser);
 
 }

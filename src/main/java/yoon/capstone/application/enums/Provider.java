@@ -8,7 +8,7 @@ public enum Provider {
     GOOGLE("GOOGLE"),
     NAVER("NAVER"),
     KAKAO("KAKAO"),
-    NULL("NULL");
+    DEFAULT("DEFAULT");
 
     private final String provider;
 

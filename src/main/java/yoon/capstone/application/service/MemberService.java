@@ -31,9 +31,7 @@ import yoon.capstone.application.security.JwtProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -57,34 +55,43 @@ public class MemberService {
     private MemberResponse toResponse(Members members){
         byte[] bytePhone = Base64.getDecoder().decode(members.getPhone());
         String phone = new String(aesBytesEncryptor.decrypt(bytePhone), StandardCharsets.UTF_8);
-        return new MemberResponse(members.getEmail(), members.getUsername(), phone, members.getProfile(), members.isOauth(), members.getLastVisit());
+
+        return new MemberResponse(members.getMemberIdx(), members.getEmail().substring(0, members.getEmail().indexOf("?"))
+                , members.getUsername(), phone, members.getProfile(), members.isOauth(), members.getLastVisit());
     }
 
     public boolean existUser(String email){
-        return memberRepository.existsByEmail(email);
+        StringBuilder sb = new StringBuilder();
+        return memberRepository.existsByEmail(sb.append(email).append("?").append(Provider.DEFAULT.getProvider()).toString());
     }
 
-    @Transactional(readOnly = true)
+    //FIX///////////////////////
+
+    @Transactional(readOnly = true) // List로 변경!
     public MemberResponse findMember(String email){
 
+        //Lazy Loading
         Members result = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
 
         return toResponse(result);
     }
 
+    //FIX//////////////////////
+
     @Transactional
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){
 
-        String email = dto.getEmail();
+        StringBuilder sb = new StringBuilder();
+        String email = sb.append(dto.getEmail()).append("?").append(Provider.DEFAULT.getProvider()).toString();
         String password = dto.getPassword();
+
+        //Lazy Loading
         Members members = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
 
-        if(members == null || members.isOauth())
-            throw new UsernameNotFoundException(email);
         if(!passwordEncoder.matches(password, members.getPassword()))
             throw new BadCredentialsException(email);
 
-        String accToken = jwtProvider.createAccessToken(dto.getEmail());
+        String accToken = jwtProvider.createAccessToken(email);
         String refToken = jwtProvider.createRefreshToken();
 
         members.setRefreshToken(refToken);
@@ -99,15 +106,14 @@ public class MemberService {
     @Transactional
     public MemberResponse formRegister(RegisterDto dto){
 
-
         Members members = Members.builder()
-                .email(dto.getEmail())
+                .email(dto.getEmail()+"?"+Provider.DEFAULT.getProvider())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .username(dto.getName())
                 .profile("https://pding-storage.s3.ap-northeast-2.amazonaws.com/members/icon.png")
                 .role(Role.USER)
                 .oauth(false)
-                .provider(Provider.NULL)
+                .provider(Provider.DEFAULT)
                 .build();
 
         if(dto.getPhone() != null){
@@ -125,7 +131,7 @@ public class MemberService {
     public void socialRegister(OAuthDto dto){
 
         Members members = Members.builder()
-                .email(dto.getEmail())
+                .email(dto.getEmail()+"?"+Provider.KAKAO.getProvider())
                 .username(dto.getName())
                 .password("kakao_member")
                 .profile(dto.getImage())
@@ -142,7 +148,9 @@ public class MemberService {
 
     @Transactional
     public MemberResponse socialLogin(String email, HttpServletResponse response){
-        Members members = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
+        StringBuilder sb = new StringBuilder();
+        Members members = memberRepository.findMembersByEmail(sb.append(email).append("?").append(Provider.DEFAULT.getProvider()).toString())
+                .orElseThrow(()->new UsernameNotFoundException(email));
 
         String accToken = jwtProvider.createAccessToken(members.getEmail());
         String refToken = jwtProvider.createRefreshToken();
