@@ -24,9 +24,7 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
     Optional<Members> findMembersByEmail(String email);
 
     //Eagle Loading Members By FromUser
-    @Query("SELECT m FROM (" +
-            "SELECT m FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.fromUser = :fromUser" +
-            ") m JOIN FETCH m.projects")
+    @Query("SELECT m FROM Members m INNER JOIN FETCH m.projects INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.fromUser = :fromUser")
     List<Members> findAllByFromUserWithFetchJoin(@Param("fromUser") long fromUser);
 
     //Boolean

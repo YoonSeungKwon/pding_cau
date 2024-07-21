@@ -130,8 +130,8 @@ public class OrderService {
                 .payment(payment)
                 .build();
 
-
-        comments.setOrders(orders);
+        orders.setComments(comments);
+        orders.setPayment(payment);
 
         orderRepository.save(orders);
 
@@ -177,9 +177,13 @@ public class OrderService {
                     KakaoResultResponse.class
             );
 
+
         }catch (LockTimeoutException e){
             orderRepository.delete(orders);    //주문 정보 삭제
             throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

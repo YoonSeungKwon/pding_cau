@@ -64,7 +64,7 @@ public class FriendsController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
-    @PostMapping("/answer/{idx}/{status}")                     //친구 요청 응답
+    @PostMapping("/answer/{friendIdx}/{status}")                     //친구 요청 응답
     @Operation(summary = "친구 요청 응답", description = "status에 따라서 친구요청 수락 혹은 거절 가능")
     public ResponseEntity<?> responseFriends(@PathVariable String status, @PathVariable long friendIdx){
 
@@ -80,7 +80,7 @@ public class FriendsController {
 
     }
 
-    @DeleteMapping("/unlink/{idx}")             //친구 삭제
+    @DeleteMapping("/unlink/{friendIdx}")             //친구 삭제
     @Operation(summary = "친구 삭제")
     public ResponseEntity<?> deleteFriends(@PathVariable long friendIdx){
 

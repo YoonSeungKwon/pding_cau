@@ -30,12 +30,12 @@ public class Orders {
     private Projects projects;
 
     //OneToOne , 사용위치 1곳  Eager
-    @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "PAYMENT_ID")
     private Payment payment;
 
     //OneToOne , 사용위치 1곳  Eager
-    @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "COMMENT_ID")
     private Comments comments;
 

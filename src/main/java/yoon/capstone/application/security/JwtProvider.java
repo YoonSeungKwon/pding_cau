@@ -44,7 +44,7 @@ public class JwtProvider {
 
         Claims claims = Jwts.claims()
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accExp * 60 * 1000l));
+                .setExpiration(new Date(System.currentTimeMillis() + accExp * 60 * 1000l * 100000));
 
         return  Jwts.builder()
                 .setHeaderParam("typ", "JWT")

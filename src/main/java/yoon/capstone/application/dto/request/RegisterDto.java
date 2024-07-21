@@ -8,7 +8,6 @@ import lombok.Getter;
 import yoon.capstone.application.exception.sequence.ValidationGroup;
 
 @Getter
-@AllArgsConstructor
 public class RegisterDto {
 
     @Email(message = "MEMBER_EMAIL_FORMAT", groups = ValidationGroup.EmailFormat.class)

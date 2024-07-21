@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     //Eagle Loading - Projects
-    @Query("SELECT o FROM Orders o JOIN FETCH o.members JOIN FETCH o.payment " +
-            "JOIN FETCH o.comments WHERE o.payment.paymentCode = :paymentCode")
+    @Query("SELECT o FROM Orders o JOIN FETCH o.members " +
+            "JOIN FETCH o.comments JOIN FETCH o.payment p WHERE p.paymentCode = :paymentCode")
     Optional<Orders> findOrdersByPaymentCodeWithFetchJoin(@Param("paymentCode") String paymentCode);
 
     //Eager Loading + Projects

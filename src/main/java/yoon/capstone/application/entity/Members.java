@@ -35,7 +35,7 @@ public class Members {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "members")
     private List<Projects> projects = new ArrayList<>();
 
-    @Column(name = "MEMBER_EMAIL", nullable = false, length = 50, unique = true)
+    @Column(name = "MEMBER_EMAIL", nullable = false, length = 100, unique = true)
     private String email;
 
     @Column(name = "MEMBER_PASSWORD",nullable = false, length = 250)

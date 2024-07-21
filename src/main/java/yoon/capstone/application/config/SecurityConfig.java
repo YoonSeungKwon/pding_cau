@@ -30,6 +30,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+
     private final JwtExceptionFilter jwtExceptionFilter;
 
     @Value("${ALLOW_ORIGIN}")

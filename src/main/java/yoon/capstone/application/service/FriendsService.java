@@ -39,8 +39,7 @@ public class FriendsService {
     private final FriendsRepository friendsRepository;
 
     private FriendsResponse toResponse(Friends friends){
-        Members fromUser = memberRepository.findMembersByMemberIdx(friends.getFromUser()).orElseThrow(()->new UsernameNotFoundException(null));
-        return new FriendsResponse(friends.getFriendIdx(), friends.getToUser().getUsername(), fromUser.getUsername(), friends.isFriends(), friends.getCreatedAt());
+        return new FriendsResponse(friends.getFriendIdx(), friends.getToUser().getUsername(), friends.isFriends(), friends.getCreatedAt());
     }
 
     private MemberResponse toMemberResponse(Members members){
@@ -69,8 +68,9 @@ public class FriendsService {
 
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
 
-        return memberRepository.findAllByFromUserWithFetchJoin(
-                dto.getMemberIdx()).stream().map(this::toMemberResponse).toList();
+        //Lazy Loading
+        return friendsRepository.findAllByFromUserWithFetchJoin(
+                dto.getMemberIdx()).stream().map((friends)->toMemberResponse(friends.getToUser())).toList();
     }
 
     @Transactional(readOnly = true)
@@ -191,7 +191,7 @@ public class FriendsService {
         friendsRepository.save(temp);   //수락한 쪽도 친구로 등록
         friendsRepository.save(friends);
 
-        List<Friends> list = friendsRepository.findAllByFromUser(currentMember.getMemberIdx());
+        List<Friends> list = friendsRepository.findAllByFromUserWithFetchJoin(currentMember.getMemberIdx());
         return list.stream().map(this::toResponse).toList();
     }
 
