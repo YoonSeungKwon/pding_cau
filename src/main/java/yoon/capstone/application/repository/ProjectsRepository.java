@@ -24,7 +24,7 @@ public interface ProjectsRepository extends JpaRepository<Projects, Long> {
 
     //Cost, Total Pessimistic Lock
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Projects p JOIN Orders o ON p.projectIdx = o.projects.projectIdx WHERE o.orderIdx = :orderIndex")
+    @Query("SELECT DISTINCT p FROM Projects p JOIN Orders o ON p.projectIdx = o.projects.projectIdx WHERE o.orderIdx = :orderIndex")
     Optional<Projects> findProjectsByOrderIndexWithLock(@Param("orderIndex") long orderIndex);
 
 }
