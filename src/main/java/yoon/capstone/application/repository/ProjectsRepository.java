@@ -27,4 +27,12 @@ public interface ProjectsRepository extends JpaRepository<Projects, Long> {
     @Query("SELECT DISTINCT p FROM Projects p JOIN Orders o ON p.projectIdx = o.projects.projectIdx WHERE o.orderIdx = :orderIndex")
     Optional<Projects> findProjectsByOrderIndexWithLock(@Param("orderIndex") long orderIndex);
 
+    @Query("SELECT p FROM Projects p JOIN FETCH p.members INNER JOIN Friends f ON p.members.memberIdx = f.toUser.memberIdx " +
+            "WHERE f.fromUser = :fromUser AND p.finishAt > CURRENT_TIMESTAMP ORDER BY p.createdAt DESC")
+    List<Projects> findProjectsByFriendsFromUserOrderByLatest(@Param("fromUser") long fromUser);
+
+    @Query("SELECT p FROM Projects p JOIN FETCH p.members INNER JOIN Friends f ON p.members.memberIdx = f.toUser.memberIdx " +
+            "WHERE f.fromUser = :fromUser AND p.finishAt > CURRENT_TIMESTAMP ORDER BY p.finishAt")
+    List<Projects> findProjectsByFriendsFromUserOrderByUpcoming(@Param("fromUser") long fromUser);
+
 }

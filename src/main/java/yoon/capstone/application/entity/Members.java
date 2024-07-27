@@ -23,7 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="members", indexes = {
-        @Index(name = "members_member_email", columnList = "MEMBER_EMAIL")
+        @Index(name = "OX_EMAIL", columnList = "MEMBER_EMAIL"),
+        @Index(name = "OX_TOKEN", columnList = "MEMBER_REFRESH_TOKEN")
 })
 public class Members {
 

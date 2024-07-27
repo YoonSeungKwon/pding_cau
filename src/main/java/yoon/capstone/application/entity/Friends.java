@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 @Table(name="friends", indexes = {
-        @Index(name = "idx_friend_to_user", columnList = "FRIEND_TO_USER"),
-        @Index(name = "idx_friend_from_user", columnList = "FRIEND_FROM_USER")})
+        @Index(name = "OX_FRIEND", columnList = "FRIEND_FROM_USER, FRIEND_TO_USER")
+})
 public class Friends {
 
     @Id

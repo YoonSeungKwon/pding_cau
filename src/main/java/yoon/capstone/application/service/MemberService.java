@@ -32,6 +32,7 @@ import yoon.capstone.application.security.JwtProvider;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -65,18 +66,16 @@ public class MemberService {
         return memberRepository.existsByEmail(sb.append(email).append("?").append(Provider.DEFAULT.getProvider()).toString());
     }
 
-    //FIX///////////////////////
-
     @Transactional(readOnly = true) // List로 변경!
-    public MemberResponse findMember(String email){
+    public List<MemberResponse> findMember(String email){
 
         //Lazy Loading
-        Members result = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
+        List<Members> result = memberRepository.findMembersByEmailLikeString(email);
 
-        return toResponse(result);
+
+        return result.stream().map(this::toResponse).toList();
     }
 
-    //FIX//////////////////////
 
     @Transactional
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){

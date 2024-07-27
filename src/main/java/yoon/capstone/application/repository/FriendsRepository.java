@@ -24,7 +24,7 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
     Optional<Friends> findFriendsByToUserAndFromUser(Members toUser, long fromUser);
 
     //Eagle Loading
-    @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.fromUser = :fromUser ORDER BY f.toUser.username")
+    @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.fromUser = :fromUser")
     List<Friends> findAllByFromUserWithFetchJoin(@Param("fromUser") long fromUser);
 
     //Duplication Check

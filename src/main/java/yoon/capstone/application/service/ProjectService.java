@@ -49,7 +49,8 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getProjectIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImage(), projects.getGoalAmount(),
-                projects.getCurrentAmount(), projects.getParticipantsCount(), projects.getCategory().getValue(), projects.getFinishAt().toString(), projects.getMembers().getProfile());
+                projects.getCurrentAmount(), projects.getParticipantsCount(), projects.getCategory().getValue(),
+                projects.getCreatedAt().toString(), projects.getFinishAt().toString(), projects.getMembers().getProfile());
     }
 
     private ProjectDetailResponse toDetailResponse(Projects projects){
@@ -142,8 +143,8 @@ public class ProjectService {
         return result;
     }
 
-    @Cacheable(value = "projectList", key = "#cacheIndex")
-    public List<ProjectResponse> getFriendsList(long cacheIndex){
+    @Cacheable(value = "projectListLatest", key = "#cacheIndex")
+    public List<ProjectResponse> getFriendsListLatest(long cacheIndex){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -153,9 +154,25 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
         //Eagle Loading
-        List<Members> list = memberRepository.findAllByFromUserWithFetchJoin(memberDto.getMemberIdx());
+        List<Projects> list = projectsRepository.findProjectsByFriendsFromUserOrderByLatest(memberDto.getMemberIdx());
 
-        return list.stream().flatMap((members)->members.getProjects().stream().map(this::toResponse)).toList();
+        return list.stream().map((this::toResponse)).toList();
+    }
+
+    @Cacheable(value = "projectListUpcoming", key = "#cacheIndex")
+    public List<ProjectResponse> getFriendsListUpcoming(long cacheIndex){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
+
+        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+
+        //Eagle Loading
+        List<Projects> list = projectsRepository.findProjectsByFriendsFromUserOrderByUpcoming(memberDto.getMemberIdx());
+
+        return list.stream().map((this::toResponse)).toList();
     }
 
     public ProjectDetailResponse getProjectDetail(long projectsIdx){

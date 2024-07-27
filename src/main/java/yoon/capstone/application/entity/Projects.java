@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "projects")
+@Table(name = "projects", indexes = {
+        @Index(name = "OX1_Projects_Sorted", columnList = "PROJECT_FINISH_AT, PROJECT_CREATED_AT")
+})
 public class Projects {
 
     @Id

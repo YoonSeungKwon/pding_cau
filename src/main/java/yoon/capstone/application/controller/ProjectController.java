@@ -39,11 +39,20 @@ public class ProjectController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @GetMapping("/friends")
-    @Operation(summary = "친구들의 펀딩 글 불러오기", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
-    public ResponseEntity<List<ProjectResponse>> getFriendsList() {
+    @GetMapping("/friends/latest")
+    @Operation(summary = "친구들의 펀딩 글 불러오기 최신순으로", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
+    public ResponseEntity<List<ProjectResponse>> getFriendsListLatest() {
 
-        List<ProjectResponse> result = projectService.getFriendsList(getCacheIndex());
+        List<ProjectResponse> result = projectService.getFriendsListLatest(getCacheIndex());
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/friends/upcoming")
+    @Operation(summary = "친구들의 펀딩 글 불러오기 만료순으로", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
+    public ResponseEntity<List<ProjectResponse>> getFriendsListUpcoming() {
+
+        List<ProjectResponse> result = projectService.getFriendsListUpcoming(getCacheIndex());
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
