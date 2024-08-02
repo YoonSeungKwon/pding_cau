@@ -214,7 +214,7 @@ public class FriendsService {
         friendsRepository.delete(friends);
 
         //Lazy Loading
-        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUser(friends.getToUser(), currentMember.getMemberIdx()).orElseThrow(
+        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUserAndFriends(friends.getToUser(), currentMember.getMemberIdx(), true).orElseThrow(
                 ()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         friendsRepository.delete(tempFriends);

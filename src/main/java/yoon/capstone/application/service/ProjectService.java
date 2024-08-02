@@ -188,7 +188,7 @@ public class ProjectService {
         Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(projectsIdx);
         Members members = projects.getMembers();
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUser(members, memberDto.getMemberIdx()).orElseThrow(
+        Friends friends = friendsRepository.findFriendsByToUserAndFromUserAndFriends(members, memberDto.getMemberIdx(), true).orElseThrow(
                 ()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         if(members.getMemberIdx() != memberDto.getMemberIdx() && !friends.isFriends())

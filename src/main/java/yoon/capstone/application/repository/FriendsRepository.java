@@ -16,15 +16,11 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
     //Lazy Loading
     Optional<Friends> findFriendsByFriendIdx(long friendIdx);
 
-    //Eagle Loading
-    @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.friendIdx = :friendIndex")
-    Optional<Friends> findFriendsByFriendIdxWithFetchJoin(@Param("friendIndex") long friendIndex);
-
     //Lazy Loading
-    Optional<Friends> findFriendsByToUserAndFromUser(Members toUser, long fromUser);
+    Optional<Friends> findFriendsByToUserAndFromUserAndFriends(Members toUser, long fromUser, boolean friend);
 
     //Eagle Loading
-    @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.fromUser = :fromUser")
+    @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.fromUser = :fromUser AND f.isFriends = true")
     List<Friends> findAllByFromUserWithFetchJoin(@Param("fromUser") long fromUser);
 
     //Duplication Check
