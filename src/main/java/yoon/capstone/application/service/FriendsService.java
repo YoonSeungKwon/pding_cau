@@ -68,7 +68,7 @@ public class FriendsService {
 
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
 
-        //Lazy Loading
+        //Eagle Loading
         return friendsRepository.findAllByFromUserWithFetchJoin(
                 dto.getMemberIdx()).stream().map((friends)->toMemberResponse(friends.getToUser())).toList();
     }
@@ -83,18 +83,7 @@ public class FriendsService {
 
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
 
-        List<Friends> list = friendsRepository.findAllWithToUserIndex(dto.getMemberIdx());
-        List<FriendsReqResponse> result = new ArrayList<>();
-
-        for(Friends f:list){
-            if(!f.isFriends()) {
-                Members tempMember = memberRepository.findMembersByMemberIdx(f.getFromUser()).orElseThrow(()->new UsernameNotFoundException(null));
-                result.add(new FriendsReqResponse(f.getFriendIdx(), tempMember.getEmail(), tempMember.getUsername(), tempMember.getProfile(), tempMember.isOauth(),
-                        f.getCreatedAt()));
-            }
-        }
-
-        return result;
+        return friendsRepository.findAllRequestsByToUser(dto.getMemberIdx());
     }
 
     @Transactional(readOnly = true)
@@ -105,10 +94,10 @@ public class FriendsService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+
         //Lazy Loading
-        Members members = memberRepository.findMembersByMemberIdx(memberIndex).orElseThrow(()->new UsernameNotFoundException(null));
-        if(!friendsRepository.existsByToUserAndFromUser(members, memberDto.getMemberIdx()))
-            throw new FriendsException(ExceptionCode.NOT_FRIENDS);
+        Members members = memberRepository.findMembersByMemberIdxAndIsFriend(memberIndex, memberDto.getMemberIdx()).orElseThrow(()->new UsernameNotFoundException(null));
+
         return toMemberDetailResponse(members);
     }
 

@@ -129,6 +129,7 @@ public class ProjectService {
             throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
 
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+
         //Eagle Loading
         Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
@@ -175,6 +176,7 @@ public class ProjectService {
         return list.stream().map((this::toResponse)).toList();
     }
 
+    @Transactional(readOnly = true)
     public ProjectDetailResponse getProjectDetail(long projectsIdx){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

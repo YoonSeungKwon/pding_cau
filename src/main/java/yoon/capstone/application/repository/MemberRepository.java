@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
 import yoon.capstone.application.security.JwtAuthentication;
 
@@ -29,6 +30,9 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
     //Eagle Loading Members By FromUser
     @Query("SELECT DISTINCT m FROM Members m JOIN FETCH m.projects INNER JOIN Friends f ON m.memberIdx = f.toUser.memberIdx WHERE f.fromUser = :fromUser")
     List<Members> findAllByFromUserWithFetchJoin(@Param("fromUser") long fromUser);
+
+    @Query("SELECT m FROM Members m JOIN Friends f ON m.memberIdx = f.toUser.memberIdx WHERE f.isFriends = true AND m.memberIdx = :memberIdx AND f.fromUser = :fromUser")
+    Optional<Members> findMembersByMemberIdxAndIsFriend(@Param("memberIdx") long idx, @Param("fromUser") long fromUser);
 
     //Boolean
     boolean existsByEmail(String email);

@@ -6,7 +6,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
 public class FriendsReqResponse {
 
     private long friendIdx;
@@ -17,8 +16,14 @@ public class FriendsReqResponse {
 
     private String profile;
 
-    private boolean oauth;
-
     private LocalDateTime regdate;
+
+    public FriendsReqResponse(long friendIdx, String email, String name, String profile, LocalDateTime createdAt){
+        this.email = email;
+        this.friendIdx = friendIdx;
+        this.name = name;
+        this.profile = profile;
+        this.regdate = createdAt;
+    }
 
 }

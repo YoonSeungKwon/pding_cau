@@ -1,9 +1,12 @@
 package yoon.capstone.application.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import yoon.capstone.application.dto.response.FriendsReqResponse;
 import yoon.capstone.application.entity.Friends;
 import yoon.capstone.application.entity.Members;
 
@@ -17,7 +20,8 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
     Optional<Friends> findFriendsByFriendIdx(long friendIdx);
 
     //Lazy Loading
-    Optional<Friends> findFriendsByToUserAndFromUserAndFriends(Members toUser, long fromUser, boolean friend);
+    @Query("SELECT f FROM Friends f WHERE f.isFriends = :friend AND f.toUser = :toUser AND f.fromUser = :fromUser")
+    Optional<Friends> findFriendsByToUserAndFromUserAndFriends(@Param("toUser") Members toUser,@Param("fromUser") long fromUser,@Param("friend") boolean friend);
 
     //Eagle Loading
     @Query("SELECT f FROM Friends f JOIN FETCH f.toUser WHERE f.fromUser = :fromUser AND f.isFriends = true")
@@ -28,4 +32,11 @@ public interface FriendsRepository extends JpaRepository<Friends, Long> {
 
     @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :memberIndex")
     List<Friends> findAllWithToUserIndex(@Param("memberIndex") long memberIndex);
+
+    @Query("SELECT new yoon.capstone.application.dto.response.FriendsReqResponse(f.friendIdx, m.email, m.username, m.profile, f.createdAt) " +
+            "FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.toUser.memberIdx = :toUser")
+    List<FriendsReqResponse> findAllRequestsByToUser(@Param("toUser") long toUser);
+
+
+
 }

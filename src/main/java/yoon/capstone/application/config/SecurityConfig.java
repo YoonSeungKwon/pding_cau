@@ -85,7 +85,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Scope("prototype")
     public AesBytesEncryptor aesBytesEncryptor(){
         return new AesBytesEncryptor(secret, "19981217");
     }

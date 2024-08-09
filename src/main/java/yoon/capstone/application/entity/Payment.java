@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="payment", indexes = {
-        @Index(name = "payment_payment_code", columnList = "PAYMENT_CODE")
+        @Index(name = "Payment_Index1", columnList = "PAYMENT_CODE")
 })
 public class Payment {
 
