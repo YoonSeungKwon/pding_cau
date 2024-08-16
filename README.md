@@ -15,11 +15,11 @@
 
  ## 4. 개발 환경 및 기술
   + **협업** :     Figma, Notion, Git, Swagger
-  + **언어** :     Java(jdk 17.x), html/css, javascript
+  + **언어** :     Java(jdk 17.), html/css, javascript
   + **FE** :       React, Nginx
-  + **BE** :       Spring Boot, Jpa
-  + **DB** :       MariaDB, Redis, AWS RDS
-  + **SEVER** :    Apache Tomcat(10.1.x), AWS EC2, AWS S3, Docker
+  + **BE** :       Spring Boot(3.3.), Jpa
+  + **DB** :       MariaDB, Redis
+  + **SEVER** :    Apache Tomcat(10.), AWS EC2, AWS S3, Docker, RabbitMQ
   + **API** :      KAKAO Oauth2, KAKAO PAY
 
 
