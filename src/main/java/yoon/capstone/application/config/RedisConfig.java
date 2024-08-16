@@ -3,6 +3,10 @@ package yoon.capstone.application.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +24,10 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
+    @Value("${REDIS_URL}")
+    private String redisUrl;
+    @Value("${REDIS_PORT}")
+    private String redisPort;
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory){
         ObjectMapper objectMapper = new ObjectMapper();
@@ -33,6 +41,15 @@ public class RedisConfig {
 
         return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
                 .cacheDefaults(redisCacheConfiguration).build();
+    }
+
+    @Bean
+    public RedissonClient redissonClient(){
+        Config config = new Config();
+        config.useSingleServer()
+                .setAddress("redis://"+redisUrl+":"+redisPort);
+
+        return Redisson.create(config);
     }
 
 }

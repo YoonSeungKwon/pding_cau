@@ -44,10 +44,11 @@ public class Orders {
     private LocalDateTime createdAt;
 
     @Builder
-    Orders(Members members, Projects projects, Payment payment){
+    Orders(Members members, Projects projects, Payment payment, Comments comments){
         this.members = members;
         this.projects = projects;
         this.payment = payment;
+        this.comments = comments;
     }
 
 }

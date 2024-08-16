@@ -117,7 +117,6 @@ public class OrderService {
                 .paymentCode(paymentCode)
                 .tid(tid)
                 .cost(dto.getTotal())
-                .createdAt(result.getCreated_at())
                 .build();
 
         Comments comments = Comments.builder()
@@ -171,7 +170,7 @@ public class OrderService {
 
             HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers); //Lock 처리 후 결제완료 요청
 
-            KakaoResultResponse result = restTemplate.postForObject(
+            restTemplate.postForObject(
                     "https://kapi.kakao.com/v1/payment/approve",
                     request,
                     KakaoResultResponse.class

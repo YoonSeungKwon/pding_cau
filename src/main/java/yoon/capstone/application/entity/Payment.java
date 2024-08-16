@@ -40,10 +40,9 @@ public class Payment {
     private LocalDateTime createdAt;
 
     @Builder
-    Payment(String paymentCode, int cost, String tid, LocalDateTime createdAt){
+    Payment(String paymentCode, int cost, String tid){
         this.paymentCode = paymentCode;
         this.cost = cost;
         this.tid = tid;
-        this.createdAt = createdAt;
     }
 }

@@ -35,4 +35,9 @@ public interface ProjectsRepository extends JpaRepository<Projects, Long> {
             "WHERE f.fromUser = :fromUser AND p.finishAt > CURRENT_TIMESTAMP ORDER BY p.finishAt")
     List<Projects> findProjectsByFriendsFromUserOrderByUpcoming(@Param("fromUser") long fromUser);
 
+
+    @Query("SELECT p FROM Projects p WHERE p.projectIdx = :idx")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Projects findProjectsByProjectIdxWithLock(@Param("idx") long idx);
+
 }
