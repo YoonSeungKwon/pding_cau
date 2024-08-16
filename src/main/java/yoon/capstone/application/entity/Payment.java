@@ -32,7 +32,7 @@ public class Payment {
     @Column(name = "PAYMENT_TOTAL")
     private int cost;
 
-    @Column(name = "PAYMENT_TID", nullable = false, length = 20)
+    @Column(name = "PAYMENT_TID", nullable = false, length = 250)
     private String tid;//양방향 암호화
 
     @CreationTimestamp
@@ -40,9 +40,10 @@ public class Payment {
     private LocalDateTime createdAt;
 
     @Builder
-    Payment(String paymentCode, int cost, String tid){
+    Payment(String paymentCode, int cost, String tid, Orders orders){
         this.paymentCode = paymentCode;
         this.cost = cost;
         this.tid = tid;
+        this.orders = orders;
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import yoon.capstone.application.dto.request.OrderDto;
 import yoon.capstone.application.dto.response.OrderMessageDto;
+import yoon.capstone.application.dto.response.ProjectCache;
 import yoon.capstone.application.entity.*;
 import yoon.capstone.application.enums.ExceptionCode;
 import yoon.capstone.application.exception.OrderException;
@@ -63,26 +64,25 @@ public class TestOrderService {
 
     private final RedissonClient redissonClient;
 
+    private ProjectCache toCache(Projects projects){
+        return new ProjectCache(projects.getProjectIdx(), projects.getTitle(), projects.getCurrentAmount(),
+                projects.getGoalAmount(), projects.getParticipantsCount());
+    }
+
     @Transactional
-    public String kakaoPayment(OrderDto dto, String tempTid){
+    public String kakaoPayment(OrderDto dto, String tempTid, Members memberDto){
 
         String paymentCode = UUID.randomUUID().toString();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-
         //Read Cache Or Cache Warm
-        RBucket<Projects> rBucket = redissonClient.getBucket("projects::" + dto.getProjectIdx());
+        RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::" + dto.getProjectIdx());
         if (rBucket.get() == null) {
-            rBucket.set(projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx()), Duration.ofMinutes(60L));
+            Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
+            rBucket.set(toCache(projects), Duration.ofMinutes(10L));
         }
         //
 
-        Projects projects = rBucket.get();
+        ProjectCache projects = rBucket.get();
 
         if(projects.getCurrentAmount() + dto.getTotal() > projects.getGoalAmount())
             throw new OrderException("목표금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
@@ -124,13 +124,13 @@ public class TestOrderService {
         OrderMessageDto dto = orderBucket.get();
 
         //RLock
-        RLock rLock = redissonClient.getLock("projects::"+dto.getProjectIdx());
+        RLock rLock = redissonClient.getLock("projects"+dto.getProjectIdx());
         try {
             boolean available = rLock.tryLock(60L, 1L, TimeUnit.SECONDS);
             if(!available) throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
-            RBucket<Projects> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
-            Projects projects = projectsRBucket.get();
+            RBucket<ProjectCache> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
+            ProjectCache projects = projectsRBucket.get();
             if(projects.getGoalAmount() < projects.getCurrentAmount() + dto.getTotal()){
                 throw new OrderException("목표 금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
             }else{
@@ -159,22 +159,26 @@ public class TestOrderService {
         Members members = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(() -> new UsernameNotFoundException(null));
         Projects projects = projectsRepository.findProjectsByProjectIdxWithLock(dto.getProjectIdx());
 
+        Orders orders = Orders.builder()
+                .projects(projects)
+                .members(members)
+                .build();
+
+
         Payment payment = Payment.builder()
                 .cost(dto.getTotal())
                 .paymentCode(dto.getPaymentCode())
                 .tid(dto.getTid())
+                .orders(orders)
                 .build();
 
         Comments comments = Comments.builder()
                 .content(dto.getMessage())
+                .orders(orders)
                 .build();
 
-        Orders orders = Orders.builder()
-                .projects(projects)
-                .members(members)
-                .payment(payment)
-                .comments(comments)
-                .build();
+        orders.setComments(comments);
+        orders.setPayment(payment);
 
         projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
         projects.setParticipantsCount(projects.getParticipantsCount()+1);

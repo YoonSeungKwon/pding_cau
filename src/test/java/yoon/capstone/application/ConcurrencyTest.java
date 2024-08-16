@@ -59,7 +59,6 @@ public class ConcurrencyTest {
                     .paymentCode(currentMember.getEmail())
                     .tid(currentMember.getUsername())
                     .cost(100)
-                    .createdAt(LocalDateTime.now())
                     .build();
 
             Comments comments = Comments.builder()
