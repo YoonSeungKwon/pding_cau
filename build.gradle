@@ -58,10 +58,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
 	implementation 'org.redisson:redisson-spring-boot-starter:3.34.1'
 
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
 }

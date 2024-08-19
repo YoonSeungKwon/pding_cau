@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +53,8 @@ public class OrderService {
     private String exchange;
     @Value("${RABBITMQ_ROUTING_KEY}")
     private String routingKey;
+
+    private final MemberRepository memberRepository;
 
     private final AesBytesEncryptor aesBytesEncryptor;
 
@@ -217,5 +221,40 @@ public class OrderService {
         orderRepository.deleteOrdersWithPaymentCode(paymentCode);
     }
 
+    @Transactional
+    @RabbitListener(queues = "${RABBITMQ_QUEUE_NAME}")
+    public void messageListener(OrderMessageDto dto){
+
+        Members members = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(() -> new UsernameNotFoundException(null));
+        Projects projects = projectsRepository.findProjectsByProjectIdxWithLock(dto.getProjectIdx());
+
+        Orders orders = Orders.builder()
+                .projects(projects)
+                .members(members)
+                .build();
+
+
+        Payment payment = Payment.builder()
+                .cost(dto.getTotal())
+                .paymentCode(dto.getPaymentCode())
+                .tid(dto.getTid())
+                .orders(orders)
+                .build();
+
+        Comments comments = Comments.builder()
+                .content(dto.getMessage())
+                .orders(orders)
+                .build();
+
+        orders.setComments(comments);
+        orders.setPayment(payment);
+
+        projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
+        projects.setParticipantsCount(projects.getParticipantsCount()+1);
+
+        orderRepository.save(orders);
+        projectsRepository.save(projects);
+
+    }
 
 }
