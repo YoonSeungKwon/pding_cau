@@ -106,7 +106,7 @@ public class OrderService {
         RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::" + dto.getProjectIdx());
         if (rBucket.get() == null) {
             Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
-            rBucket.set(toCache(projects), Duration.ofMinutes(10L));
+            rBucket.set(toCache(projects)); //Persist
         }
         //
 
