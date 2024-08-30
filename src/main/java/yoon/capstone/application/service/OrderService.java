@@ -49,10 +49,6 @@ public class OrderService {
     private String admin_key;
     @Value("${SERVICE_URL}")
     private String serviceUrl;
-    @Value("${RABBITMQ_EXCHANGE_NAME}")
-    private String exchange;
-    @Value("${RABBITMQ_ROUTING_KEY}")
-    private String routingKey;
 
     private final MemberRepository memberRepository;
 
@@ -61,8 +57,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     private final ProjectsRepository projectsRepository;
-
-    private final RabbitTemplate rabbitTemplate;
 
     private final RedissonClient redissonClient;
 
@@ -153,67 +147,27 @@ public class OrderService {
     }
 
     @Transactional
-    public void kakaoPaymentAccess(String id, String token){
+    public void kakaoPaymentAccess(OrderMessageDto dto){
 
-        RBucket<OrderMessageDto> orderBucket = redissonClient.getBucket("order::"+id);
-        OrderMessageDto dto = orderBucket.get();
-
-        //RLock
-        RLock rLock = redissonClient.getLock("projects"+dto.getProjectIdx());
-        try {
-            boolean available = rLock.tryLock(60L, 1L, TimeUnit.SECONDS);
-            if(!available) throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
-
-            RBucket<ProjectCache> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
-            ProjectCache projects = projectsRBucket.get();
-            if(projects.getGoalAmount() < projects.getCurrentAmount() + dto.getTotal()){
-                throw new OrderException("목표 금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
-            }else{
-                projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
-                projects.setParticipantsCount(projects.getParticipantsCount()+1);
-                projectsRBucket.set(projects);
-            }
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }finally {
-            if(rLock.isHeldByCurrentThread())
-                rLock.unlock();
+        RBucket<ProjectCache> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
+        ProjectCache projects = projectsRBucket.get();
+        if(projects.getGoalAmount() < projects.getCurrentAmount() + dto.getTotal()){
+            throw new OrderException("목표 금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
+        }else{
+            projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
+            projects.setParticipantsCount(projects.getParticipantsCount()+1);
+            projectsRBucket.set(projects);
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate restTemplate = new RestTemplate();
-        headers.set("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-        headers.set("Authorization", "KakaoAK " + admin_key);
+    }
 
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-
-        byte[] byteTid = Base64.getDecoder().decode(dto.getTid());
-        String tid = new String(aesBytesEncryptor.decrypt(byteTid), StandardCharsets.UTF_8);
-
-        try {
-
-            map.add("cid", "TC0ONETIME");
-            map.add("tid", tid);
-            map.add("partner_order_id", dto.getPaymentCode());
-            map.add("partner_user_id", dto.getMemberIdx());
-            map.add("pg_token", token);
-
-            HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers); //Lock 처리 후 결제완료 요청
-
-            restTemplate.postForObject(
-                    "https://kapi.kakao.com/v1/payment/approve",
-                    request,
-                    KakaoResultResponse.class
-            );
-
-
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        rabbitTemplate.convertAndSend(exchange, routingKey, dto);
+    @Transactional
+    public void kakaoPayRollBack(OrderMessageDto dto){
+        RBucket<ProjectCache> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
+        ProjectCache projects = projectsRBucket.get();
+        projects.setCurrentAmount(projects.getCurrentAmount() - dto.getTotal());
+        projects.setParticipantsCount(projects.getParticipantsCount()-1);
+        projectsRBucket.set(projects);
     }
 
     @Transactional

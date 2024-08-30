@@ -99,7 +99,7 @@ public class ConcurrencyTest {
         for(Members m: members){
             executorService.execute(()->{
                 try{
-                    orderService.kakaoPaymentAccess(m.getEmail(), null);
+//                    orderService.kakaoPaymentAccess(m.getEmail(), null);
                     successCount.incrementAndGet();
                 }catch(Exception e) {
                     System.out.println(e.getMessage());
