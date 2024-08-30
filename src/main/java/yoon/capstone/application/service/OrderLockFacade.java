@@ -21,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import yoon.capstone.application.dto.request.KakaoApproveRequest;
 import yoon.capstone.application.dto.response.KakaoResultResponse;
 import yoon.capstone.application.dto.response.OrderMessageDto;
 import yoon.capstone.application.enums.ExceptionCode;
@@ -72,37 +73,31 @@ public class OrderLockFacade {
             if(rLock.isHeldByCurrentThread())
                 rLock.unlock();
         }
-        sendKakaoRequest(dto, token);
+        sendKakaoApproveRequest(dto, token);
         publishMessage(dto);
     }
 
-    public void sendKakaoRequest(OrderMessageDto dto, String token){
+    public void sendKakaoApproveRequest(OrderMessageDto dto, String token){
         HttpHeaders headers = new HttpHeaders();
         RestTemplate restTemplate = new RestTemplate();
-        headers.set("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-        headers.set("Authorization", "KakaoAK " + admin_key);
-
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-
+        headers.set("Content-type", "application/json");
+        headers.set("Authorization", "DEV_SECRET_KEY " + admin_key);
+        System.out.println(token);
         byte[] byteTid = Base64.getDecoder().decode(dto.getTid());
         String tid = new String(aesBytesEncryptor.decrypt(byteTid), StandardCharsets.UTF_8);
 
         try {
+            KakaoApproveRequest kakaoApproveRequest = new KakaoApproveRequest("TC0ONETIME", tid,
+                    dto.getPaymentCode(), String.valueOf(dto.getMemberIdx()), token);
 
-            map.add("cid", "TC0ONETIME");
-            map.add("tid", tid);
-            map.add("partner_order_id", dto.getPaymentCode());
-            map.add("partner_user_id", dto.getMemberIdx());
-            map.add("pg_token", token);
-
-            HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers); //Lock 처리 후 결제완료 요청
+            HttpEntity<KakaoApproveRequest> request = new HttpEntity<>(kakaoApproveRequest, headers);
 
             KakaoResultResponse response = restTemplate.postForObject(
-                    "https://kapi.kakao.com/v1/payment/approve",
+                    "https://open-api.kakaopay.com/online/v1/payment/approve",
                     request,
                     KakaoResultResponse.class
             );
-
+            System.out.println(response);
             //RestTemplate Exception MQ 발행 전(Redis Rollback)
         }catch (HttpClientErrorException e) {      //4xx
             rollbackPayment(e, dto);

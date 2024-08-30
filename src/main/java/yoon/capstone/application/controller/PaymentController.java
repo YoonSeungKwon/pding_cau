@@ -21,6 +21,7 @@ public class PaymentController {
 
     @GetMapping("/success/{id}")
     public RedirectView paymentSuccessHandler(@PathVariable String id, @RequestParam("pg_token") String token){
+        System.out.println(token);
         orderLockFacade.order(id, token);
         RedirectView redirectView = new RedirectView();
         redirectView.setUrl(redirectUrl);
@@ -40,5 +41,3 @@ public class PaymentController {
     }
 
 }
-
-//결제완료 response 간편화, 유저 인계 고려, 주문번호 고려 필요

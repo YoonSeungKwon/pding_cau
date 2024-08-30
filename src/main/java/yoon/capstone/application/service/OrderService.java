@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import yoon.capstone.application.dto.request.KakaoReadyRequest;
 import yoon.capstone.application.dto.request.OrderDto;
 import yoon.capstone.application.dto.response.*;
 import yoon.capstone.application.entity.*;
@@ -111,24 +112,18 @@ public class OrderService {
 
 
 
-        headers.set("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-        headers.set("Authorization", "KakaoAK " + admin_key);
+        headers.set("Content-type", "application/json");
+        headers.set("Authorization", "DEV_SECRET_KEY " + admin_key);
 
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        map.add("cid", "TC0ONETIME");
-        map.add("partner_order_id", paymentCode);
-        map.add("partner_user_id", memberDto.getEmail());
-        map.add("item_name", projects.getTitle());
-        map.add("quantity", 1);
-        map.add("total_amount", dto.getTotal());
-        map.add("tax_free_amount", dto.getTotal());
-        map.add("approval_url", serviceUrl + "/api/v1/payment/success/"+paymentCode);
-        map.add("cancel_url", serviceUrl + "/api/v1/payment/cancel/"+paymentCode);
-        map.add("fail_url", serviceUrl + "/api/v1/payment/failure/"+paymentCode);
+        KakaoReadyRequest kakaoRequest = new KakaoReadyRequest("TC0ONETIME",
+                paymentCode, String.valueOf(memberDto.getMemberIdx()), projects.getTitle(), 1, dto.getTotal(), dto.getTotal(),
+                serviceUrl + "/api/v1/payment/success/"+paymentCode, serviceUrl + "/api/v1/payment/cancel/"+paymentCode,
+                serviceUrl + "/api/v1/payment/failure/"+paymentCode);
 
-        HttpEntity<MultiValueMap<String,Object>> request = new HttpEntity<>(map, headers);
+
+        HttpEntity<KakaoReadyRequest> request = new HttpEntity<>(kakaoRequest, headers);
         KakaoPayResponse result = restTemplate.postForObject(
-                "https://kapi.kakao.com/v1/payment/ready",
+                "https://open-api.kakaopay.com/online/v1/payment/ready",
                 request,
                 KakaoPayResponse.class
         );
@@ -173,42 +168,6 @@ public class OrderService {
     @Transactional
     public void cancelOrder(String paymentCode){
         orderRepository.deleteOrdersWithPaymentCode(paymentCode);
-    }
-
-    @Transactional
-    @RabbitListener(queues = "${RABBITMQ_QUEUE_NAME}")
-    public void messageListener(OrderMessageDto dto){
-
-        Members members = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(() -> new UsernameNotFoundException(null));
-        Projects projects = projectsRepository.findProjectsByProjectIdxWithLock(dto.getProjectIdx());
-
-        Orders orders = Orders.builder()
-                .projects(projects)
-                .members(members)
-                .build();
-
-
-        Payment payment = Payment.builder()
-                .cost(dto.getTotal())
-                .paymentCode(dto.getPaymentCode())
-                .tid(dto.getTid())
-                .orders(orders)
-                .build();
-
-        Comments comments = Comments.builder()
-                .content(dto.getMessage())
-                .orders(orders)
-                .build();
-
-        orders.setComments(comments);
-        orders.setPayment(payment);
-
-        projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
-        projects.setParticipantsCount(projects.getParticipantsCount()+1);
-
-        orderRepository.save(orders);
-        projectsRepository.save(projects);
-
     }
 
 }

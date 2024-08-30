@@ -18,7 +18,7 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
     Optional<Members> findMembersByMemberIdx(long idx);
 
     //Eagle Loading
-    @Query("SELECT DISTINCT m FROM Members m JOIN FETCH m.projects WHERE m.memberIdx = :memberIndex")
+    @Query("SELECT m FROM Members m JOIN FETCH m.projects WHERE m.memberIdx = :memberIndex")
     Optional<Members> findMembersByMemberIdxWithFetchJoin(@Param("memberIndex") long idx);
 
     //Lazy Loading
