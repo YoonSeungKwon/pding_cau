@@ -132,7 +132,7 @@ public class ProjectQueryTest {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         System.out.println("-------------------------------------------------------------");
-        List<ProjectResponse> projects = projectService.getProjectList(members.getMemberIdx());
+        List<ProjectResponse> projects = projectService.getProjectList();
         System.out.println("-------------------------------------------------------------");
     }
 

@@ -57,9 +57,8 @@ public class FriendsService {
     }
 
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..
-    @Cacheable(value = "friendsList", key = "#cacheIndex")
     @Transactional(readOnly = true)
-    public List<MemberResponse> getFriendsList(long cacheIndex){
+    public List<MemberResponse> getFriendsList(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -146,9 +145,8 @@ public class FriendsService {
         friendsRepository.delete(friends);
     }
 
-    @CachePut(value = "friendsList", key = "#cacheIndex")
     @Transactional
-    public List<FriendsResponse> acceptFriends(long friendIdx, long cacheIndex){  //친구 요청 수락
+    public List<FriendsResponse> acceptFriends(long friendIdx){  //친구 요청 수락
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -184,9 +182,8 @@ public class FriendsService {
         return list.stream().map(this::toResponse).toList();
     }
 
-    @CachePut(value = "friendsList", key = "#cacheIndex")
     @Transactional
-    public void deleteFriends(long friendIdx, long cacheIndex){  //친구 목록 삭제
+    public void deleteFriends(long friendIdx){  //친구 목록 삭제
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)

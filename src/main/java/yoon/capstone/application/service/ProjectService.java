@@ -59,9 +59,8 @@ public class ProjectService {
                 ,projects.getParticipantsCount(), projects.getCreatedAt().toString(), projects.getFinishAt().toString());
     }
 
-    @CachePut(value = "myProjectList", key = "#cacheIndex")
     @Transactional
-    public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto, long cacheIndex) {
+    public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -71,6 +70,7 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
 
         //Eagle Loading
+
         Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
@@ -120,8 +120,7 @@ public class ProjectService {
         return result;
     }
     @Transactional(readOnly = true)
-    @Cacheable(value = "myProjectList", key = "#cacheIndex")
-    public List<ProjectResponse> getProjectList(long cacheIndex){
+    public List<ProjectResponse> getProjectList(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -144,8 +143,7 @@ public class ProjectService {
         return result;
     }
 
-    @Cacheable(value = "projectListLatest", key = "#cacheIndex")
-    public List<ProjectResponse> getFriendsListLatest(long cacheIndex){
+    public List<ProjectResponse> getFriendsListLatest(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -160,8 +158,7 @@ public class ProjectService {
         return list.stream().map((this::toResponse)).toList();
     }
 
-    @Cacheable(value = "projectListUpcoming", key = "#cacheIndex")
-    public List<ProjectResponse> getFriendsListUpcoming(long cacheIndex){
+    public List<ProjectResponse> getFriendsListUpcoming(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -66,7 +66,7 @@ public class MemberService {
         return memberRepository.existsByEmail(sb.append(email).append("?").append(Provider.DEFAULT.getProvider()).toString());
     }
 
-    @Transactional(readOnly = true) // List로 변경!
+    @Transactional(readOnly = true)
     public List<MemberResponse> findMember(String email){
 
         //Lazy Loading

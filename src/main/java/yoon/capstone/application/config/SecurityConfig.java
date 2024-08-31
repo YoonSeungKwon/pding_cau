@@ -48,9 +48,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth->{
-//                    auth.requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name());
-//                    auth.requestMatchers("/api/v1/friends/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name());
-//                    auth.requestMatchers("/api/v1/projects/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name());
+                    auth.requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name());
+                    auth.requestMatchers("/api/v1/friends/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name());
+                    auth.requestMatchers("/api/v1/projects/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name());
 //                    auth.requestMatchers("/api/v1/payment/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name());
                     auth.anyRequest().permitAll();
                 })

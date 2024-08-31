@@ -50,46 +50,42 @@ public class RedisTest {
     @Test
     void test() throws InterruptedException {
 
-        RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::"+502);
-        System.out.println(rBucket.get().getCurrentAmount());
-        System.out.println(rBucket.get().getParticipantsCount());
+        int testSize = 200;
+        Random random = new Random();
 
-//        int testSize = 200;
-//        Random random = new Random();
-//
-//        AtomicInteger success = new AtomicInteger();
-//        AtomicInteger failure = new AtomicInteger();
-//        ExecutorService executorService = Executors.newFixedThreadPool(15);
-//        CountDownLatch countDownLatch = new CountDownLatch(testSize);
-//
-//        for(int i=0; i<testSize; i++){
-//            executorService.execute(()->{
-//                try{
-//                    Members members = memberRepository.findMembersByMemberIdx(2000+random.nextInt(2000)).orElseThrow();
-//
-//                    OrderDto dto = new OrderDto(506, random.nextInt(100,1000), "test");
-//
-//                    String code = String.valueOf(orderService.kakaoPayment(dto));
-//
-//                    System.out.println(code);
-////                    orderService.kakaoPaymentAccess(code, "tokenTest");
-//
-//                    success.incrementAndGet();
-//                }catch (Exception e){
-//
-//                    failure.incrementAndGet();
-//                }finally {
-//                    countDownLatch.countDown();
-//                }
-//            });
-//        }
-//
-//
-//
-//        countDownLatch.await();
-//
-//        System.out.println("Success :" + success);
-//        System.out.println("Failure :" + failure);
+        AtomicInteger success = new AtomicInteger();
+        AtomicInteger failure = new AtomicInteger();
+        ExecutorService executorService = Executors.newFixedThreadPool(15);
+        CountDownLatch countDownLatch = new CountDownLatch(testSize);
+
+        for(int i=0; i<testSize; i++){
+            executorService.execute(()->{
+                try{
+                    Members members = memberRepository.findMembersByMemberIdx(2000+random.nextInt(2000)).orElseThrow();
+
+                    OrderDto dto = new OrderDto(506, random.nextInt(100,1000), "test");
+
+                    String code = String.valueOf(orderService.kakaoPayment(dto));
+
+                    System.out.println(code);
+//                    orderService.kakaoPaymentAccess(code, "tokenTest");
+
+                    success.incrementAndGet();
+                }catch (Exception e){
+
+                    failure.incrementAndGet();
+                }finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+
+
+        countDownLatch.await();
+
+        System.out.println("Success :" + success);
+        System.out.println("Failure :" + failure);
 
     }
 

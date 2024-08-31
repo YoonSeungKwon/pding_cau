@@ -50,7 +50,7 @@ public class FriendsController {
     @Operation(summary = "친구 목록 불러오기", description = "본인이 친구 목록을 가져온다. 신청중인 친구 제외")
     public ResponseEntity<List<MemberResponse>> getFriendsList(){
 
-        List<MemberResponse> result = friendsService.getFriendsList(getCacheIndex());
+        List<MemberResponse> result = friendsService.getFriendsList();
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -71,7 +71,7 @@ public class FriendsController {
         List<FriendsResponse> result;
 
         if(status.equals("ok")){
-            result = friendsService.acceptFriends(friendIdx, getCacheIndex());
+            result = friendsService.acceptFriends(friendIdx);
             return new ResponseEntity<>(result, HttpStatus.OK);
         }else{
             friendsService.declineFriends(friendIdx);
@@ -84,20 +84,11 @@ public class FriendsController {
     @Operation(summary = "친구 삭제")
     public ResponseEntity<?> deleteFriends(@PathVariable long friendIdx){
 
-        friendsService.deleteFriends(friendIdx, getCacheIndex());
+        friendsService.deleteFriends(friendIdx);
 
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
 
-    private long getCacheIndex(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        return memberDto.getMemberIdx();
-    }
 
 }

@@ -18,7 +18,7 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
     Optional<Members> findMembersByMemberIdx(long idx);
 
     //Eagle Loading
-    @Query("SELECT m FROM Members m JOIN FETCH m.projects WHERE m.memberIdx = :memberIndex")
+    @Query("SELECT DISTINCT m FROM Members m LEFT JOIN FETCH m.projects WHERE m.memberIdx = :memberIndex")
     Optional<Members> findMembersByMemberIdxWithFetchJoin(@Param("memberIndex") long idx);
 
     //Lazy Loading
@@ -28,7 +28,7 @@ public interface MemberRepository extends JpaRepository<Members, Long> {
     List<Members> findMembersByEmailLikeString(@Param("email") String email);
 
     //Eagle Loading Members By FromUser
-    @Query("SELECT DISTINCT m FROM Members m JOIN FETCH m.projects INNER JOIN Friends f ON m.memberIdx = f.toUser.memberIdx WHERE f.fromUser = :fromUser")
+    @Query("SELECT DISTINCT m FROM Members m LEFT JOIN FETCH m.projects INNER JOIN Friends f ON m.memberIdx = f.toUser.memberIdx WHERE f.fromUser = :fromUser")
     List<Members> findAllByFromUserWithFetchJoin(@Param("fromUser") long fromUser);
 
     @Query("SELECT m FROM Members m JOIN Friends f ON m.memberIdx = f.toUser.memberIdx WHERE f.isFriends = true AND m.memberIdx = :memberIdx AND f.fromUser = :fromUser")

@@ -34,7 +34,7 @@ public class ProjectController {
     @Operation(summary = "본인의 펀딩 글 불러오기", description = "본인이 작성한 펀딩 글을 불러온다.")
     public ResponseEntity<List<ProjectResponse>> getList() {
 
-        List<ProjectResponse> result = projectService.getProjectList(getCacheIndex());
+        List<ProjectResponse> result = projectService.getProjectList();
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -43,7 +43,7 @@ public class ProjectController {
     @Operation(summary = "친구들의 펀딩 글 불러오기 최신순으로", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
     public ResponseEntity<List<ProjectResponse>> getFriendsListLatest() {
 
-        List<ProjectResponse> result = projectService.getFriendsListLatest(getCacheIndex());
+        List<ProjectResponse> result = projectService.getFriendsListLatest();
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -52,7 +52,7 @@ public class ProjectController {
     @Operation(summary = "친구들의 펀딩 글 불러오기 만료순으로", description = "친구로 등록된 유저들의 펀딩 글을 불러온다.")
     public ResponseEntity<List<ProjectResponse>> getFriendsListUpcoming() {
 
-        List<ProjectResponse> result = projectService.getFriendsListUpcoming(getCacheIndex());
+        List<ProjectResponse> result = projectService.getFriendsListUpcoming();
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -70,7 +70,7 @@ public class ProjectController {
     @Operation(summary = "펀딩 글 쓰기", description = "지정된 형식의 dto와 파일을 받아서 유효성 검사 후 펀딩 글 등록")
     public ResponseEntity<List<ProjectResponse>> makeProject(@RequestPart MultipartFile file, @RequestPart @Validated(ProjectValidationSequence.class) ProjectDto dto) {
 
-        List<ProjectResponse> result = projectService.makeProjects(file, dto, getCacheIndex());
+        List<ProjectResponse> result = projectService.makeProjects(file, dto);
 
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
@@ -84,15 +84,5 @@ public class ProjectController {
         return new ResponseEntity<>(url, HttpStatus.OK);
     }
 
-
-    private long getCacheIndex(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
-        return memberDto.getMemberIdx();
-    }
 
 }
