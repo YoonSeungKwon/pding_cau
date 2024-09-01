@@ -46,6 +46,9 @@
   
   **7. 펀딩하기**: 펀딩하기는 더 나은 사용자 경험을 위하여 KAKAO PAY의 간편 결제 API를 이용하였고, 사업자 번호를 등록하지 않은 버전으로 결제 준비 과정과 결제 승인 과정을 공식문서에 따라서 올바른 절차로 진행되고, 상태에 따라 올바른 페이지로 리다이렉트 되도록 설계하였다.
 
+![메시지큐 시나리오](https://github.com/user-attachments/assets/c4b68b7b-c309-4dab-9ac5-f07047d87f05)
+
+
 ## 6. ERD
 ![데이터베이스](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding3.png)
 
