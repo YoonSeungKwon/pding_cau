@@ -1,8 +1,6 @@
 package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,21 +8,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yoon.capstone.application.dto.response.FriendsReqResponse;
-import yoon.capstone.application.dto.response.FriendsResponse;
-import yoon.capstone.application.dto.response.MemberDetailResponse;
-import yoon.capstone.application.dto.response.MemberResponse;
-import yoon.capstone.application.entity.Friends;
-import yoon.capstone.application.entity.Members;
-import yoon.capstone.application.enums.ExceptionCode;
-import yoon.capstone.application.exception.FriendsException;
-import yoon.capstone.application.exception.UnauthorizedException;
-import yoon.capstone.application.repository.FriendsRepository;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.security.JwtAuthentication;
+import yoon.capstone.application.common.dto.response.FriendsReqResponse;
+import yoon.capstone.application.common.dto.response.FriendsResponse;
+import yoon.capstone.application.common.dto.response.MemberDetailResponse;
+import yoon.capstone.application.common.dto.response.MemberResponse;
+import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.common.util.EmailFormatManager;
+import yoon.capstone.application.service.domain.Friends;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.common.enums.ExceptionCode;
+import yoon.capstone.application.common.exception.FriendsException;
+import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.config.security.JwtAuthentication;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -32,28 +31,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendsService {
 
-    private final AesBytesEncryptor aesBytesEncryptor;
+    private final AesEncryptorManager aesEncryptorManager;
 
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberRepository;
 
-    private final FriendsRepository friendsRepository;
+    private final FriendsJpaRepository friendsRepository;
 
     private FriendsResponse toResponse(Friends friends){
         return new FriendsResponse(friends.getFriendIdx(), friends.getToUser().getUsername(), friends.isFriends(), friends.getCreatedAt());
     }
 
     private MemberResponse toMemberResponse(Members members){
-        byte[] bytePhone = Base64.getDecoder().decode(members.getPhone());
-        String phone = new String(aesBytesEncryptor.decrypt(bytePhone), StandardCharsets.UTF_8);
-        return new MemberResponse(members.getMemberIdx(), members.getEmail().substring(0, members.getEmail().indexOf("?")), members.getUsername()
-                , phone, members.getProfile(), members.isOauth(), members.getLastVisit());
+        return new MemberResponse(members.getMemberIdx(), EmailFormatManager.toEmail(members.getEmail()), members.getUsername()
+                , aesEncryptorManager.decode(members.getPhone()), members.getProfile(), members.isOauth(), members.getLastVisit());
     }
 
     private MemberDetailResponse toMemberDetailResponse(Members members){
-        byte[] bytePhone = Base64.getDecoder().decode(members.getPhone());
-        String phone = new String(aesBytesEncryptor.decrypt(bytePhone), StandardCharsets.UTF_8);
-        return new MemberDetailResponse(members.getEmail().substring(0, members.getEmail().indexOf("?")), members.getUsername()
-                , phone, members.getProfile(), members.isOauth(),members.getCreatedAt(), members.getLastVisit());
+        return new MemberDetailResponse(EmailFormatManager.toEmail(members.getEmail()), members.getUsername()
+                , aesEncryptorManager.decode(members.getPhone()), members.getProfile(), members.isOauth(),members.getCreatedAt(), members.getLastVisit());
     }
 
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..

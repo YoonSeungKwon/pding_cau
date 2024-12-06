@@ -4,18 +4,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import yoon.capstone.application.entity.*;
-import yoon.capstone.application.repository.FriendsRepository;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.repository.OrderRepository;
-import yoon.capstone.application.repository.ProjectsRepository;
-import yoon.capstone.application.security.JwtProvider;
+import yoon.capstone.application.config.security.JwtProvider;
+import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.OrderJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.OrderService;
+import yoon.capstone.application.service.domain.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -29,22 +27,22 @@ public class ConcurrencyTest {
     MemberService memberService;
 
     @Autowired
-    MemberRepository memberRepository;
+    MemberJpaRepository memberRepository;
 
     @Autowired
-    FriendsRepository friendsRepository;
+    FriendsJpaRepository friendsRepository;
 
     @Autowired
     JwtProvider jwtProvider;
 
     @Autowired
-    ProjectsRepository projectsRepository;
+    ProjectsJpaRepository projectsRepository;
 
     @Autowired
     OrderService orderService;
 
     @Autowired
-    OrderRepository orderRepository;
+    OrderJpaRepository orderRepository;
 
     @Transactional
     List<Members> setting(){

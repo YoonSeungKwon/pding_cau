@@ -5,33 +5,31 @@ import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-import yoon.capstone.application.dto.request.RegisterDto;
-import yoon.capstone.application.dto.response.ProjectCache;
-import yoon.capstone.application.repository.*;
-import yoon.capstone.application.security.JwtProvider;
+import yoon.capstone.application.common.dto.response.ProjectCache;
+import yoon.capstone.application.infrastructure.jpa.*;
+import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.MemberService;
 
 @SpringBootTest
 class ApplicationTests {
 
 	@Autowired
-	MemberRepository memberRepository;
+	MemberJpaRepository memberRepository;
 
 	@Autowired
 	MemberService memberService;
 
 	@Autowired
-	FriendsRepository friendsRepository;
+	FriendsJpaRepository friendsRepository;
 
 	@Autowired
-	ProjectsRepository projectsRepository;
+	ProjectsJpaRepository projectsRepository;
 
 	@Autowired
-	OrderRepository orderRepository;
+	OrderJpaRepository orderRepository;
 
 	@Autowired
-	PaymentRepository paymentRepository;
+	PaymentJpaRepository paymentRepository;
 
 	@Autowired
 	JwtProvider jwtProvider;

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,10 +16,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import yoon.capstone.application.enums.Role;
-import yoon.capstone.application.security.JwtAuthenticationFilter;
-import yoon.capstone.application.security.JwtExceptionFilter;
-import yoon.capstone.application.security.JwtProvider;
+import yoon.capstone.application.common.enums.Role;
+import yoon.capstone.application.config.security.JwtAuthenticationFilter;
+import yoon.capstone.application.config.security.JwtExceptionFilter;
+import yoon.capstone.application.config.security.JwtProvider;
 
 import java.util.List;
 

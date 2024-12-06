@@ -5,19 +5,18 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import yoon.capstone.application.entity.Members;
-import yoon.capstone.application.entity.Projects;
-import yoon.capstone.application.enums.Category;
-import yoon.capstone.application.enums.Provider;
-import yoon.capstone.application.enums.Role;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.repository.ProjectsRepository;
-import yoon.capstone.application.security.JwtProvider;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.service.domain.Projects;
+import yoon.capstone.application.common.enums.Category;
+import yoon.capstone.application.common.enums.Provider;
+import yoon.capstone.application.common.enums.Role;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
+import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.MemberService;
 
 import java.nio.charset.StandardCharsets;
@@ -42,10 +41,10 @@ public class MemberQueryTest {
     MemberService memberService;
 
     @Autowired
-    MemberRepository memberRepository;
+    MemberJpaRepository memberRepository;
 
     @Autowired
-    ProjectsRepository projectsRepository;
+    ProjectsJpaRepository projectsRepository;
 
     @PersistenceContext
     EntityManager entityManager;

@@ -1,19 +1,16 @@
 package yoon.capstone.application;
 
 import org.junit.jupiter.api.Test;
-import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import yoon.capstone.application.dto.request.OrderDto;
-import yoon.capstone.application.dto.response.ProjectCache;
-import yoon.capstone.application.entity.Members;
-import yoon.capstone.application.entity.Projects;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.repository.OrderRepository;
-import yoon.capstone.application.repository.PaymentRepository;
-import yoon.capstone.application.repository.ProjectsRepository;
+import yoon.capstone.application.common.dto.request.OrderDto;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.OrderJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.PaymentJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
 import yoon.capstone.application.service.OrderService;
 
 import java.util.Random;
@@ -27,19 +24,19 @@ public class RedisTest {
 
 
     @Autowired
-    MemberRepository memberRepository;
+    MemberJpaRepository memberRepository;
 
     @Autowired
-    ProjectsRepository projectsRepository;
+    ProjectsJpaRepository projectsRepository;
 
     @Autowired
-    OrderRepository orderRepository;
+    OrderJpaRepository orderRepository;
 
     @Autowired
     OrderService orderService;
 
     @Autowired
-    PaymentRepository paymentRepository;
+    PaymentJpaRepository paymentRepository;
 
     @Autowired
     RedissonClient redissonClient;

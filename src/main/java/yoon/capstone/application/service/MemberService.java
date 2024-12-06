@@ -1,8 +1,7 @@
 package yoon.capstone.application.service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,56 +13,57 @@ import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.dto.request.LoginDto;
-import yoon.capstone.application.dto.request.OAuthDto;
-import yoon.capstone.application.dto.request.RegisterDto;
-import yoon.capstone.application.dto.response.MemberResponse;
-import yoon.capstone.application.entity.Members;
-import yoon.capstone.application.enums.ExceptionCode;
-import yoon.capstone.application.enums.Provider;
-import yoon.capstone.application.enums.Role;
-import yoon.capstone.application.exception.ProjectException;
-import yoon.capstone.application.exception.UnauthorizedException;
-import yoon.capstone.application.exception.UtilException;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.security.JwtAuthentication;
-import yoon.capstone.application.security.JwtProvider;
+import yoon.capstone.application.common.dto.request.LoginDto;
+import yoon.capstone.application.common.dto.request.OAuthDto;
+import yoon.capstone.application.common.dto.request.RegisterDto;
+import yoon.capstone.application.common.dto.response.MemberResponse;
+import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.common.util.EmailFormatManager;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.common.enums.ExceptionCode;
+import yoon.capstone.application.common.enums.Provider;
+import yoon.capstone.application.common.enums.Role;
+import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.config.security.JwtAuthentication;
+import yoon.capstone.application.config.security.JwtProvider;
+import yoon.capstone.application.service.manager.ProfileManager;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 
 @Service
+@Builder
 @RequiredArgsConstructor
 public class MemberService {
 
     private final JwtProvider jwtProvider;
 
-    private final AmazonS3Client amazonS3Client;
+    private final MemberJpaRepository memberRepository;
 
-    private final MemberRepository memberRepository;
+    private final AesEncryptorManager aesEncryptorManager;
 
-    private final AesBytesEncryptor aesBytesEncryptor;
+    private final ProfileManager profileManager;
 
-    private final String bucket = "cau-artech-capstone";
-    private final String region = "ap-northeast-2";
-
+    private final String DEFAULT_PROFILE = "https://pding-storage.s3.ap-northeast-2.amazonaws.com/members/icon.png";
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    private MemberResponse toResponse(Members members){
-        byte[] bytePhone = Base64.getDecoder().decode(members.getPhone());
-        String phone = new String(aesBytesEncryptor.decrypt(bytePhone), StandardCharsets.UTF_8);
 
-        return new MemberResponse(members.getMemberIdx(), members.getEmail().substring(0, members.getEmail().indexOf("?"))
-                , members.getUsername(), phone, members.getProfile(), members.isOauth(), members.getLastVisit());
+
+    private MemberResponse toResponse(Members members){
+        return new MemberResponse(members.getMemberIdx(), EmailFormatManager.toEmail(members.getEmail())
+                , members.getUsername(), aesEncryptorManager.decode(members.getPhone()), members.getProfile(), members.isOauth(), members.getLastVisit());
     }
 
+
+
+
+    @Transactional(readOnly = true)
     public boolean existUser(String email){
-        StringBuilder sb = new StringBuilder();
-        return memberRepository.existsByEmail(sb.append(email).append("?").append(Provider.DEFAULT.getProvider()).toString());
+        return memberRepository.existsByEmail(EmailFormatManager.toPersist(email, Provider.DEFAULT));
     }
 
     @Transactional(readOnly = true)
@@ -72,7 +72,6 @@ public class MemberService {
         //Lazy Loading
         List<Members> result = memberRepository.findMembersByEmailLikeString(email);
 
-
         return result.stream().map(this::toResponse).toList();
     }
 
@@ -80,8 +79,7 @@ public class MemberService {
     @Transactional
     public MemberResponse formLogin(LoginDto dto, HttpServletResponse response){
 
-        StringBuilder sb = new StringBuilder();
-        String email = sb.append(dto.getEmail()).append("?").append(Provider.DEFAULT.getProvider()).toString();
+        String email = EmailFormatManager.toPersist(dto.getEmail(), Provider.DEFAULT);
         String password = dto.getPassword();
 
         //Lazy Loading
@@ -106,19 +104,17 @@ public class MemberService {
     public MemberResponse formRegister(RegisterDto dto){
 
         Members members = Members.builder()
-                .email(dto.getEmail()+"?"+Provider.DEFAULT.getProvider())
+                .email(EmailFormatManager.toPersist(dto.getEmail(), Provider.DEFAULT))
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .username(dto.getName())
-                .profile("https://pding-storage.s3.ap-northeast-2.amazonaws.com/members/icon.png")
+                .profile(DEFAULT_PROFILE)
                 .role(Role.USER)
                 .oauth(false)
                 .provider(Provider.DEFAULT)
                 .build();
 
         if(dto.getPhone() != null){
-            byte[] encryptPhone = aesBytesEncryptor.encrypt(dto.getPhone().getBytes(StandardCharsets.UTF_8));
-            String phone = Base64.getEncoder().encodeToString(encryptPhone);
-            members.setPhone(phone);
+            members.setPhone(aesEncryptorManager.encode(dto.getPhone()));
         }
 
         memberRepository.save(members);
@@ -147,8 +143,8 @@ public class MemberService {
 
     @Transactional
     public MemberResponse socialLogin(String email, HttpServletResponse response){
-        StringBuilder sb = new StringBuilder();
-        Members members = memberRepository.findMembersByEmail(sb.append(email).append("?").append(Provider.DEFAULT.getProvider()).toString())
+
+        Members members = memberRepository.findMembersByEmail(EmailFormatManager.toPersist(email, Provider.KAKAO))
                 .orElseThrow(()->new UsernameNotFoundException(email));
 
         String accToken = jwtProvider.createAccessToken(members.getEmail());
@@ -177,7 +173,7 @@ public class MemberService {
     }
 
     @Transactional
-    public String uploadProfile(MultipartFile file){
+    public MemberResponse uploadProfile(MultipartFile file){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
@@ -186,25 +182,7 @@ public class MemberService {
         JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
-        String url;
-        UUID uuid = UUID.randomUUID();
-        if (!file.getContentType().startsWith("image")) {
-            throw new UtilException(ExceptionCode.NOT_IMAGE_FORMAT);
-        }
-        try {
-            String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/members/" + currentMember.getMemberIdx() + "/" + fileName;
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentType(file.getContentType());
-            objectMetadata.setContentLength(file.getSize());
-            System.out.println(file.getContentType());
-            url = fileUrl;
-            amazonS3Client.putObject(bucket +"/members/" + currentMember.getMemberIdx(), fileName, file.getInputStream(), objectMetadata);
-        } catch (Exception e){
-            throw new ProjectException(ExceptionCode.INTERNAL_SERVER_ERROR);
-        }
-        currentMember.setProfile(url);
-        memberRepository.save(currentMember);
-        return url;
+        currentMember.setProfile(profileManager.updateProfile(file, currentMember.getMemberIdx()));
+        return toResponse(memberRepository.save(currentMember));
     }
 }

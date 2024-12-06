@@ -4,31 +4,29 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import yoon.capstone.application.dto.request.ProjectDto;
-import yoon.capstone.application.dto.response.ProjectDetailResponse;
-import yoon.capstone.application.dto.response.ProjectResponse;
-import yoon.capstone.application.entity.Friends;
-import yoon.capstone.application.entity.Members;
-import yoon.capstone.application.entity.Projects;
-import yoon.capstone.application.enums.Category;
-import yoon.capstone.application.enums.ExceptionCode;
-import yoon.capstone.application.exception.FriendsException;
-import yoon.capstone.application.exception.ProjectException;
-import yoon.capstone.application.exception.UnauthorizedException;
-import yoon.capstone.application.exception.UtilException;
-import yoon.capstone.application.repository.FriendsRepository;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.repository.ProjectsRepository;
-import yoon.capstone.application.security.JwtAuthentication;
+import yoon.capstone.application.common.dto.request.ProjectDto;
+import yoon.capstone.application.common.dto.response.ProjectDetailResponse;
+import yoon.capstone.application.common.dto.response.ProjectResponse;
+import yoon.capstone.application.service.domain.Friends;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.service.domain.Projects;
+import yoon.capstone.application.common.enums.Category;
+import yoon.capstone.application.common.enums.ExceptionCode;
+import yoon.capstone.application.common.exception.FriendsException;
+import yoon.capstone.application.common.exception.ProjectException;
+import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.common.exception.UtilException;
+import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
+import yoon.capstone.application.config.security.JwtAuthentication;
+import yoon.capstone.application.service.manager.ProfileManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +37,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProjectService {
 
-    private final ProjectsRepository projectsRepository;
-    private final MemberRepository memberRepository;
-    private final FriendsRepository friendsRepository;
-    private final AmazonS3Client amazonS3Client;
-    private final String bucket = "pding-storage";
-    private final String region = "ap-northeast-2";
+    private final ProjectsJpaRepository projectsRepository;
 
+    private final MemberJpaRepository memberRepository;
+
+    private final FriendsJpaRepository friendsRepository;
+
+    private final ProfileManager profileManager;
 
     private ProjectResponse toResponse(Projects projects){
         return new ProjectResponse(projects.getProjectIdx(), projects.getMembers().getUsername(), projects.getTitle(), projects.getImage(), projects.getGoalAmount(),
@@ -74,29 +72,7 @@ public class ProjectService {
         Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
-        String url;
-        if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
-            throw new UtilException(ExceptionCode.NOT_IMAGE_FORMAT);
-        }
-        UUID uuid = UUID.randomUUID();
-        try {
-            String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/projects/" + fileName;
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentType(file.getContentType());
-            objectMetadata.setContentLength(file.getSize());
-            System.out.println(file.getContentType());
-            url = fileUrl;
-            amazonS3Client.putObject(bucket +"/projects", fileName, file.getInputStream(), objectMetadata);
-        } catch (Exception e){
-            throw new ProjectException(ExceptionCode.INTERNAL_SERVER_ERROR);
-        }
-        Category category;
-        if(dto.getCategory().equals(Category.생일.getValue())){
-            category = Category.생일;
-        }else{
-            category = Category.졸업;
-        }
+        String url = profileManager.updateProject(file, Category.valueOf(dto.getCategory()));
 
         Projects projects = Projects.builder()
                 .members(currentMember)
@@ -107,7 +83,7 @@ public class ProjectService {
                 .image(url)
                 .goal(dto.getGoal())
                 .finishAt(dto.getEnddate())
-                .category(category)
+                .category(Category.valueOf(dto.getCategory()))
                 .build();
 
         currentMember.getProjects().add(projects);
@@ -216,37 +192,18 @@ public class ProjectService {
     }
 
     @Transactional
-    public String changeImage(long idx, MultipartFile file){
-        String url;
-        if (!Objects.requireNonNull(file.getContentType()).startsWith("image")) {
-            throw new UtilException(ExceptionCode.NOT_IMAGE_FORMAT);
-        }
-        UUID uuid = UUID.randomUUID();
-        try {
-            String fileName = uuid + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/projects/" + fileName;
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentType(file.getContentType());
-            objectMetadata.setContentLength(file.getSize());
-            url = fileUrl;
-            amazonS3Client.putObject(bucket +"/projects", fileName, file.getInputStream(), objectMetadata);
-        } catch (Exception e){
-            throw new ProjectException(null);
-        }
+    public ProjectResponse changeImage(long idx, MultipartFile file){
         //Lazy Loading
         Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
+
+        String url = profileManager.updateProject(file, projects.getCategory());
         String prevImg = projects.getImage();
+
+        profileManager.deleteImage(prevImg);
+
         projects.setImage(url);
 
-        try{
-            System.out.println(prevImg);
-            System.out.println("name" + prevImg.substring(prevImg.indexOf("/projects/")+10));
-            amazonS3Client.deleteObject(new DeleteObjectRequest(bucket + "/projects", prevImg.substring(prevImg.indexOf("/projects/")+10)));
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-        }
-        projectsRepository.save(projects);
-        return url;
+        return toResponse(projectsRepository.save(projects));
     }
 
 }

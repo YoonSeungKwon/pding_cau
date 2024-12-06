@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,17 +13,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import yoon.capstone.application.dto.request.KakaoApproveRequest;
-import yoon.capstone.application.dto.response.KakaoResultResponse;
-import yoon.capstone.application.dto.response.OrderMessageDto;
-import yoon.capstone.application.enums.ExceptionCode;
-import yoon.capstone.application.exception.OrderException;
+import yoon.capstone.application.common.dto.request.KakaoApproveRequest;
+import yoon.capstone.application.common.dto.response.KakaoResultResponse;
+import yoon.capstone.application.common.dto.response.OrderMessageDto;
+import yoon.capstone.application.common.enums.ExceptionCode;
+import yoon.capstone.application.common.exception.OrderException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -53,7 +49,11 @@ public class OrderLockFacade {
 
     private final RabbitTemplate rabbitTemplate;
 
+    //
     public void order(String id, String token) {
+
+//        long current = System.currentTimeMillis();
+
         RBucket<OrderMessageDto> orderBucket = redissonClient.getBucket("order::" + id);
         OrderMessageDto dto = orderBucket.get();
 
@@ -75,6 +75,9 @@ public class OrderLockFacade {
         }
         sendKakaoApproveRequest(dto, token);
         publishMessage(dto);
+
+
+//        System.out.println("작업시간 : " + String.valueOf(System.currentTimeMillis() - current) +"ms");
     }
 
     public void sendKakaoApproveRequest(OrderMessageDto dto, String token){

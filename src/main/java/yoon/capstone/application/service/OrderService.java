@@ -1,12 +1,8 @@
 package yoon.capstone.application.service;
 
-import jakarta.persistence.LockTimeoutException;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,25 +10,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import yoon.capstone.application.dto.request.KakaoReadyRequest;
-import yoon.capstone.application.dto.request.OrderDto;
-import yoon.capstone.application.dto.response.*;
-import yoon.capstone.application.entity.*;
-import yoon.capstone.application.enums.ExceptionCode;
-import yoon.capstone.application.exception.OrderException;
-import yoon.capstone.application.exception.UnauthorizedException;
-import yoon.capstone.application.repository.MemberRepository;
-import yoon.capstone.application.repository.OrderRepository;
-import yoon.capstone.application.repository.PaymentRepository;
-import yoon.capstone.application.repository.ProjectsRepository;
-import yoon.capstone.application.security.JwtAuthentication;
+import yoon.capstone.application.common.dto.request.KakaoReadyRequest;
+import yoon.capstone.application.common.dto.request.OrderDto;
+import yoon.capstone.application.common.dto.response.KakaoPayResponse;
+import yoon.capstone.application.common.dto.response.OrderMessageDto;
+import yoon.capstone.application.common.dto.response.OrderResponse;
+import yoon.capstone.application.common.dto.response.ProjectCache;
+import yoon.capstone.application.common.enums.ExceptionCode;
+import yoon.capstone.application.common.exception.OrderException;
+import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.config.security.JwtAuthentication;
+import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.OrderJpaRepository;
+import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
+import yoon.capstone.application.service.domain.Orders;
+import yoon.capstone.application.service.domain.Projects;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -40,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -51,13 +46,13 @@ public class OrderService {
     @Value("${SERVICE_URL}")
     private String serviceUrl;
 
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberRepository;
 
     private final AesBytesEncryptor aesBytesEncryptor;
 
-    private final OrderRepository orderRepository;
+    private final OrderJpaRepository orderRepository;
 
-    private final ProjectsRepository projectsRepository;
+    private final ProjectsJpaRepository projectsRepository;
 
     private final RedissonClient redissonClient;
 
