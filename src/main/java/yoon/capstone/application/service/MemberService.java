@@ -13,6 +13,7 @@ import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import yoon.capstone.application.common.annotation.Authenticated;
 import yoon.capstone.application.common.dto.request.LoginDto;
 import yoon.capstone.application.common.dto.request.OAuthDto;
 import yoon.capstone.application.common.dto.request.RegisterDto;
@@ -159,13 +160,9 @@ public class MemberService {
     }
 
     @Transactional
+    @Authenticated
     public void logOut(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         currentMember.setRefreshToken(null);
@@ -173,13 +170,9 @@ public class MemberService {
     }
 
     @Transactional
+    @Authenticated
     public MemberResponse uploadProfile(MultipartFile file){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         currentMember.setProfile(profileManager.updateProfile(file, currentMember.getMemberIdx()));

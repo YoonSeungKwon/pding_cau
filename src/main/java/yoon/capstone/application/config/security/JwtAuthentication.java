@@ -1,9 +1,11 @@
 package yoon.capstone.application.config.security;
 
+import lombok.Builder;
 import lombok.Getter;
 import yoon.capstone.application.common.enums.Role;
 
 @Getter
+@Builder
 public class JwtAuthentication {
 
     private long memberIdx;

@@ -31,7 +31,7 @@ public interface FriendsJpaRepository extends JpaRepository<Friends, Long> {
     @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :memberIndex")
     List<Friends> findAllWithToUserIndex(@Param("memberIndex") long memberIndex);
 
-    @Query("SELECT new yoon.capstone.application.common.response.FriendsReqResponse(f.friendIdx, m.email, m.username, m.profile, f.createdAt) " +
+    @Query("SELECT new yoon.capstone.application.common.dto.response.FriendsReqResponse(f.friendIdx, m.email, m.username, m.profile, f.createdAt) " +
             "FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.toUser.memberIdx = :toUser")
     List<FriendsReqResponse> findAllRequestsByToUser(@Param("toUser") long toUser);
 

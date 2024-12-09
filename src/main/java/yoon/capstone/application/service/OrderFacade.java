@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class OrderLockFacade {
+public class OrderFacade {
 
     @Value("${KAKAOPAY_KEY}")
     private String admin_key;

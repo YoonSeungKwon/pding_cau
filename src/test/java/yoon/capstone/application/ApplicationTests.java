@@ -5,47 +5,50 @@ import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import yoon.capstone.application.common.dto.response.ProjectCache;
+import yoon.capstone.application.common.enums.Provider;
+import yoon.capstone.application.common.enums.Role;
+import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.infrastructure.jpa.*;
 import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.MemberService;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.service.manager.MockProfileManager;
+import yoon.capstone.application.service.repository.MemberRepository;
 
 @SpringBootTest
 class ApplicationTests {
 
 	@Autowired
-	MemberJpaRepository memberRepository;
+	MemberJpaRepository memberJpaRepository;
 
 	@Autowired
-	MemberService memberService;
-
-	@Autowired
-	FriendsJpaRepository friendsRepository;
-
-	@Autowired
-	ProjectsJpaRepository projectsRepository;
-
-	@Autowired
-	OrderJpaRepository orderRepository;
-
-	@Autowired
-	PaymentJpaRepository paymentRepository;
-
-	@Autowired
-	JwtProvider jwtProvider;
-
-	@Autowired
-	RedissonClient redissonClient;
-
+	AesBytesEncryptor aesBytesEncryptor;
 	@Test
 	void contextLoads() {
 
-		RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::"+506);
+		MemberService memberService = MemberService.builder()
+				.memberRepository(memberJpaRepository)
+				.aesEncryptorManager(new AesEncryptorManager(aesBytesEncryptor))
+				.profileManager(new MockProfileManager())
+				.jwtProvider(new JwtProvider(memberJpaRepository))
+				.build();
 
-		ProjectCache cache = rBucket.get();
+		Members members = Members.builder()
+				.email("test32123@test.com")
+				.password("abcd1234")
+				.oauth(false)
+				.provider(Provider.DEFAULT)
+				.username("tester")
+				.role(Role.USER)
+				.build();
 
-		System.out.println("Current: " + cache.getCurrentAmount());
-		System.out.println("Participant: " + cache.getParticipantsCount());
+		JwtAuthentication jwtAuthentication = JwtAuthentication.builder()
+				.email(members.getEmail())
+
+				.build();
 
 	}
 

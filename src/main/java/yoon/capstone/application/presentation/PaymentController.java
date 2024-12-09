@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
-import yoon.capstone.application.service.OrderLockFacade;
+import yoon.capstone.application.service.OrderFacade;
 import yoon.capstone.application.service.OrderService;
 
 @RestController
@@ -14,7 +14,7 @@ public class PaymentController {
 
     private final OrderService orderService;
 
-    private final OrderLockFacade orderLockFacade;
+    private final OrderFacade orderFacade;
 
     @Value("${PAYMENT_SUCCESS_URL}")
     private String redirectUrl;
@@ -22,7 +22,7 @@ public class PaymentController {
     @GetMapping("/success/{id}")
     public RedirectView paymentSuccessHandler(@PathVariable String id, @RequestParam("pg_token") String token){
         System.out.println(token);
-        orderLockFacade.order(id, token);
+        orderFacade.order(id, token);
         RedirectView redirectView = new RedirectView();
         redirectView.setUrl(redirectUrl);
         return redirectView;

@@ -37,12 +37,12 @@ public interface MemberJpaRepository extends JpaRepository<Members, Long> {
     boolean existsByEmail(String email);
 
     //Security DTO Authentication
-    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) " +
+    @Query("SELECT new yoon.capstone.application.config.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) " +
             "FROM Members m WHERE m.email = :email")
     JwtAuthentication findMemberDtoWithEmail(@Param("email") String email);
 
     //Security DTO Refresh Token
-    @Query("SELECT new yoon.capstone.application.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) " +
+    @Query("SELECT new yoon.capstone.application.config.security.JwtAuthentication(m.memberIdx, m.email, m.refreshToken, m.role) " +
             "FROM Members m WHERE m.refreshToken = :token")
     JwtAuthentication findMemberDtoWithToken(@Param("token") String token);
 
