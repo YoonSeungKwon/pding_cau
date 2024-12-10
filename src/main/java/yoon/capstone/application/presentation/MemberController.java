@@ -37,12 +37,7 @@ public class MemberController {
 
     @PostMapping("/")
     @Operation(summary = "회원가입", description = "들어온 RegisterDto의 유효성을 검증하고 회원가입 진행")
-    public ResponseEntity<?> register(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "유저 회원가입 정보", required = true,
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterDto.class)))
-            @Parameter(description = "User information", required = true)
-            @RequestBody @Validated(RegisterValidationSequence.class) RegisterDto dto){
+    public ResponseEntity<?> register(@RequestBody @Validated(RegisterValidationSequence.class) RegisterDto dto){
 
         MemberResponse result = memberService.formRegister(dto);
 

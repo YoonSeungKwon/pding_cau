@@ -22,7 +22,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class JwtProvider {
+public class JwtProvider implements TokenProvider{
 
     private final MemberJpaRepository memberRepository;
 
@@ -40,7 +40,9 @@ public class JwtProvider {
     private String findIdByToken(String token){
         return memberRepository.findMemberDtoWithToken(token).getEmail();
     }
-    public String createAccessToken(String id){
+
+    @Override
+    public String createAccessToken(String email){
 
         Claims claims = Jwts.claims()
                 .setIssuedAt(new Date())
@@ -49,11 +51,12 @@ public class JwtProvider {
         return  Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setClaims(claims)
-                .claim("email", id)
+                .claim("email", email)
                 .signWith(getKey())
                 .compact();
     }
 
+    @Override
     public String createRefreshToken(){
 
         Claims claims = Jwts.claims()

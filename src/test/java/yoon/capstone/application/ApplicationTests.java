@@ -16,6 +16,7 @@ import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.manager.MockProfileManager;
+import yoon.capstone.application.service.manager.TokenRefreshTemplate;
 import yoon.capstone.application.service.repository.MemberRepository;
 
 @SpringBootTest
@@ -33,7 +34,7 @@ class ApplicationTests {
 				.memberRepository(memberJpaRepository)
 				.aesEncryptorManager(new AesEncryptorManager(aesBytesEncryptor))
 				.profileManager(new MockProfileManager())
-				.jwtProvider(new JwtProvider(memberJpaRepository))
+				.tokenRefreshTemplate(new TokenRefreshTemplate(new JwtProvider(memberJpaRepository)))
 				.build();
 
 		Members members = Members.builder()

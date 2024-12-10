@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import yoon.capstone.application.common.annotation.Authenticated;
 import yoon.capstone.application.common.dto.response.FriendsReqResponse;
 import yoon.capstone.application.common.dto.response.FriendsResponse;
 import yoon.capstone.application.common.dto.response.MemberDetailResponse;
@@ -53,41 +54,25 @@ public class FriendsService {
 
     // 친구 목록, 친구 요청, 친구 수락, 친구 거절, 친구 삭제, 친구 페이지, 등..
     @Transactional(readOnly = true)
+    @Authenticated
     public List<MemberResponse> getFriendsList(){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
         return friendsRepository.findAllByFromUserWithFetchJoin(
                 dto.getMemberIdx()).stream().map((friends)->toMemberResponse(friends.getToUser())).toList();
     }
 
-    @Transactional(readOnly = true)
+    @Authenticated
     public List<FriendsReqResponse> getFriendsRequest(){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication dto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return friendsRepository.findAllRequestsByToUser(dto.getMemberIdx());
     }
 
-    @Transactional(readOnly = true)
+    @Authenticated
     public MemberDetailResponse friendsDetail(long memberIndex){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Lazy Loading
         Members members = memberRepository.findMembersByMemberIdxAndIsFriend(memberIndex, memberDto.getMemberIdx()).orElseThrow(()->new UsernameNotFoundException(null));
@@ -96,17 +81,12 @@ public class FriendsService {
     }
 
     @Transactional
+    @Authenticated
     public FriendsResponse requestFriends(long memberIndex){ //친구 요청
         //Lazy Loading
         Members toUser = memberRepository.findMembersByMemberIdx(memberIndex).orElseThrow(()->new UsernameNotFoundException(null));
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
         //DTO
-        JwtAuthentication fromUser = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication fromUser = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(toUser.getMemberIdx() == fromUser.getMemberIdx())
             throw new FriendsException(ExceptionCode.SELF_FRIENDS);
@@ -118,20 +98,13 @@ public class FriendsService {
                 .fromUser(fromUser.getMemberIdx())
                 .build();
 
-        //소켓 통신으로 친구 요청 알림 보내기
-
         return toResponse(friendsRepository.save(friends));
     }
 
     @Transactional
+    @Authenticated
     public void declineFriends(long friendIdx) { //친구 요청 거절
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Lazy Loading
         Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(() -> new FriendsException(ExceptionCode.NOT_FRIENDS));
@@ -141,14 +114,9 @@ public class FriendsService {
     }
 
     @Transactional
+    @Authenticated
     public List<FriendsResponse> acceptFriends(long friendIdx){  //친구 요청 수락
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Lazy Loading
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
@@ -178,13 +146,9 @@ public class FriendsService {
     }
 
     @Transactional
+    @Authenticated
     public void deleteFriends(long friendIdx){  //친구 목록 삭제
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));

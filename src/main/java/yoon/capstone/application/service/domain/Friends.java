@@ -49,4 +49,9 @@ public class Friends {
         this.fromUser = fromUser;
     }
 
+    public void activate(){
+        this.isFriends = true;
+    }
+
+
 }

@@ -101,6 +101,16 @@ public class Members {
         return authorities;
     }
 
+    public void refresh(String token){
+        this.lastVisit = LocalDateTime.now();
+        this.refreshToken = token;
+    }
+
+    public void logout(){
+        this.refreshToken = null;
+    }
+
+
     public String getRoleKey(){
         return this.role.getRoleKey();
     }

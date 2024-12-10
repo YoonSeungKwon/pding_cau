@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import yoon.capstone.application.common.annotation.Authenticated;
 import yoon.capstone.application.common.dto.request.ProjectDto;
 import yoon.capstone.application.common.dto.response.ProjectDetailResponse;
 import yoon.capstone.application.common.dto.response.ProjectResponse;
@@ -58,17 +59,11 @@ public class ProjectService {
     }
 
     @Transactional
+    @Authenticated
     public List<ProjectResponse> makeProjects(MultipartFile file, ProjectDto dto) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-
         Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
@@ -95,15 +90,9 @@ public class ProjectService {
         }
         return result;
     }
-    @Transactional(readOnly = true)
+    @Authenticated
     public List<ProjectResponse> getProjectList(){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
         Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
@@ -119,14 +108,9 @@ public class ProjectService {
         return result;
     }
 
+    @Authenticated
     public List<ProjectResponse> getFriendsListLatest(){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
         List<Projects> list = projectsRepository.findProjectsByFriendsFromUserOrderByLatest(memberDto.getMemberIdx());
@@ -134,14 +118,9 @@ public class ProjectService {
         return list.stream().map((this::toResponse)).toList();
     }
 
+    @Authenticated
     public List<ProjectResponse> getFriendsListUpcoming(){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
         List<Projects> list = projectsRepository.findProjectsByFriendsFromUserOrderByUpcoming(memberDto.getMemberIdx());
@@ -149,15 +128,9 @@ public class ProjectService {
         return list.stream().map((this::toResponse)).toList();
     }
 
-    @Transactional(readOnly = true)
+    @Authenticated
     public ProjectDetailResponse getProjectDetail(long projectsIdx){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
         Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(projectsIdx);
@@ -173,16 +146,11 @@ public class ProjectService {
     }
 
     @Transactional
+    @Authenticated
     public void deleteProjects(long idx){
         //Eagle Loading
         Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(idx);
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(projects.getMembers().getMemberIdx() != memberDto.getMemberIdx())
             throw new ProjectException(ExceptionCode.PROJECT_OWNER);

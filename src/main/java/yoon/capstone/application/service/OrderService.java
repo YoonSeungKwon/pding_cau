@@ -14,6 +14,7 @@ import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import yoon.capstone.application.common.annotation.Authenticated;
 import yoon.capstone.application.common.dto.request.KakaoReadyRequest;
 import yoon.capstone.application.common.dto.request.OrderDto;
 import yoon.capstone.application.common.dto.response.KakaoPayResponse;
@@ -78,6 +79,7 @@ public class OrderService {
     }
 
     @Transactional
+    @Authenticated
     public KakaoPayResponse kakaoPayment(OrderDto dto){
 
         HttpHeaders headers = new HttpHeaders();
@@ -85,12 +87,7 @@ public class OrderService {
 
         String paymentCode = UUID.randomUUID().toString();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS); //로그인 되지 않았거나 만료됨
-
-        JwtAuthentication memberDto = (JwtAuthentication) authentication.getPrincipal();
+        JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Read Cache Or Cache Warm
         RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::" + dto.getProjectIdx());

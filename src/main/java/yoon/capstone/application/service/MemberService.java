@@ -29,6 +29,7 @@ import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.manager.ProfileManager;
+import yoon.capstone.application.service.manager.TokenRefreshTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final JwtProvider jwtProvider;
+    private final TokenRefreshTemplate tokenRefreshTemplate;
 
     private final MemberJpaRepository memberRepository;
 
@@ -89,14 +90,8 @@ public class MemberService {
         if(!passwordEncoder.matches(password, members.getPassword()))
             throw new BadCredentialsException(email);
 
-        String accToken = jwtProvider.createAccessToken(email);
-        String refToken = jwtProvider.createRefreshToken();
-
-        members.setRefreshToken(refToken);
-        members.setLastVisit(LocalDateTime.now());
-
-        response.setHeader("Authorization", accToken);
-        response.setHeader("X-Refresh-Token", refToken);
+        String refToken = tokenRefreshTemplate.refreshToken(response, members);
+        members.refresh(refToken);
 
         return toResponse(memberRepository.save(members));
     }
@@ -114,13 +109,11 @@ public class MemberService {
                 .provider(Provider.DEFAULT)
                 .build();
 
-        if(dto.getPhone() != null){
+        if(dto.getPhone() != null && !dto.getPhone().equals("")){
             members.setPhone(aesEncryptorManager.encode(dto.getPhone()));
         }
 
-        memberRepository.save(members);
-
-        return toResponse(members);
+        return toResponse(memberRepository.save(members));
     }
 
     @Transactional
@@ -136,10 +129,7 @@ public class MemberService {
                 .provider(Provider.KAKAO)
                 .build();
 
-        memberRepository.save(members);
-
-
-        toResponse(members);
+        toResponse(memberRepository.save(members));
     }
 
     @Transactional
@@ -148,25 +138,21 @@ public class MemberService {
         Members members = memberRepository.findMembersByEmail(EmailFormatManager.toPersist(email, Provider.KAKAO))
                 .orElseThrow(()->new UsernameNotFoundException(email));
 
-        String accToken = jwtProvider.createAccessToken(members.getEmail());
-        String refToken = jwtProvider.createRefreshToken();
-        members.setRefreshToken(refToken);
-        members.setLastVisit(LocalDateTime.now());
-        response.setHeader("Authorization", accToken);
-        response.setHeader("X-Refresh-Token", refToken);
+        String refToken = tokenRefreshTemplate.refreshToken(response, members);
+        members.refresh(refToken);
 
-        memberRepository.save(members);
-        return toResponse(members);
+        return toResponse(memberRepository.save(members));
     }
 
     @Transactional
     @Authenticated
     public void logOut(){
         JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
+        Members members = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
-        currentMember.setRefreshToken(null);
-        memberRepository.save(currentMember);
+        members.logout();
+
+        memberRepository.save(members);
     }
 
     @Transactional
