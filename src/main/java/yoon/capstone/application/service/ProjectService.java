@@ -28,21 +28,21 @@ import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
 import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.manager.ProfileManager;
+import yoon.capstone.application.service.repository.FriendRepository;
+import yoon.capstone.application.service.repository.MemberRepository;
+import yoon.capstone.application.service.repository.ProjectRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
 
-    private final ProjectsJpaRepository projectsRepository;
+    private final ProjectRepository projectsRepository;
 
-    private final MemberJpaRepository memberRepository;
+    private final MemberRepository memberRepository;
 
-    private final FriendsJpaRepository friendsRepository;
+    private final FriendRepository friendsRepository;
 
     private final ProfileManager profileManager;
 
@@ -64,7 +64,7 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-        Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
+        Members currentMember = memberRepository.findMemberFetch(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         String url = profileManager.updateProject(file, Category.valueOf(dto.getCategory()));
@@ -95,7 +95,7 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-        Members currentMember = memberRepository.findMembersByMemberIdxWithFetchJoin(memberDto.getMemberIdx())
+        Members currentMember = memberRepository.findMemberFetch(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         List<ProjectResponse> result = new ArrayList<>();
@@ -113,7 +113,7 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-        List<Projects> list = projectsRepository.findProjectsByFriendsFromUserOrderByLatest(memberDto.getMemberIdx());
+        List<Projects> list = projectsRepository.findAllProjectsLatest(memberDto.getMemberIdx());
 
         return list.stream().map((this::toResponse)).toList();
     }
@@ -123,7 +123,7 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-        List<Projects> list = projectsRepository.findProjectsByFriendsFromUserOrderByUpcoming(memberDto.getMemberIdx());
+        List<Projects> list = projectsRepository.findAllProjectsUpcoming(memberDto.getMemberIdx());
 
         return list.stream().map((this::toResponse)).toList();
     }
@@ -133,10 +133,10 @@ public class ProjectService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-        Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(projectsIdx);
+        Projects projects = projectsRepository.findProjectFetch(projectsIdx).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
         Members members = projects.getMembers();
 
-        Friends friends = friendsRepository.findFriendsByToUserAndFromUserAndFriends(members, memberDto.getMemberIdx(), true).orElseThrow(
+        Friends friends = friendsRepository.findFriend(members, memberDto.getMemberIdx(), true).orElseThrow(
                 ()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         if(members.getMemberIdx() != memberDto.getMemberIdx() && !friends.isFriends())
@@ -149,7 +149,7 @@ public class ProjectService {
     @Authenticated
     public void deleteProjects(long idx){
         //Eagle Loading
-        Projects projects = projectsRepository.findProjectsByProjectIdxWithFetchJoin(idx);
+        Projects projects = projectsRepository.findProjectFetch(idx).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(projects.getMembers().getMemberIdx() != memberDto.getMemberIdx())
@@ -162,7 +162,7 @@ public class ProjectService {
     @Transactional
     public ProjectResponse changeImage(long idx, MultipartFile file){
         //Lazy Loading
-        Projects projects = projectsRepository.findProjectsByProjectIdx(idx);
+        Projects projects = projectsRepository.findProject(idx).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
 
         String url = profileManager.updateProject(file, projects.getCategory());
         String prevImg = projects.getImage();

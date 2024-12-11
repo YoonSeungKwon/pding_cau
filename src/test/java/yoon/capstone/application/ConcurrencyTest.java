@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
+import yoon.capstone.application.common.enums.ExceptionCode;
+import yoon.capstone.application.common.exception.ProjectException;
 import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
 import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
@@ -15,6 +17,7 @@ import yoon.capstone.application.service.OrderService;
 import yoon.capstone.application.service.domain.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +50,7 @@ public class ConcurrencyTest {
     @Transactional
     List<Members> setting(){
 
-        Projects projects = projectsRepository.findProjectsByProjectIdx(501);
+        Projects projects = projectsRepository.findProjectsByProjectIdx(501).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
         List<Members> list = friendsRepository.findAllByFromUserWithFetchJoin(29).stream().map(Friends::getToUser).toList();
 
         for(int i=0; i<list.size(); i++){
@@ -81,7 +84,7 @@ public class ConcurrencyTest {
     @Test
     @Transactional
     void orderConcurrencyTest() throws InterruptedException {
-        Projects projects = projectsRepository.findProjectsByProjectIdx(501);
+        Projects projects = projectsRepository.findProjectsByProjectIdx(501).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
 
 
         List<Members> members = friendsRepository.findAllByFromUserWithFetchJoin(29).stream().map(Friends::getToUser).toList();

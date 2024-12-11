@@ -28,8 +28,6 @@ public interface FriendsJpaRepository extends JpaRepository<Friends, Long> {
     //Duplication Check
     boolean existsByToUserAndFromUser(Members toUser, long fromUser);
 
-    @Query("SELECT f FROM Friends f WHERE f.toUser.memberIdx = :memberIndex")
-    List<Friends> findAllWithToUserIndex(@Param("memberIndex") long memberIndex);
 
     @Query("SELECT new yoon.capstone.application.common.dto.response.FriendsReqResponse(f.friendIdx, m.email, m.username, m.profile, f.createdAt) " +
             "FROM Members m INNER JOIN Friends f ON m.memberIdx = f.fromUser WHERE f.toUser.memberIdx = :toUser")

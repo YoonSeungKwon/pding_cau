@@ -3,13 +3,10 @@ package yoon.capstone.application.service;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,22 +15,18 @@ import yoon.capstone.application.common.dto.request.LoginDto;
 import yoon.capstone.application.common.dto.request.OAuthDto;
 import yoon.capstone.application.common.dto.request.RegisterDto;
 import yoon.capstone.application.common.dto.response.MemberResponse;
-import yoon.capstone.application.common.util.AesEncryptorManager;
-import yoon.capstone.application.common.util.EmailFormatManager;
-import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.enums.Provider;
 import yoon.capstone.application.common.enums.Role;
 import yoon.capstone.application.common.exception.UnauthorizedException;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.common.util.EmailFormatManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
-import yoon.capstone.application.config.security.JwtProvider;
+import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.manager.ProfileManager;
 import yoon.capstone.application.service.manager.TokenRefreshTemplate;
+import yoon.capstone.application.service.repository.MemberRepository;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -43,7 +36,7 @@ public class MemberService {
 
     private final TokenRefreshTemplate tokenRefreshTemplate;
 
-    private final MemberJpaRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     private final AesEncryptorManager aesEncryptorManager;
 
@@ -65,14 +58,14 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public boolean existUser(String email){
-        return memberRepository.existsByEmail(EmailFormatManager.toPersist(email, Provider.DEFAULT));
+        return memberRepository.checkEmail(EmailFormatManager.toPersist(email, Provider.DEFAULT));
     }
 
     @Transactional(readOnly = true)
     public List<MemberResponse> findMember(String email){
 
         //Lazy Loading
-        List<Members> result = memberRepository.findMembersByEmailLikeString(email);
+        List<Members> result = memberRepository.findMemberFetch(email);
 
         return result.stream().map(this::toResponse).toList();
     }
@@ -85,7 +78,7 @@ public class MemberService {
         String password = dto.getPassword();
 
         //Lazy Loading
-        Members members = memberRepository.findMembersByEmail(email).orElseThrow(()->new UsernameNotFoundException(email));
+        Members members = memberRepository.findMember(email).orElseThrow(()->new UsernameNotFoundException(email));
 
         if(!passwordEncoder.matches(password, members.getPassword()))
             throw new BadCredentialsException(email);
@@ -135,7 +128,7 @@ public class MemberService {
     @Transactional
     public MemberResponse socialLogin(String email, HttpServletResponse response){
 
-        Members members = memberRepository.findMembersByEmail(EmailFormatManager.toPersist(email, Provider.KAKAO))
+        Members members = memberRepository.findMember(EmailFormatManager.toPersist(email, Provider.KAKAO))
                 .orElseThrow(()->new UsernameNotFoundException(email));
 
         String refToken = tokenRefreshTemplate.refreshToken(response, members);
@@ -148,7 +141,7 @@ public class MemberService {
     @Authenticated
     public void logOut(){
         JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members members = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
+        Members members = memberRepository.findMember(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         members.logout();
 
@@ -159,7 +152,7 @@ public class MemberService {
     @Authenticated
     public MemberResponse uploadProfile(MultipartFile file){
         JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Members currentMember = memberRepository.findMembersByMemberIdx(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
+        Members currentMember = memberRepository.findMember(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         currentMember.setProfile(profileManager.updateProfile(file, currentMember.getMemberIdx()));
         return toResponse(memberRepository.save(currentMember));

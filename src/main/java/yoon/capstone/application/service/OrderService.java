@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
@@ -23,13 +21,12 @@ import yoon.capstone.application.common.dto.response.OrderResponse;
 import yoon.capstone.application.common.dto.response.ProjectCache;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.OrderException;
-import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.common.exception.ProjectException;
 import yoon.capstone.application.config.security.JwtAuthentication;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
-import yoon.capstone.application.infrastructure.jpa.OrderJpaRepository;
-import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
 import yoon.capstone.application.service.domain.Orders;
 import yoon.capstone.application.service.domain.Projects;
+import yoon.capstone.application.service.repository.OrderRepository;
+import yoon.capstone.application.service.repository.ProjectRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -47,13 +44,11 @@ public class OrderService {
     @Value("${SERVICE_URL}")
     private String serviceUrl;
 
-    private final MemberJpaRepository memberRepository;
-
     private final AesBytesEncryptor aesBytesEncryptor;
 
-    private final OrderJpaRepository orderRepository;
+    private final OrderRepository orderRepository;
 
-    private final ProjectsJpaRepository projectsRepository;
+    private final ProjectRepository projectsRepository;
 
     private final RedissonClient redissonClient;
 
@@ -70,7 +65,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrderList(long idx){
         //Eagle Loading
-        List<Orders> list = orderRepository.findAllByProjectsIndexWithFetchJoin(idx);
+        List<Orders> list = orderRepository.findAllOrders(idx);
         List<OrderResponse> result = new ArrayList<>();
         for(Orders o:list){
             result.add(toResponse(o));
@@ -92,7 +87,7 @@ public class OrderService {
         //Read Cache Or Cache Warm
         RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::" + dto.getProjectIdx());
         if (rBucket.get() == null) {
-            Projects projects = projectsRepository.findProjectsByProjectIdx(dto.getProjectIdx());
+            Projects projects = projectsRepository.findProject(dto.getProjectIdx()).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
             rBucket.set(toCache(projects)); //Persist
         }
         //
@@ -159,7 +154,7 @@ public class OrderService {
 
     @Transactional
     public void cancelOrder(String paymentCode){
-        orderRepository.deleteOrdersWithPaymentCode(paymentCode);
+        orderRepository.cancelOrder(paymentCode);
     }
 
 }

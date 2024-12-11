@@ -23,7 +23,7 @@ import yoon.capstone.application.service.repository.MemberRepository;
 class ApplicationTests {
 
 	@Autowired
-	MemberJpaRepository memberJpaRepository;
+	MemberRepository memberRepository;
 
 	@Autowired
 	AesBytesEncryptor aesBytesEncryptor;
@@ -31,10 +31,10 @@ class ApplicationTests {
 	void contextLoads() {
 
 		MemberService memberService = MemberService.builder()
-				.memberRepository(memberJpaRepository)
+				.memberRepository(memberRepository)
 				.aesEncryptorManager(new AesEncryptorManager(aesBytesEncryptor))
 				.profileManager(new MockProfileManager())
-				.tokenRefreshTemplate(new TokenRefreshTemplate(new JwtProvider(memberJpaRepository)))
+				.tokenRefreshTemplate(new TokenRefreshTemplate(new JwtProvider(memberRepository)))
 				.build();
 
 		Members members = Members.builder()

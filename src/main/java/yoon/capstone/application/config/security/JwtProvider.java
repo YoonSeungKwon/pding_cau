@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.service.repository.MemberRepository;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtProvider implements TokenProvider{
 
-    private final MemberJpaRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${JWT_ACCESS}")
     private long accExp;
@@ -38,7 +39,7 @@ public class JwtProvider implements TokenProvider{
     }
 
     private String findIdByToken(String token){
-        return memberRepository.findMemberDtoWithToken(token).getEmail();
+        return memberRepository.findAuthenticationWithToken(token).getEmail();
     }
 
     @Override
@@ -75,7 +76,7 @@ public class JwtProvider implements TokenProvider{
     }
 
     public Authentication getAuthentication(String token){
-        JwtAuthentication dto  = memberRepository.findMemberDtoWithEmail(getEmail(token));
+        JwtAuthentication dto  = memberRepository.findAuthenticationWithEmail(getEmail(token));
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(dto.getRole().getRoleKey()));
         return new JwtAuthenticationToken(dto, null, authorities);

@@ -1,11 +1,8 @@
 package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yoon.capstone.application.common.annotation.Authenticated;
@@ -13,19 +10,17 @@ import yoon.capstone.application.common.dto.response.FriendsReqResponse;
 import yoon.capstone.application.common.dto.response.FriendsResponse;
 import yoon.capstone.application.common.dto.response.MemberDetailResponse;
 import yoon.capstone.application.common.dto.response.MemberResponse;
-import yoon.capstone.application.common.util.AesEncryptorManager;
-import yoon.capstone.application.common.util.EmailFormatManager;
-import yoon.capstone.application.service.domain.Friends;
-import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.FriendsException;
 import yoon.capstone.application.common.exception.UnauthorizedException;
-import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.common.util.EmailFormatManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
+import yoon.capstone.application.service.domain.Friends;
+import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.service.repository.FriendRepository;
+import yoon.capstone.application.service.repository.MemberRepository;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -34,9 +29,9 @@ public class FriendsService {
 
     private final AesEncryptorManager aesEncryptorManager;
 
-    private final MemberJpaRepository memberRepository;
+    private final MemberRepository memberRepository;
 
-    private final FriendsJpaRepository friendsRepository;
+    private final FriendRepository friendsRepository;
 
     private FriendsResponse toResponse(Friends friends){
         return new FriendsResponse(friends.getFriendIdx(), friends.getToUser().getUsername(), friends.isFriends(), friends.getCreatedAt());
@@ -59,7 +54,7 @@ public class FriendsService {
         JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Eagle Loading
-        return friendsRepository.findAllByFromUserWithFetchJoin(
+        return friendsRepository.findAllFriend(
                 dto.getMemberIdx()).stream().map((friends)->toMemberResponse(friends.getToUser())).toList();
     }
 
@@ -67,7 +62,7 @@ public class FriendsService {
     public List<FriendsReqResponse> getFriendsRequest(){
         JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return friendsRepository.findAllRequestsByToUser(dto.getMemberIdx());
+        return friendsRepository.findAllRequest(dto.getMemberIdx());
     }
 
     @Authenticated
@@ -75,7 +70,7 @@ public class FriendsService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Lazy Loading
-        Members members = memberRepository.findMembersByMemberIdxAndIsFriend(memberIndex, memberDto.getMemberIdx()).orElseThrow(()->new UsernameNotFoundException(null));
+        Members members = memberRepository.findFriendMember(memberIndex, memberDto.getMemberIdx()).orElseThrow(()->new UsernameNotFoundException(null));
 
         return toMemberDetailResponse(members);
     }
@@ -84,13 +79,13 @@ public class FriendsService {
     @Authenticated
     public FriendsResponse requestFriends(long memberIndex){ //친구 요청
         //Lazy Loading
-        Members toUser = memberRepository.findMembersByMemberIdx(memberIndex).orElseThrow(()->new UsernameNotFoundException(null));
+        Members toUser = memberRepository.findMember(memberIndex).orElseThrow(()->new UsernameNotFoundException(null));
         //DTO
         JwtAuthentication fromUser = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(toUser.getMemberIdx() == fromUser.getMemberIdx())
             throw new FriendsException(ExceptionCode.SELF_FRIENDS);
-        if(friendsRepository.existsByToUserAndFromUser(toUser, fromUser.getMemberIdx()))
+        if(friendsRepository.checkFriend(toUser, fromUser.getMemberIdx()))
             throw new FriendsException(ExceptionCode.ALREADY_FRIENDS);        // 이미 친구로 등록되어 있거나 친구 요청을 보냄
 
         Friends friends = Friends.builder()
@@ -107,7 +102,7 @@ public class FriendsService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Lazy Loading
-        Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(() -> new FriendsException(ExceptionCode.NOT_FRIENDS));
+        Friends friends = friendsRepository.findFriend(friendIdx).orElseThrow(() -> new FriendsException(ExceptionCode.NOT_FRIENDS));
         if(!memberDto.getEmail().equals(friends.getToUser().getEmail())) throw new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS);
 
         friendsRepository.delete(friends);
@@ -119,13 +114,13 @@ public class FriendsService {
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Lazy Loading
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
+        Members currentMember = memberRepository.findMember(memberDto.getMemberIdx()).orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         //Lazy Loading
-        Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
+        Friends friends = friendsRepository.findFriend(friendIdx).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         //Lazy Loading
-        Members fromUser = memberRepository.findMembersByMemberIdx(friends.getFromUser()).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
+        Members fromUser = memberRepository.findMember(friends.getFromUser()).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         if(friends.isFriends())
             throw new FriendsException(ExceptionCode.ALREADY_FRIENDS);
@@ -141,7 +136,7 @@ public class FriendsService {
         friendsRepository.save(temp);   //수락한 쪽도 친구로 등록
         friendsRepository.save(friends);
 
-        List<Friends> list = friendsRepository.findAllByFromUserWithFetchJoin(currentMember.getMemberIdx());
+        List<Friends> list = friendsRepository.findAllFriend(currentMember.getMemberIdx());
         return list.stream().map(this::toResponse).toList();
     }
 
@@ -150,16 +145,16 @@ public class FriendsService {
     public void deleteFriends(long friendIdx){  //친구 목록 삭제
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Members currentMember = memberRepository.findMembersByMemberIdx(memberDto.getMemberIdx())
+        Members currentMember = memberRepository.findMember(memberDto.getMemberIdx())
                 .orElseThrow(()->new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         //Lazy Loading
-        Friends friends = friendsRepository.findFriendsByFriendIdx(friendIdx).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
+        Friends friends = friendsRepository.findFriend(friendIdx).orElseThrow(()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         friendsRepository.delete(friends);
 
         //Lazy Loading
-        Friends tempFriends = friendsRepository.findFriendsByToUserAndFromUserAndFriends(friends.getToUser(), currentMember.getMemberIdx(), true).orElseThrow(
+        Friends tempFriends = friendsRepository.findFriend(friends.getToUser(), currentMember.getMemberIdx(), true).orElseThrow(
                 ()->new FriendsException(ExceptionCode.NOT_FRIENDS));
 
         friendsRepository.delete(tempFriends);

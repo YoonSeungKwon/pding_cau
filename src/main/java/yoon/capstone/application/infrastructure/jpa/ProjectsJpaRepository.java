@@ -15,16 +15,11 @@ import java.util.Optional;
 public interface ProjectsJpaRepository extends JpaRepository<Projects, Long> {
 
     //Lazy Loading
-    Projects findProjectsByProjectIdx(long idx);
+    Optional<Projects> findProjectsByProjectIdx(long idx);
 
     //Eagle Loading
     @Query("SELECT p FROM Projects p JOIN FETCH p.members WHERE p.projectIdx = :projectIndex")
-    Projects findProjectsByProjectIdxWithFetchJoin(@Param("projectIndex") long projectIndex);
-
-    //Cost, Total Pessimistic Lock
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT DISTINCT p FROM Projects p JOIN Orders o ON p.projectIdx = o.projects.projectIdx WHERE o.orderIdx = :orderIndex")
-    Optional<Projects> findProjectsByOrderIndexWithLock(@Param("orderIndex") long orderIndex);
+    Optional<Projects> findProjectsByProjectIdxWithFetchJoin(@Param("projectIndex") long projectIndex);
 
     @Query("SELECT p FROM Projects p JOIN FETCH p.members INNER JOIN Friends f ON p.members.memberIdx = f.toUser.memberIdx " +
             "WHERE f.fromUser = :fromUser AND p.finishAt > CURRENT_TIMESTAMP ORDER BY p.createdAt DESC")
@@ -34,9 +29,5 @@ public interface ProjectsJpaRepository extends JpaRepository<Projects, Long> {
             "WHERE f.fromUser = :fromUser AND p.finishAt > CURRENT_TIMESTAMP ORDER BY p.finishAt")
     List<Projects> findProjectsByFriendsFromUserOrderByUpcoming(@Param("fromUser") long fromUser);
 
-
-    @Query("SELECT p FROM Projects p WHERE p.projectIdx = :idx")
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Projects findProjectsByProjectIdxWithLock(@Param("idx") long idx);
 
 }

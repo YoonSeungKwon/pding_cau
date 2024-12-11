@@ -47,6 +47,8 @@ public enum ExceptionCode {
 
     DATE_NOT_FUTURE( "마감 기한을 확인해주세요.", HttpStatus.BAD_REQUEST),
 
+    PROJECT_NOT_FOUND( "해당 펀딩을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
+
     //Util Exception
     NOT_IMAGE_FORMAT("이미지 파일만 업로드 할 수 있습니다.", HttpStatus.BAD_REQUEST),
 
