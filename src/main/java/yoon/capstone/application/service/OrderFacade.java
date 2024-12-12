@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -22,9 +21,11 @@ import yoon.capstone.application.common.dto.response.KakaoResultResponse;
 import yoon.capstone.application.common.dto.response.OrderMessageDto;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.OrderException;
+import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.service.manager.KakaoOrderManager;
+import yoon.capstone.application.service.manager.MessageManager;
+import yoon.capstone.application.service.manager.OrderManager;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -32,27 +33,19 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class OrderFacade {
 
-    @Value("${KAKAOPAY_KEY}")
-    private String admin_key;
-    @Value("${SERVICE_URL}")
-    private String serviceUrl;
-    @Value("${RABBITMQ_EXCHANGE_NAME}")
-    private String exchange;
-    @Value("${RABBITMQ_ROUTING_KEY}")
-    private String routingKey;
+    private final AesEncryptorManager aesEncryptorManager;
 
-    private final AesBytesEncryptor aesBytesEncryptor;
+    private final OrderManager orderManager;
+
+    private final MessageManager messageManager;
 
     private final OrderService orderService;
 
     private final RedissonClient redissonClient;
 
-    private final RabbitTemplate rabbitTemplate;
 
-    //
     public void order(String id, String token) {
 
-//        long current = System.currentTimeMillis();
 
         RBucket<OrderMessageDto> orderBucket = redissonClient.getBucket("order::" + id);
         OrderMessageDto dto = orderBucket.get();
@@ -74,63 +67,21 @@ public class OrderFacade {
                 rLock.unlock();
         }
         sendKakaoApproveRequest(dto, token);
-        publishMessage(dto);
-
-
-//        System.out.println("작업시간 : " + String.valueOf(System.currentTimeMillis() - current) +"ms");
+        messageManager.publish(dto);
     }
 
     public void sendKakaoApproveRequest(OrderMessageDto dto, String token){
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate restTemplate = new RestTemplate();
-        headers.set("Content-type", "application/json");
-        headers.set("Authorization", "DEV_SECRET_KEY " + admin_key);
-        System.out.println(token);
-        byte[] byteTid = Base64.getDecoder().decode(dto.getTid());
-        String tid = new String(aesBytesEncryptor.decrypt(byteTid), StandardCharsets.UTF_8);
-
+        String tid = aesEncryptorManager.decode(dto.getTid());
         try {
-            KakaoApproveRequest kakaoApproveRequest = new KakaoApproveRequest("TC0ONETIME", tid,
-                    dto.getPaymentCode(), String.valueOf(dto.getMemberIdx()), token);
-
-            HttpEntity<KakaoApproveRequest> request = new HttpEntity<>(kakaoApproveRequest, headers);
-
-            KakaoResultResponse response = restTemplate.postForObject(
-                    "https://open-api.kakaopay.com/online/v1/payment/approve",
-                    request,
-                    KakaoResultResponse.class
-            );
-            System.out.println(response);
-            //RestTemplate Exception MQ 발행 전(Redis Rollback)
-        }catch (HttpClientErrorException e) {      //4xx
-            rollbackPayment(e, dto);
-        }catch (HttpServerErrorException e) {      //5xx
-            rollbackPayment(e, dto);
-        }catch (RestClientException e) {           //other
-            rollbackPayment(e, dto);
-        }catch (Exception e){                      //server side
-            rollbackPayment(e, dto);
+            orderManager.orderAccess(dto.getMemberIdx(), dto.getPaymentCode(), tid, token);
+        }catch (Exception e) {
+            rollbackOrder(e, dto);
         }
     }
 
-    public void publishMessage(OrderMessageDto dto){
-        try {
-            rabbitTemplate.convertAndSend(exchange, routingKey, dto);
-        }catch (AmqpException e) {                  //rabbit
-            System.out.println("Message sending failed: " + e.getMessage());
-            log.error("메시지큐 전송 실패" +
-                    "\n memberIndex  " + dto.getMemberIdx() +
-                    "\n projectIndex " + dto.getProjectIdx() +
-                    "\n paymentCode  " + dto.getPaymentCode() +
-                    "\n total        " + dto.getTotal() +
-                    "\n tid          " + dto.getTid() +
-                    "\n message      " + dto.getMessage());
-        }
-    }
 
-    public void rollbackPayment(Exception e, OrderMessageDto dto){
+    public void rollbackOrder(Exception e, OrderMessageDto dto){
         System.out.println("Client error: " + e.getMessage());
-
 
         RLock rLock = redissonClient.getLock("projects" + dto.getProjectIdx());
         try {

@@ -22,9 +22,11 @@ import yoon.capstone.application.common.dto.response.ProjectCache;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.OrderException;
 import yoon.capstone.application.common.exception.ProjectException;
+import yoon.capstone.application.common.util.AesEncryptorManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Orders;
 import yoon.capstone.application.service.domain.Projects;
+import yoon.capstone.application.service.manager.OrderManager;
 import yoon.capstone.application.service.repository.OrderRepository;
 import yoon.capstone.application.service.repository.ProjectRepository;
 
@@ -39,18 +41,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
 
-    @Value("${KAKAOPAY_KEY}")
-    private String admin_key;
-    @Value("${SERVICE_URL}")
-    private String serviceUrl;
 
-    private final AesBytesEncryptor aesBytesEncryptor;
+    private final AesEncryptorManager aesEncryptorManager;
 
     private final OrderRepository orderRepository;
 
     private final ProjectRepository projectsRepository;
 
     private final RedissonClient redissonClient;
+
+    private final OrderManager orderManager;
 
     private OrderResponse toResponse(Orders orders){
         return new OrderResponse(orders.getMembers().getUsername(), orders.getMembers().getProfile(),
@@ -77,9 +77,6 @@ public class OrderService {
     @Authenticated
     public KakaoPayResponse kakaoPayment(OrderDto dto){
 
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate restTemplate = new RestTemplate();
-
         String paymentCode = UUID.randomUUID().toString();
 
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -97,26 +94,9 @@ public class OrderService {
         if(projects.getCurrentAmount() + dto.getTotal() > projects.getGoalAmount())
             throw new OrderException("목표금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
 
+        KakaoPayResponse result = (KakaoPayResponse) orderManager.orderPrepare(memberDto.getMemberIdx(), projects.getTitle(), paymentCode, dto.getTotal());
 
-
-        headers.set("Content-type", "application/json");
-        headers.set("Authorization", "DEV_SECRET_KEY " + admin_key);
-
-        KakaoReadyRequest kakaoRequest = new KakaoReadyRequest("TC0ONETIME",
-                paymentCode, String.valueOf(memberDto.getMemberIdx()), projects.getTitle(), 1, dto.getTotal(), dto.getTotal(),
-                serviceUrl + "/api/v1/payment/success/"+paymentCode, serviceUrl + "/api/v1/payment/cancel/"+paymentCode,
-                serviceUrl + "/api/v1/payment/failure/"+paymentCode);
-
-
-        HttpEntity<KakaoReadyRequest> request = new HttpEntity<>(kakaoRequest, headers);
-        KakaoPayResponse result = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/ready",
-                request,
-                KakaoPayResponse.class
-        );
-
-        byte[] encryptByte = aesBytesEncryptor.encrypt(result.getTid().getBytes(StandardCharsets.UTF_8));
-        String tid = Base64.getEncoder().encodeToString(encryptByte);
+        String tid = aesEncryptorManager.encode(result.getTid());
 
         OrderMessageDto message = new OrderMessageDto(dto.getProjectIdx(), memberDto.getMemberIdx()
                 , dto.getTotal(), dto.getMessage(), tid, paymentCode);

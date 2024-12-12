@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class KakaoPayResponse {
+public class KakaoPayResponse implements PayResponse{
 
     private String tid;
 
