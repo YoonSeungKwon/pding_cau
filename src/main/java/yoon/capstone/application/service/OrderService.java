@@ -26,6 +26,7 @@ import yoon.capstone.application.common.util.AesEncryptorManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Orders;
 import yoon.capstone.application.service.domain.Projects;
+import yoon.capstone.application.service.manager.CacheManager;
 import yoon.capstone.application.service.manager.OrderManager;
 import yoon.capstone.application.service.repository.OrderRepository;
 import yoon.capstone.application.service.repository.ProjectRepository;
@@ -51,6 +52,8 @@ public class OrderService {
     private final RedissonClient redissonClient;
 
     private final OrderManager orderManager;
+
+    private final CacheManager cacheManager;
 
     private OrderResponse toResponse(Orders orders){
         return new OrderResponse(orders.getMembers().getUsername(), orders.getMembers().getProfile(),

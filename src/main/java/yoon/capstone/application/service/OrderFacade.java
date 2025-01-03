@@ -2,6 +2,7 @@ package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Cache;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -22,11 +23,14 @@ import yoon.capstone.application.common.dto.response.OrderMessageDto;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.OrderException;
 import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.service.manager.CacheManager;
 import yoon.capstone.application.service.manager.KakaoOrderManager;
 import yoon.capstone.application.service.manager.MessageManager;
 import yoon.capstone.application.service.manager.OrderManager;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @Slf4j
@@ -43,6 +47,7 @@ public class OrderFacade {
 
     private final RedissonClient redissonClient;
 
+    private final CacheManager cacheManager;
 
     public void order(String id, String token) {
 
@@ -50,10 +55,9 @@ public class OrderFacade {
         RBucket<OrderMessageDto> orderBucket = redissonClient.getBucket("order::" + id);
         OrderMessageDto dto = orderBucket.get();
 
-        RLock rLock = redissonClient.getLock("projects" + dto.getProjectIdx());
 
         try {
-            boolean available = rLock.tryLock(60L, 1L, TimeUnit.SECONDS);
+            boolean available = cacheManager.available("order::"+id);//rLock.tryLock(60L, 1L, TimeUnit.SECONDS);
             if (!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
@@ -63,8 +67,8 @@ public class OrderFacade {
             System.out.println(e.getMessage());
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }finally {
-            if(rLock.isHeldByCurrentThread())
-                rLock.unlock();
+            if(cacheManager.checkLock("order::"+id))
+                cacheManager.unlock("order::"+id);
         }
         sendKakaoApproveRequest(dto, token);
         messageManager.publish(dto);
