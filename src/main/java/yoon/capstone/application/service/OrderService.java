@@ -1,19 +1,12 @@
 package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import yoon.capstone.application.common.annotation.Authenticated;
-import yoon.capstone.application.common.dto.request.KakaoReadyRequest;
 import yoon.capstone.application.common.dto.request.OrderDto;
 import yoon.capstone.application.common.dto.response.KakaoPayResponse;
 import yoon.capstone.application.common.dto.response.OrderMessageDto;
@@ -31,10 +24,7 @@ import yoon.capstone.application.service.manager.OrderManager;
 import yoon.capstone.application.service.repository.OrderRepository;
 import yoon.capstone.application.service.repository.ProjectRepository;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,15 +74,26 @@ public class OrderService {
 
         JwtAuthentication memberDto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        //Read Cache Or Cache Warm
-        RBucket<ProjectCache> rBucket = redissonClient.getBucket("projects::" + dto.getProjectIdx());
-        if (rBucket.get() == null) {
-            Projects projects = projectsRepository.findProject(dto.getProjectIdx()).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
-            rBucket.set(toCache(projects)); //Persist
-        }
-        //
+        Projects projects;
 
-        ProjectCache projects = rBucket.get();
+        try{
+            boolean available = cacheManager.available("projects::"+dto.getProjectIdx());
+            if(!available)
+                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
+
+            projects = cacheManager.cacheGet("projects", String.valueOf(dto.getProjectIdx()), Projects.class);
+            if (projects == null) {
+                projects = projectsRepository.findProject(dto.getProjectIdx()).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
+                cacheManager.cachePut("projects", String.valueOf(dto.getProjectIdx()), projects);
+            }
+
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }finally {
+            if(cacheManager.checkLock("projects::"+dto.getProjectIdx()))
+                cacheManager.unlock("projects::"+dto.getProjectIdx());
+        }
 
         if(projects.getCurrentAmount() + dto.getTotal() > projects.getGoalAmount())
             throw new OrderException("목표금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
@@ -104,9 +105,7 @@ public class OrderService {
         OrderMessageDto message = new OrderMessageDto(dto.getProjectIdx(), memberDto.getMemberIdx()
                 , dto.getTotal(), dto.getMessage(), tid, paymentCode);
 
-        RBucket<OrderMessageDto> ordersBucket = redissonClient.getBucket("order::" + paymentCode);
-
-        ordersBucket.set(message, Duration.ofMinutes(10L));
+        cacheManager.cachePut("orders", paymentCode, message);
 
         return result;
     }
@@ -114,25 +113,57 @@ public class OrderService {
     @Transactional
     public void kakaoPaymentAccess(OrderMessageDto dto){
 
-        RBucket<ProjectCache> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
-        ProjectCache projects = projectsRBucket.get();
-        if(projects.getGoalAmount() < projects.getCurrentAmount() + dto.getTotal()){
-            throw new OrderException("목표 금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
-        }else{
-            projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
-            projects.setParticipantsCount(projects.getParticipantsCount()+1);
-            projectsRBucket.set(projects);
-        }
+        try{
+            boolean available = cacheManager.available("projects::"+dto.getProjectIdx());
+            if(!available) {
+                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
+            }
 
+            Projects projects = cacheManager.cacheGet("projects", String.valueOf(dto.getProjectIdx()), Projects.class);
+
+            if(projects == null){
+                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
+            }
+
+
+            if(projects.getGoalAmount() < projects.getCurrentAmount() + dto.getTotal()){
+                throw new OrderException("목표 금액을 초과하였습니다.", HttpStatus.BAD_REQUEST);
+            }else{
+                projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
+                projects.setParticipantsCount(projects.getParticipantsCount()+1);
+                cacheManager.cachePut("projects", String.valueOf(projects.getProjectIdx()), projects);
+            }
+
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            cancelOrder(dto.getPaymentCode());
+            throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }finally {
+            if (cacheManager.checkLock("projects::" + dto.getProjectIdx()))
+                cacheManager.unlock("projects::" + dto.getProjectIdx());
+        }
     }
 
     @Transactional
     public void kakaoPayRollBack(OrderMessageDto dto){
-        RBucket<ProjectCache> projectsRBucket = redissonClient.getBucket("projects::"+dto.getProjectIdx());
-        ProjectCache projects = projectsRBucket.get();
-        projects.setCurrentAmount(projects.getCurrentAmount() - dto.getTotal());
-        projects.setParticipantsCount(projects.getParticipantsCount()-1);
-        projectsRBucket.set(projects);
+
+        try {
+            boolean available = cacheManager.available("projects::"+dto.getProjectIdx());
+            if(!available) {
+                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
+            }
+
+            Projects projects = cacheManager.cacheGet("projects", String.valueOf(dto.getProjectIdx()), Projects.class);
+
+            projects.setCurrentAmount(projects.getCurrentAmount() - dto.getTotal());
+            projects.setParticipantsCount(projects.getParticipantsCount() - 1);
+
+            cacheManager.cachePut("projects", String.valueOf(dto.getProjectIdx()), projects);
+        }catch (Exception e){
+        }finally {
+            if (cacheManager.checkLock("projects::" + dto.getProjectIdx()))
+                cacheManager.unlock("projects::" + dto.getProjectIdx());
+        }
     }
 
     @Transactional

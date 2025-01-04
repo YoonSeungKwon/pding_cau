@@ -1,26 +1,34 @@
 package yoon.capstone.application.service.manager;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component
-public class CaffeineCacheManager implements CacheManager{
+@RequiredArgsConstructor
+public class CaffeineManager implements CacheManager{
 
     private final ConcurrentHashMap<String, ReentrantLock> cacheLock = new ConcurrentHashMap<>();
 
+    private final CaffeineCacheManager cacheManager;
 
     @Override
-    public <T> void cachePut(String key, T value) {
-
+    public <T> void cachePut(String cacheName, String key, T value) {
+        Cache cache = cacheManager.getCache(cacheName);
+        cache.put(key, value);
     }
 
     @Override
-    public <T> T cacheGet() {
-        return null;
+    public <T> T cacheGet(String cacheName, String key, Class<T> type) {
+        Cache cache = cacheManager.getCache(cacheName);
+        if(cache==null)
+            return null;
+        return cache.get(key, type);
     }
 
     @Override
