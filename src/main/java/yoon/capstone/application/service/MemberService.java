@@ -44,7 +44,7 @@ public class MemberService {
 
     private final String DEFAULT_PROFILE = "https://pding-storage.s3.ap-northeast-2.amazonaws.com/members/icon.png";
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
 
 

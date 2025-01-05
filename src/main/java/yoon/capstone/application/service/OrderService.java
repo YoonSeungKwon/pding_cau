@@ -1,7 +1,6 @@
 package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -38,8 +37,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     private final ProjectRepository projectsRepository;
-
-    private final RedissonClient redissonClient;
 
     private final OrderManager orderManager;
 
@@ -105,7 +102,7 @@ public class OrderService {
         OrderMessageDto message = new OrderMessageDto(dto.getProjectIdx(), memberDto.getMemberIdx()
                 , dto.getTotal(), dto.getMessage(), tid, paymentCode);
 
-        cacheManager.cachePut("orders", paymentCode, message);
+        cacheManager.cachePut("order", paymentCode, message);
 
         return result;
     }

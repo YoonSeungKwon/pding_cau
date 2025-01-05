@@ -11,4 +11,5 @@ public interface CacheManager {
     boolean checkLock(String key);
 
     void unlock(String key);
+
 }

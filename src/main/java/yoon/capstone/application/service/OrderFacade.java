@@ -3,7 +3,6 @@ package yoon.capstone.application.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,6 @@ import yoon.capstone.application.common.util.AesEncryptorManager;
 import yoon.capstone.application.service.manager.CacheManager;
 import yoon.capstone.application.service.manager.MessageManager;
 import yoon.capstone.application.service.manager.OrderManager;
-
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -30,17 +27,12 @@ public class OrderFacade {
 
     private final OrderService orderService;
 
-    private final RedissonClient redissonClient;
-
     private final CacheManager cacheManager;
 
     public void order(String id, String token) {
 
 
-
-        RBucket<OrderMessageDto> orderBucket = redissonClient.getBucket("order::" + id);
-        OrderMessageDto dto = orderBucket.get();
-
+        OrderMessageDto dto = cacheManager.cacheGet("order", id, OrderMessageDto.class);
 
         try {
             boolean available = cacheManager.available("order::"+id);//rLock.tryLock(60L, 1L, TimeUnit.SECONDS);

@@ -33,6 +33,8 @@ public class CaffeineManager implements CacheManager{
 
     @Override
     public boolean available(String key) {
+        if(!cacheLock.contains(key))
+            cacheLock.put(key, new ReentrantLock());
         return cacheLock.get(key).tryLock();
     }
 
