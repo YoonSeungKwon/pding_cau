@@ -9,7 +9,7 @@ import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
-public class AesEncryptorManager {
+public class AesEncryptorManager implements AesEncryptor{
 
     private final AesBytesEncryptor aesBytesEncryptor;
 

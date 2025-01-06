@@ -1,11 +1,6 @@
 package yoon.capstone.application.service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +17,6 @@ import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.FriendsException;
 import yoon.capstone.application.common.exception.ProjectException;
 import yoon.capstone.application.common.exception.UnauthorizedException;
-import yoon.capstone.application.common.exception.UtilException;
-import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
-import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.manager.ProfileManager;
 import yoon.capstone.application.service.repository.FriendRepository;

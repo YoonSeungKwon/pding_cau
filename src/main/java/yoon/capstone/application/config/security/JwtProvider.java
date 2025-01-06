@@ -12,7 +12,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
 import yoon.capstone.application.service.repository.MemberRepository;
 
 import javax.crypto.SecretKey;

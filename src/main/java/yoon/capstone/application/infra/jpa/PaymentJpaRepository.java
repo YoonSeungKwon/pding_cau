@@ -1,4 +1,4 @@
-package yoon.capstone.application.infrastructure.jpa;
+package yoon.capstone.application.infra.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

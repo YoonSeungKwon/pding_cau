@@ -1,8 +1,8 @@
-package yoon.capstone.application.infrastructure;
+package yoon.capstone.application.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import yoon.capstone.application.infrastructure.jpa.OrderJpaRepository;
+import yoon.capstone.application.infra.jpa.OrderJpaRepository;
 import yoon.capstone.application.service.domain.Orders;
 import yoon.capstone.application.service.repository.OrderRepository;
 

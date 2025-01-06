@@ -14,8 +14,8 @@ import yoon.capstone.application.service.domain.Projects;
 import yoon.capstone.application.common.enums.Category;
 import yoon.capstone.application.common.enums.Provider;
 import yoon.capstone.application.common.enums.Role;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
-import yoon.capstone.application.infrastructure.jpa.ProjectsJpaRepository;
+import yoon.capstone.application.infra.jpa.MemberJpaRepository;
+import yoon.capstone.application.infra.jpa.ProjectsJpaRepository;
 import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.MemberService;
 

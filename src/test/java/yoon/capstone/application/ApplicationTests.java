@@ -1,17 +1,13 @@
 package yoon.capstone.application;
 
 import org.junit.jupiter.api.Test;
-import org.redisson.api.RBucket;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.encrypt.AesBytesEncryptor;
-import yoon.capstone.application.common.dto.response.ProjectCache;
 import yoon.capstone.application.common.enums.Provider;
 import yoon.capstone.application.common.enums.Role;
 import yoon.capstone.application.common.util.AesEncryptorManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
-import yoon.capstone.application.infrastructure.jpa.*;
 import yoon.capstone.application.config.security.JwtProvider;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.domain.Members;

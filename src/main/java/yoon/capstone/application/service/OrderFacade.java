@@ -2,8 +2,6 @@ package yoon.capstone.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RBucket;
-import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import yoon.capstone.application.common.dto.response.OrderMessageDto;

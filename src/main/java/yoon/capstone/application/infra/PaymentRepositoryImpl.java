@@ -1,8 +1,8 @@
-package yoon.capstone.application.infrastructure;
+package yoon.capstone.application.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import yoon.capstone.application.infrastructure.jpa.PaymentJpaRepository;
+import yoon.capstone.application.infra.jpa.PaymentJpaRepository;
 import yoon.capstone.application.service.repository.PaymentRepository;
 
 @Repository

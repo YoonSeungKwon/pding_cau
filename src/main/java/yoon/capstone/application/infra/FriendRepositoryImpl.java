@@ -1,9 +1,9 @@
-package yoon.capstone.application.infrastructure;
+package yoon.capstone.application.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import yoon.capstone.application.common.dto.response.FriendsReqResponse;
-import yoon.capstone.application.infrastructure.jpa.FriendsJpaRepository;
+import yoon.capstone.application.infra.jpa.FriendsJpaRepository;
 import yoon.capstone.application.service.domain.Friends;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.repository.FriendRepository;

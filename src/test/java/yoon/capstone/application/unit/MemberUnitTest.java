@@ -2,47 +2,35 @@ package yoon.capstone.application.unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.Mock;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
 import yoon.capstone.application.common.dto.request.RegisterDto;
 import yoon.capstone.application.common.dto.response.MemberResponse;
-import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.infra.stub.StubMemberRepository;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.manager.MockProfileManager;
 import yoon.capstone.application.service.manager.TokenRefreshTemplate;
-import yoon.capstone.application.service.repository.MemberRepository;
+import yoon.capstone.application.service.stub.StubAesManager;
 
 import java.util.Random;
 
-@SpringBootTest
 public class MemberUnitTest {
 
     /**
      회원가입 테스트
      **/
-    @Autowired
-    AesEncryptorManager aesEncryptorManager;
-
-    @Autowired
-    MemberRepository memberRepository;
-
-    @Autowired
+    @Mock
     TokenRefreshTemplate tokenRefreshTemplate;
 
-    @Autowired
-    BCryptPasswordEncoder passwordEncoder;
-
     @Test
-    void member_register_success(){
+    void 기본_회원가입_성공(){
 
         MemberService memberService = MemberService.builder()
-                .memberRepository(memberRepository)
+                .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
-                .aesEncryptorManager(aesEncryptorManager)
-                .passwordEncoder(passwordEncoder)
+                .aesEncryptorManager(new StubAesManager())
+                .passwordEncoder(new BCryptPasswordEncoder())
                 .build();
 
         Random random = new Random();
@@ -60,13 +48,13 @@ public class MemberUnitTest {
 
     }
     @Test
-    void register_email_duplicate(){
+    void 회원가입_이메일_중복가입(){
         MemberService memberService = MemberService.builder()
-                .memberRepository(memberRepository)
+                .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
-                .aesEncryptorManager(aesEncryptorManager)
-                .passwordEncoder(passwordEncoder)
+                .aesEncryptorManager(new StubAesManager())
+                .passwordEncoder(new BCryptPasswordEncoder())
                 .build();
 
         Random random = new Random();
@@ -81,13 +69,13 @@ public class MemberUnitTest {
         Assertions.assertTrue(memberService.existUser(email));
     }
     @Test
-    void register_email_check(){
+    void 회원가입_이메일_중복체크(){
         MemberService memberService = MemberService.builder()
-                .memberRepository(memberRepository)
+                .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
-                .aesEncryptorManager(aesEncryptorManager)
-                .passwordEncoder(passwordEncoder)
+                .aesEncryptorManager(new StubAesManager())
+                .passwordEncoder(new BCryptPasswordEncoder())
                 .build();
 
         Random random = new Random();
@@ -102,13 +90,13 @@ public class MemberUnitTest {
         Assertions.assertTrue(memberService.existUser(email));
     }
     @Test
-    void register_aes_encode(){
+    void 회원가입_AES_인코딩(){
         MemberService memberService = MemberService.builder()
-                .memberRepository(memberRepository)
+                .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
-                .aesEncryptorManager(aesEncryptorManager)
-                .passwordEncoder(passwordEncoder)
+                .aesEncryptorManager(new StubAesManager())
+                .passwordEncoder(new BCryptPasswordEncoder())
                 .build();
 
         Random random = new Random();
@@ -118,9 +106,9 @@ public class MemberUnitTest {
         String username = "tester"+random.nextInt(0, 10000);
         String phone = "010-1234-5678";
 
-        memberService.formRegister(new RegisterDto(email, password, username, phone));
+        MemberResponse memberResponse = memberService.formRegister(new RegisterDto(email, password, username, phone));
 
-        Assertions.assertEquals(memberService.findMember(email).get(0).getPhone(), phone);
+        Assertions.assertEquals(phone, memberResponse.getPhone());
     }
 
     /**

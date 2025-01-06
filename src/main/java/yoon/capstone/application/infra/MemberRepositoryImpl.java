@@ -1,9 +1,9 @@
-package yoon.capstone.application.infrastructure;
+package yoon.capstone.application.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import yoon.capstone.application.config.security.JwtAuthentication;
-import yoon.capstone.application.infrastructure.jpa.MemberJpaRepository;
+import yoon.capstone.application.infra.jpa.MemberJpaRepository;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.repository.MemberRepository;
 

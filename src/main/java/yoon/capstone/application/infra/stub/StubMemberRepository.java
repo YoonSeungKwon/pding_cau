@@ -1,4 +1,4 @@
-package yoon.capstone.application.infrastructure.mock;
+package yoon.capstone.application.infra.stub;
 
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
@@ -7,7 +7,7 @@ import yoon.capstone.application.service.repository.MemberRepository;
 import java.util.List;
 import java.util.Optional;
 
-public class MemberMockRepository implements MemberRepository {
+public class StubMemberRepository implements MemberRepository {
     @Override
     public Optional<Members> findMember(long index) {
         return Optional.empty();
@@ -35,7 +35,7 @@ public class MemberMockRepository implements MemberRepository {
 
     @Override
     public boolean checkEmail(String email) {
-        return false;
+        return true;
     }
 
     @Override

@@ -19,6 +19,7 @@ import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.enums.Provider;
 import yoon.capstone.application.common.enums.Role;
 import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.common.util.AesEncryptor;
 import yoon.capstone.application.common.util.AesEncryptorManager;
 import yoon.capstone.application.common.util.EmailFormatManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
@@ -38,7 +39,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    private final AesEncryptorManager aesEncryptorManager;
+    private final AesEncryptor aesEncryptorManager;
 
     private final ProfileManager profileManager;
 

@@ -53,13 +53,15 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 	//AssertJ
 	testImplementation 'org.assertj:assertj-core:3.26.3'
-	// https://mvnrepository.com/artifact/com.querydsl/querydsl-jpa
-	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-	// https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
-	implementation 'org.redisson:redisson-spring-boot-starter:3.34.1'
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+	
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+	// https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
+//	implementation 'org.redisson:redisson-spring-boot-starter:3.34.1'
+
 
 }
