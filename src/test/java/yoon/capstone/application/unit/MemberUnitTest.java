@@ -24,7 +24,7 @@ public class MemberUnitTest {
 
     @Test
     void 기본_회원가입_성공(){
-
+        //given
         MemberService memberService = MemberService.builder()
                 .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
@@ -40,8 +40,10 @@ public class MemberUnitTest {
         String username = "tester"+random.nextInt(0, 10000);
         String phone = "010-1234-5678";
 
+        //when
         MemberResponse response = memberService.formRegister(new RegisterDto(email, password, username, phone));
 
+        //then
         Assertions.assertEquals(response.getEmail(), email);
         Assertions.assertEquals(response.getName(), username);
         Assertions.assertEquals(response.getPhone(), phone);
@@ -49,6 +51,7 @@ public class MemberUnitTest {
     }
     @Test
     void 회원가입_이메일_중복가입(){
+        //given
         MemberService memberService = MemberService.builder()
                 .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
@@ -64,12 +67,15 @@ public class MemberUnitTest {
         String username = "tester"+random.nextInt(0, 10000);
         String phone = "010-1234-5678";
 
+        //when
         memberService.formRegister(new RegisterDto(email, password, username, phone));
 
+        //then
         Assertions.assertTrue(memberService.existUser(email));
     }
     @Test
     void 회원가입_이메일_중복체크(){
+        //given
         MemberService memberService = MemberService.builder()
                 .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
@@ -85,12 +91,15 @@ public class MemberUnitTest {
         String username = "tester"+random.nextInt(0, 10000);
         String phone = "010-1234-5678";
 
+        //when
         memberService.formRegister(new RegisterDto(email, password, username, phone));
 
+        //then
         Assertions.assertTrue(memberService.existUser(email));
     }
     @Test
     void 회원가입_AES_인코딩(){
+        //given
         MemberService memberService = MemberService.builder()
                 .memberRepository(new StubMemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
@@ -106,20 +115,12 @@ public class MemberUnitTest {
         String username = "tester"+random.nextInt(0, 10000);
         String phone = "010-1234-5678";
 
+        //when
         MemberResponse memberResponse = memberService.formRegister(new RegisterDto(email, password, username, phone));
 
+        //then
         Assertions.assertEquals(phone, memberResponse.getPhone());
     }
-
-    /**
-     로그인 테스트
-     **/
-    @Test
-    void login_jwt(){
-
-    }
-
-
 
 
 }
