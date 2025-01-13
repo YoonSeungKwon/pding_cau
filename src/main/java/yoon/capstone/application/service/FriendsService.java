@@ -1,5 +1,6 @@
 package yoon.capstone.application.service;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,6 +14,7 @@ import yoon.capstone.application.common.dto.response.MemberResponse;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.FriendsException;
 import yoon.capstone.application.common.exception.UnauthorizedException;
+import yoon.capstone.application.common.util.AesEncryptor;
 import yoon.capstone.application.common.util.AesEncryptorManager;
 import yoon.capstone.application.common.util.EmailFormatManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
@@ -24,10 +26,11 @@ import yoon.capstone.application.service.repository.MemberRepository;
 import java.util.List;
 
 @Service
+@Builder
 @RequiredArgsConstructor
 public class FriendsService {
 
-    private final AesEncryptorManager aesEncryptorManager;
+    private final AesEncryptor aesEncryptorManager;
 
     private final MemberRepository memberRepository;
 

@@ -4,12 +4,19 @@ import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.repository.MemberRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class StubMemberRepository implements MemberRepository {
+
+    private List<Members> list = new ArrayList<>();
+
     @Override
     public Optional<Members> findMember(long index) {
+        for(Members members : list){
+            if(members.getMemberIdx() == index)return Optional.of(members);
+        }
         return Optional.empty();
     }
 
@@ -20,6 +27,9 @@ public class StubMemberRepository implements MemberRepository {
 
     @Override
     public Optional<Members> findMember(String email) {
+        for(Members members : list){
+            if(members.getEmail().equals(email))return Optional.of(members);
+        }
         return Optional.empty();
     }
 
@@ -35,7 +45,10 @@ public class StubMemberRepository implements MemberRepository {
 
     @Override
     public boolean checkEmail(String email) {
-        return true;
+        for(Members members : list){
+            if(members.getEmail().equals(email))return true;
+        }
+        return false;
     }
 
     @Override
@@ -50,6 +63,7 @@ public class StubMemberRepository implements MemberRepository {
 
     @Override
     public Members save(Members members) {
+        list.add(members);
         return members;
     }
 }
