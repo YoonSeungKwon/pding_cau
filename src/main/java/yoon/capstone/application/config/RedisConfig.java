@@ -7,10 +7,13 @@
 //import org.redisson.api.RedissonClient;
 //import org.redisson.config.Config;
 //import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+//import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 //import org.springframework.cache.CacheManager;
 //import org.springframework.cache.annotation.EnableCaching;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;
+//import org.springframework.context.annotation.Profile;
 //import org.springframework.data.redis.cache.RedisCacheConfiguration;
 //import org.springframework.data.redis.cache.RedisCacheManager;
 //import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -21,8 +24,9 @@
 //import yoon.capstone.application.service.domain.Projects;
 //
 //import java.time.Duration;
-//
+
 //@Configuration
+//@Profile("redis-enable")
 //@EnableCaching
 //public class RedisConfig {
 //
@@ -31,6 +35,7 @@
 //    @Value("${REDIS_PORT}")
 //    private String redisPort;
 //    @Bean
+//    @ConditionalOnBean(RedisCacheManager.class)
 //    public CacheManager cacheManager(RedisConnectionFactory connectionFactory){
 //        ObjectMapper objectMapper = new ObjectMapper();
 //        objectMapper.registerModule(new JavaTimeModule());
@@ -46,6 +51,7 @@
 //    }
 //
 //    @Bean
+//    @ConditionalOnBean(RedisCacheManager.class)
 //    public RedissonClient redissonClient(){
 //        Config config = new Config();
 //        config.useSingleServer()

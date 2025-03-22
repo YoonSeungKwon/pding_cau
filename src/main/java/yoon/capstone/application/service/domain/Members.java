@@ -85,7 +85,8 @@ public class Members {
     private boolean isDormant;
 
     @Builder
-    Members(String email, String password, String username, String profile, Role role, boolean oauth, Provider provider){
+    Members(long index, String email, String password, String username, String profile, Role role, boolean oauth, Provider provider){
+        this.memberIdx = index;
         this.email = email;
         this.password = password;
         this.username = username;

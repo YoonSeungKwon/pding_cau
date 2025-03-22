@@ -2,20 +2,20 @@ package yoon.capstone.application.service.manager;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component
+@Profile("caffeine-enable")
 @RequiredArgsConstructor
-public class CaffeineManager implements CacheManager{
+public class CaffeineCacheManager implements CacheManager{
 
     private final ConcurrentHashMap<String, ReentrantLock> cacheLock = new ConcurrentHashMap<>();
 
-    private final CaffeineCacheManager cacheManager;
+    private final org.springframework.cache.caffeine.CaffeineCacheManager cacheManager;
 
     @Override
     public <T> void cachePut(String cacheName, String key, T value) {

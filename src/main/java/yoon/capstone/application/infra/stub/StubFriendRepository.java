@@ -15,6 +15,9 @@ public class StubFriendRepository implements FriendRepository {
 
     @Override
     public Optional<Friends> findFriend(long index) {
+        for(Friends f: list){
+            if(f.getFriendIdx() == index)return Optional.of(f);
+        }
         return Optional.empty();
     }
 
@@ -25,14 +28,18 @@ public class StubFriendRepository implements FriendRepository {
 
     @Override
     public List<Friends> findAllFriend(long fromUser) {
-        return new ArrayList<>();
+        List<Friends> result = new ArrayList<>();
+        for(Friends f : list){
+            if(f.getToUser().getMemberIdx() == fromUser)result.add(f);
+        }
+        return result;
     }
 
     @Override
     public boolean checkFriend(Members toUser, long fromUser) {
         for(Friends friends : list){
-            if(friends.getToUser() == toUser && friends.getFromUser() == fromUser)
-                return friends.isFriends();
+            if(friends.getToUser().getMemberIdx() == toUser.getMemberIdx() && friends.getFromUser() == fromUser)
+                return true;
         }
         return false;
     }
