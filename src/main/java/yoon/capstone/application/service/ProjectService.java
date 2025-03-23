@@ -1,5 +1,6 @@
 package yoon.capstone.application.service;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import yoon.capstone.application.service.repository.ProjectRepository;
 import java.util.*;
 
 @Service
+@Builder
 @RequiredArgsConstructor
 public class ProjectService {
 

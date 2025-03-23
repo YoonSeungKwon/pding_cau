@@ -1,4 +1,4 @@
-package yoon.capstone.application.service.stub;
+package yoon.capstone.application.service.manager.stub;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 

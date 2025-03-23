@@ -19,10 +19,9 @@ import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.manager.MockProfileManager;
 import yoon.capstone.application.service.manager.TokenRefreshTemplate;
-import yoon.capstone.application.service.stub.StubAesManager;
+import yoon.capstone.application.service.manager.stub.StubAesManager;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class FriendUnitTest {
 
