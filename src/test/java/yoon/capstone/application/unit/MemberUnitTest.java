@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import yoon.capstone.application.common.dto.request.RegisterDto;
 import yoon.capstone.application.common.dto.response.MemberResponse;
-import yoon.capstone.application.infra.stub.StubMemberRepository;
+import yoon.capstone.application.infra.stub.Stub1MemberRepository;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.manager.MockProfileManager;
 import yoon.capstone.application.service.manager.TokenRefreshTemplate;
@@ -26,7 +26,7 @@ public class MemberUnitTest {
     void 기본_회원가입_성공(){
         //given
         MemberService memberService = MemberService.builder()
-                .memberRepository(new StubMemberRepository())
+                .memberRepository(new Stub1MemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
                 .aesEncryptorManager(new StubAesManager())
@@ -50,10 +50,10 @@ public class MemberUnitTest {
 
     }
     @Test
-    void 회원가입_이메일_중복가입(){
+    void 회원가입_이메일중복체크_중복없음(){
         //given
         MemberService memberService = MemberService.builder()
-                .memberRepository(new StubMemberRepository())
+                .memberRepository(new Stub1MemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
                 .aesEncryptorManager(new StubAesManager())
@@ -62,22 +62,20 @@ public class MemberUnitTest {
 
         Random random = new Random();
 
+        //when
         String email = "test"+random.nextInt(0, 10000)+"@test.com";
         String password = "test1234"+random.nextInt(0, 10000);
         String username = "tester"+random.nextInt(0, 10000);
         String phone = "010-1234-5678";
 
-        //when
-        memberService.formRegister(new RegisterDto(email, password, username, phone));
-
         //then
-        Assertions.assertTrue(memberService.existUser(email));
+        Assertions.assertFalse(memberService.existUser(email));
     }
     @Test
-    void 회원가입_이메일_중복체크(){
+    void 회원가입_이메일중복체크_중복있음(){
         //given
         MemberService memberService = MemberService.builder()
-                .memberRepository(new StubMemberRepository())
+                .memberRepository(new Stub1MemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
                 .aesEncryptorManager(new StubAesManager())
@@ -101,7 +99,7 @@ public class MemberUnitTest {
     void 회원가입_AES_인코딩(){
         //given
         MemberService memberService = MemberService.builder()
-                .memberRepository(new StubMemberRepository())
+                .memberRepository(new Stub1MemberRepository())
                 .tokenRefreshTemplate(tokenRefreshTemplate)
                 .profileManager(new MockProfileManager())
                 .aesEncryptorManager(new StubAesManager())

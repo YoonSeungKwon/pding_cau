@@ -2,37 +2,29 @@ package yoon.capstone.application.infra.stub;
 
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
-import yoon.capstone.application.service.domain.Projects;
 import yoon.capstone.application.service.repository.MemberRepository;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Stub1MemberRepository implements MemberRepository {
 
-    private List<Members> list = new ArrayList<>();
+public class Stub2MemberRepository implements MemberRepository {
 
+    Members testMember(int index){
+        return Members.builder().index(index).email("test"+index+"@test.com").username("tester"+index).build();
+    }
     @Override
     public Optional<Members> findMember(long index) {
-        for(Members members : list){
-            if(members.getMemberIdx() == index)return Optional.of(members);
-        }
-        return Optional.empty();
+        return Optional.of(testMember(2));
     }
 
     @Override
     public Optional<Members> findMemberFetch(long index) {
-        if(index != 1)return Optional.empty();
-        return Optional.of(Members.builder().index(index).email("test"+index+"@test.com").username("tester"+index).build());
+        return Optional.empty();
     }
 
     @Override
     public Optional<Members> findMember(String email) {
-        for(Members members : list){
-            if(members.getEmail().equals(email))return Optional.of(members);
-        }
         return Optional.empty();
     }
 
@@ -48,9 +40,6 @@ public class Stub1MemberRepository implements MemberRepository {
 
     @Override
     public boolean checkEmail(String email) {
-        for(Members members : list){
-            if(members.getEmail().equals(email))return true;
-        }
         return false;
     }
 
@@ -66,11 +55,6 @@ public class Stub1MemberRepository implements MemberRepository {
 
     @Override
     public Members save(Members members) {
-        list.add(members);
-
-        for(Projects p:members.getProjects()){
-            p.setCreatedAt(LocalDateTime.now());
-        }
-        return members;
+        return null;
     }
 }

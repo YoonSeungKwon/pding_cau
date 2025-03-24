@@ -11,9 +11,9 @@ import yoon.capstone.application.common.enums.Role;
 import yoon.capstone.application.common.exception.FriendsException;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.config.security.JwtAuthenticationToken;
-import yoon.capstone.application.infra.stub.Stub1MemberRepository;
+import yoon.capstone.application.infra.stub.Stub2MemberRepository;
 import yoon.capstone.application.infra.stub.StubFriendRepository;
-import yoon.capstone.application.infra.stub.StubMemberRepository;
+import yoon.capstone.application.infra.stub.Stub1MemberRepository;
 import yoon.capstone.application.service.FriendsService;
 import yoon.capstone.application.service.MemberService;
 import yoon.capstone.application.service.domain.Members;
@@ -33,7 +33,7 @@ public class FriendUnitTest {
     @BeforeEach
     void before(){
         this.memberService = MemberService.builder()
-            .memberRepository(new StubMemberRepository())
+            .memberRepository(new Stub1MemberRepository())
             .tokenRefreshTemplate(tokenRefreshTemplate)
             .passwordEncoder(new BCryptPasswordEncoder())
             .profileManager(new MockProfileManager())
@@ -52,7 +52,7 @@ public class FriendUnitTest {
     void 친구_요청(){
         //given
         FriendsService friendsService = FriendsService.builder()
-                .memberRepository(new Stub1MemberRepository())
+                .memberRepository(new Stub2MemberRepository())
                 .friendsRepository(new StubFriendRepository())
                 .aesEncryptorManager(new StubAesManager())
                 .build();
@@ -71,7 +71,7 @@ public class FriendUnitTest {
     void 본인에게_친구_요청(){
         //given
         FriendsService friendsService = FriendsService.builder()
-                .memberRepository(new Stub1MemberRepository())
+                .memberRepository(new Stub2MemberRepository())
                 .friendsRepository(new StubFriendRepository())
                 .aesEncryptorManager(new StubAesManager())
                 .build();
@@ -91,7 +91,7 @@ public class FriendUnitTest {
     void 친구_요청_중복(){
         //given
         FriendsService friendsService = FriendsService.builder()
-                .memberRepository(new Stub1MemberRepository())
+                .memberRepository(new Stub2MemberRepository())
                 .friendsRepository(new StubFriendRepository())
                 .aesEncryptorManager(new StubAesManager())
                 .build();
@@ -109,7 +109,7 @@ public class FriendUnitTest {
     void 친구_요청_수락(){
         //given
         FriendsService friendsService = FriendsService.builder()
-                .memberRepository(new Stub1MemberRepository())
+                .memberRepository(new Stub2MemberRepository())
                 .friendsRepository(new StubFriendRepository())
                 .aesEncryptorManager(new StubAesManager())
                 .build();
@@ -132,7 +132,7 @@ public class FriendUnitTest {
     void 친구_요청_거절(){
         //given
         FriendsService friendsService = FriendsService.builder()
-                .memberRepository(new Stub1MemberRepository())
+                .memberRepository(new Stub2MemberRepository())
                 .friendsRepository(new StubFriendRepository())
                 .aesEncryptorManager(new StubAesManager())
                 .build();

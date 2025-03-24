@@ -3,12 +3,14 @@ package yoon.capstone.application.common.dto.request;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import yoon.capstone.application.common.exception.sequence.ValidationGroup;
 
 import java.time.LocalDateTime;
 
 @Getter
+@AllArgsConstructor
 public class ProjectDto {
 
     @NotBlank(message = "TITLE_NOT_BLANK", groups = ValidationGroup.TitleBlank.class)

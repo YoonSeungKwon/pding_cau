@@ -7,7 +7,7 @@ import yoon.capstone.application.service.manager.ProfileManager;
 public class StubProfileManager implements ProfileManager {
     @Override
     public String updateProfile(MultipartFile file, long memberIndex) {
-        return null;
+        return "newProfile";
     }
 
     @Override

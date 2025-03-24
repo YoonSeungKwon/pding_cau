@@ -2,13 +2,15 @@ package yoon.capstone.application.infra.stub;
 
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
+import yoon.capstone.application.service.domain.Projects;
 import yoon.capstone.application.service.repository.MemberRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class StubMemberRepository implements MemberRepository {
+public class Stub3MemberRepository implements MemberRepository {
 
     private List<Members> list = new ArrayList<>();
 
@@ -22,7 +24,13 @@ public class StubMemberRepository implements MemberRepository {
 
     @Override
     public Optional<Members> findMemberFetch(long index) {
-        return Optional.empty();
+
+        for(Members m : list){
+            if(m.getMemberIdx() == 1) return Optional.of(m);
+        }
+
+        if(index != 1)return Optional.empty();
+        return Optional.of(Members.builder().index(index).email("test"+index+"@test.com").username("tester"+index).build());
     }
 
     @Override
@@ -64,6 +72,11 @@ public class StubMemberRepository implements MemberRepository {
     @Override
     public Members save(Members members) {
         list.add(members);
+
+        for(Projects p:members.getProjects()){
+            p.setCreatedAt(LocalDateTime.now());
+        }
         return members;
     }
+
 }

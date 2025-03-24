@@ -72,7 +72,8 @@ public class Projects {
 
 
     @Builder
-    public Projects(Members members, String title, String content,String option, String link, String image, int goal, LocalDateTime finishAt, Category category){
+    public Projects(long index, Members members, String title, String content,String option, String link, String image, int goal, LocalDateTime finishAt, Category category){
+        this.projectIdx = index;
         this.members = members;
         this.title = title;
         this.content = content;

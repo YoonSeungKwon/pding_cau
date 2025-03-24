@@ -2,6 +2,7 @@ package yoon.capstone.application.service;
 
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,6 +77,7 @@ public class ProjectService {
 
         currentMember.getProjects().add(projects);
         memberRepository.save(currentMember);
+        projectsRepository.save(projects);
 
         List<ProjectResponse> result = new ArrayList<>();
         for(Projects p: currentMember.getProjects()){
@@ -157,7 +159,7 @@ public class ProjectService {
         //Lazy Loading
         Projects projects = projectsRepository.findProject(idx).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
 
-        String url = profileManager.updateProject(file, projects.getCategory());
+        String url = profileManager.updateProfile(file, idx);
         String prevImg = projects.getImage();
 
         profileManager.deleteImage(prevImg);
