@@ -1,8 +1,8 @@
-package yoon.capstone.application.service.manager.stub;
+package yoon.capstone.application.service.manager.mock;
 
 import yoon.capstone.application.common.util.AesEncryptor;
 
-public class StubAesManager implements AesEncryptor {
+public class MockAesManager implements AesEncryptor {
     @Override
     public String decode(String s) {
         return s;

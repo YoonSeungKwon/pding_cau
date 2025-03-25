@@ -1,4 +1,4 @@
-package yoon.capstone.application.infra.stub;
+package yoon.capstone.application.infra.mock;
 
 import yoon.capstone.application.common.dto.response.FriendsReqResponse;
 import yoon.capstone.application.service.domain.Friends;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class StubFriendRepository implements FriendRepository {
+public class MockFriendRepository implements FriendRepository {
 
     private List<Friends> list = new ArrayList<>();
 

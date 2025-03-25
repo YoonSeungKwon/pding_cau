@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import yoon.capstone.application.common.dto.request.ProjectDto;
 import yoon.capstone.application.common.dto.response.ProjectDetailResponse;
 import yoon.capstone.application.common.dto.response.ProjectResponse;
@@ -15,17 +14,14 @@ import yoon.capstone.application.common.exception.FriendsException;
 import yoon.capstone.application.common.exception.UnauthorizedException;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.config.security.JwtAuthenticationToken;
-import yoon.capstone.application.infra.stub.*;
-import yoon.capstone.application.service.FriendsService;
-import yoon.capstone.application.service.MemberService;
+import yoon.capstone.application.infra.mock.Mock1MemberRepository;
+import yoon.capstone.application.infra.mock.Mock3MemberRepository;
+import yoon.capstone.application.infra.mock.MockFriendRepository;
+import yoon.capstone.application.infra.mock.MockProjectRepository;
 import yoon.capstone.application.service.ProjectService;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.domain.Projects;
-import yoon.capstone.application.service.manager.MockProfileManager;
-import yoon.capstone.application.service.manager.ProfileManager;
-import yoon.capstone.application.service.manager.TokenRefreshTemplate;
-import yoon.capstone.application.service.manager.stub.StubAesManager;
-import yoon.capstone.application.service.manager.stub.StubProfileManager;
+import yoon.capstone.application.service.manager.mock.MockProfileManager;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,32 +29,10 @@ import java.util.List;
 
 public class ProjectUnitTest {
 
-    private MemberService memberService;
-
-    private FriendsService friendsService;
-
-    private TokenRefreshTemplate tokenRefreshTemplate;
-
-    private ProfileManager profileManager;
-
 
 
     @BeforeEach
     void before(){
-        this.memberService = MemberService.builder()
-                .memberRepository(new Stub1MemberRepository())
-                .tokenRefreshTemplate(tokenRefreshTemplate)
-                .passwordEncoder(new BCryptPasswordEncoder())
-                .profileManager(new MockProfileManager())
-                .aesEncryptorManager(new StubAesManager())
-                .build();
-
-        this.friendsService = FriendsService.builder()
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub2MemberRepository())
-                .aesEncryptorManager(new StubAesManager())
-                .build();
-
         JwtAuthentication jwtAuthentication = new JwtAuthentication(1, "test1@test.com", null, Role.USER);
         SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwtAuthentication, null, new ArrayList<>()));
     }
@@ -76,10 +50,10 @@ public class ProjectUnitTest {
     void 프로젝트_생성_성공(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub1MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock1MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -100,10 +74,10 @@ public class ProjectUnitTest {
     void 프로젝트_유저인증_실패(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub1MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock1MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -119,10 +93,10 @@ public class ProjectUnitTest {
     void 프로젝트_카테고리_미존재(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub1MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock1MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -137,10 +111,10 @@ public class ProjectUnitTest {
     void 프로젝트_불러오기_성공(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub3MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock3MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -175,10 +149,10 @@ public class ProjectUnitTest {
     void 프로젝트_자세히보기_성공(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub3MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock3MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -202,10 +176,10 @@ public class ProjectUnitTest {
     void 프로젝트_자세히보기_친구아닐경우(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub3MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock3MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -223,10 +197,10 @@ public class ProjectUnitTest {
     void 프로젝트_이미지변경_성공(){
         //given
         ProjectService projectService = ProjectService.builder()
-                .projectsRepository(new StubProjectRepository())
-                .friendsRepository(new StubFriendRepository())
-                .memberRepository(new Stub3MemberRepository())
-                .profileManager(new StubProfileManager())
+                .projectsRepository(new MockProjectRepository())
+                .friendsRepository(new MockFriendRepository())
+                .memberRepository(new Mock3MemberRepository())
+                .profileManager(new MockProfileManager())
                 .build();
 
         //when
@@ -236,7 +210,7 @@ public class ProjectUnitTest {
         ProjectResponse result = projectService.changeImage(0, new MockMultipartFile("file", new byte[]{}));
 
         //then
-        Assertions.assertEquals(result.getImg(), "newProfile");
+        Assertions.assertEquals(result.getImg(), "file");
 
     }
 

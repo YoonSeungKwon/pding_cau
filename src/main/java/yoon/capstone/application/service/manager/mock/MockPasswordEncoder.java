@@ -1,8 +1,8 @@
-package yoon.capstone.application.service.manager.stub;
+package yoon.capstone.application.service.manager.mock;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-public class StubPasswordEncoder implements PasswordEncoder {
+public class MockPasswordEncoder implements PasswordEncoder {
     @Override
     public String encode(CharSequence rawPassword) {
         return rawPassword.toString();

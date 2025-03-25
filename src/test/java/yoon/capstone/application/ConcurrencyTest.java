@@ -46,8 +46,7 @@ public class ConcurrencyTest {
     @Autowired
     OrderJpaRepository orderRepository;
 
-    @Transactional
-    List<Members> setting(){
+    void setting(){
 
         Projects projects = projectsRepository.findProjectsByProjectIdx(501).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
         List<Members> list = friendsRepository.findAllByFromUserWithFetchJoin(29).stream().map(Friends::getToUser).toList();
@@ -77,12 +76,11 @@ public class ConcurrencyTest {
         }
 
         System.out.println("테스트 멤버 수 : " +list.size());
-        return list;
     }
 
     @Test
     @Transactional
-    void orderConcurrencyTest() throws InterruptedException {
+    void 주문_동시성_테스트() throws InterruptedException {
         Projects projects = projectsRepository.findProjectsByProjectIdx(501).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
 
 
@@ -121,7 +119,7 @@ public class ConcurrencyTest {
 
     @Test
     @Transactional
-    void queryTest(){
+    void 쿼리수_테스트(){
 
         Members members = memberRepository.findMembersByMemberIdx(30).orElseThrow(()->new UsernameNotFoundException(null));
         Orders orders = orderRepository.findOrdersByPaymentCodeWithFetchJoin(members.getEmail()).orElseThrow(()->new UsernameNotFoundException("Order Not Found"));

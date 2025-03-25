@@ -25,6 +25,7 @@ import yoon.capstone.application.common.util.EmailFormatManager;
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
 import yoon.capstone.application.service.manager.ProfileManager;
+import yoon.capstone.application.service.manager.RefreshTemplate;
 import yoon.capstone.application.service.manager.TokenRefreshTemplate;
 import yoon.capstone.application.service.repository.MemberRepository;
 
@@ -35,7 +36,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final TokenRefreshTemplate tokenRefreshTemplate;
+    private final RefreshTemplate tokenRefreshTemplate;
 
     private final MemberRepository memberRepository;
 
@@ -140,13 +141,13 @@ public class MemberService {
 
     @Transactional
     @Authenticated
-    public void logOut(){
+    public Members logOut(){
         JwtAuthentication dto = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Members members = memberRepository.findMember(dto.getMemberIdx()).orElseThrow(()-> new UnauthorizedException(ExceptionCode.UNAUTHORIZED_ACCESS));
 
         members.logout();
 
-        memberRepository.save(members);
+        return memberRepository.save(members);
     }
 
     @Transactional

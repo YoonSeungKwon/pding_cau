@@ -1,6 +1,5 @@
-package yoon.capstone.application.infra.stub;
+package yoon.capstone.application.infra.mock;
 
-import org.springframework.security.core.parameters.P;
 import yoon.capstone.application.service.domain.Projects;
 import yoon.capstone.application.service.repository.ProjectRepository;
 
@@ -8,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class StubProjectRepository implements ProjectRepository {
+public class MockProjectRepository implements ProjectRepository {
 
     List<Projects> list = new ArrayList<>();
 

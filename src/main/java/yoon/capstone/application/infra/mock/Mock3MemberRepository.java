@@ -1,4 +1,4 @@
-package yoon.capstone.application.infra.stub;
+package yoon.capstone.application.infra.mock;
 
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Stub3MemberRepository implements MemberRepository {
+public class Mock3MemberRepository implements MemberRepository {
 
     private List<Members> list = new ArrayList<>();
 

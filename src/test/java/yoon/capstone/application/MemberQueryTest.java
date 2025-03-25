@@ -94,7 +94,7 @@ public class MemberQueryTest {
 
     @Test
 //    @Transactional
-    void memberTest(){
+    void 멤버_쿼리수_테스트(){
 
         setting(10);
 

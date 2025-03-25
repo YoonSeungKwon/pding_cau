@@ -9,10 +9,11 @@ import yoon.capstone.application.service.domain.Members;
 
 @Service
 @RequiredArgsConstructor
-public class TokenRefreshTemplate {
+public class TokenRefreshTemplate implements RefreshTemplate{
 
     private final TokenProvider tokenProvider;
 
+    @Override
     public String refreshToken(HttpServletResponse response, Members members){
         String accessToken = tokenProvider.createAccessToken(members.getEmail());
         String refreshToken = tokenProvider.createRefreshToken();

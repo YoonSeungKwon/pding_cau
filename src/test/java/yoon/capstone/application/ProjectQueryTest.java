@@ -115,7 +115,7 @@ public class ProjectQueryTest {
 
     @Test
     @Transactional
-    void getAllProjects(){
+    void 프로젝트_쿼리수_테스트(){
 
         setting(20);
 

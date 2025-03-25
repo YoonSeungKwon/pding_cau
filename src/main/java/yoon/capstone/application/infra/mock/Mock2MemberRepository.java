@@ -1,4 +1,4 @@
-package yoon.capstone.application.infra.stub;
+package yoon.capstone.application.infra.mock;
 
 import yoon.capstone.application.config.security.JwtAuthentication;
 import yoon.capstone.application.service.domain.Members;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class Stub2MemberRepository implements MemberRepository {
+public class Mock2MemberRepository implements MemberRepository {
 
     Members testMember(int index){
         return Members.builder().index(index).email("test"+index+"@test.com").username("tester"+index).build();
