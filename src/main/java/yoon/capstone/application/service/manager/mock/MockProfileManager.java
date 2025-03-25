@@ -18,6 +18,7 @@ public class MockProfileManager implements ProfileManager {
 
     @Override
     public String updateProject(MultipartFile file, Category category) {
+        if(file == null)return "file";
         return file.getName();
     }
 
