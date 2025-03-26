@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public class MockFriendRepository implements FriendRepository {
 
+    private int index = 0;
     private List<Friends> list = new ArrayList<>();
 
     @Override
@@ -30,7 +31,7 @@ public class MockFriendRepository implements FriendRepository {
     public List<Friends> findAllFriend(long fromUser) {
         List<Friends> result = new ArrayList<>();
         for(Friends f : list){
-            if(f.getToUser().getMemberIdx() == fromUser)result.add(f);
+            if(f.getFromUser() == fromUser)result.add(f);
         }
         return result;
     }
@@ -46,12 +47,33 @@ public class MockFriendRepository implements FriendRepository {
 
     @Override
     public List<FriendsReqResponse> findAllRequest(long toUser) {
-        return new ArrayList<>();
+        List<FriendsReqResponse> result = new ArrayList<>();
+        for(Friends f : list){
+            if(f.getToUser().getMemberIdx() == toUser)
+                result.add(new FriendsReqResponse(f.getFriendIdx(), "test"+f.getFromUser()+"@test.com", "tester"+f.getFromUser()
+                , null, null));
+        }
+        return result;
     }
 
     @Override
     public Friends save(Friends friends) {
-        list.add(friends);
+        boolean exist = false;
+        for(Friends f: list){
+            if(f.getFromUser() == friends.getFromUser() && f.getToUser().getMemberIdx() == friends.getToUser().getMemberIdx()){
+                friends.setFriendIdx(f.getFriendIdx());
+                list.remove(f);
+                list.add(friends);
+                exist = true;
+                break;
+            }
+        }
+
+        if(!exist){
+            friends.setFriendIdx(index);
+            index++;
+            list.add(friends);
+        }
         return friends;
     }
 

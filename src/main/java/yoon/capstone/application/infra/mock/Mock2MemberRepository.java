@@ -11,11 +11,11 @@ import java.util.Optional;
 public class Mock2MemberRepository implements MemberRepository {
 
     Members testMember(int index){
-        return Members.builder().index(index).email("test"+index+"@test.com").username("tester"+index).build();
+        return Members.builder().index(index).email("test"+index+"@test.com?").username("tester"+index).build();
     }
     @Override
     public Optional<Members> findMember(long index) {
-        return Optional.of(testMember(2));
+        return Optional.of(testMember((int)index));
     }
 
     @Override
