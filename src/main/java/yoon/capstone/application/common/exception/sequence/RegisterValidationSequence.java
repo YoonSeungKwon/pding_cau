@@ -6,7 +6,9 @@ import jakarta.validation.GroupSequence;
         ValidationGroup.EmailBlank.class,
         ValidationGroup.EmailFormat.class,
         ValidationGroup.PasswordBlank.class,
-        ValidationGroup.NameBlank.class
+        ValidationGroup.PasswordLength.class,
+        ValidationGroup.NameBlank.class,
+        ValidationGroup.NameLength.class
 })
 public interface RegisterValidationSequence {
 }

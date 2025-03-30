@@ -7,7 +7,11 @@ public class ValidationGroup {
 
     public interface PasswordBlank{};
 
+    public interface PasswordLength{};
+
     public interface NameBlank{};
+
+    public interface NameLength{};
 
     public interface EmailFormat{};
 
@@ -16,6 +20,7 @@ public class ValidationGroup {
     public interface LinkBlank{};
 
     public interface GoalBlank{};
+
     public interface DateFuture{};
 
 

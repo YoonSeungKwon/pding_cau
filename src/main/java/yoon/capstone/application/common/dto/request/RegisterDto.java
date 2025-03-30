@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import yoon.capstone.application.common.exception.sequence.ValidationGroup;
 
 @Getter
@@ -17,9 +18,11 @@ public class RegisterDto {
     private String email;
 
     @NotBlank(message = "MEMBER_PASSWORD_BLANK", groups = ValidationGroup.PasswordBlank.class)
+    @Length(min = 8, groups = ValidationGroup.NameBlank.class)
     private String password;
 
     @NotBlank(message = "MEMBER_USERNAME_BLANK", groups = ValidationGroup.NameBlank.class)
+    @Length(min = 2, groups = ValidationGroup.NameBlank.class)
     private String name;
 
     private String phone;

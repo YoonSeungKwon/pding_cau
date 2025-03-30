@@ -59,8 +59,12 @@ public class GlobalExceptionHandler {
             exceptionCode = ExceptionCode.MEMBER_EMAIL_FORMAT;
         } else if (message.equals(ExceptionCode.MEMBER_PASSWORD_BLANK.getMessage())) { //비밀번호 빈칸
             exceptionCode = ExceptionCode.MEMBER_PASSWORD_BLANK;
+        } else if (message.equals(ExceptionCode.MEMBER_PASSWORD_LENGTH.getMessage())) { //비밀번호 빈칸
+            exceptionCode = ExceptionCode.MEMBER_PASSWORD_LENGTH;
         } else if (message.equals(ExceptionCode.MEMBER_USERNAME_BLANK.getMessage())) { //이름 빈칸
             exceptionCode = ExceptionCode.MEMBER_USERNAME_BLANK;
+        } else if (message.equals(ExceptionCode.MEMBER_USERNAME_LENGTH.getMessage())) { //비밀번호 빈칸
+            exceptionCode = ExceptionCode.MEMBER_USERNAME_LENGTH;
         } else{
             exceptionCode = ExceptionCode.INTERNAL_SERVER_ERROR;
         }

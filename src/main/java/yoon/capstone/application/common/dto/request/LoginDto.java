@@ -4,10 +4,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import yoon.capstone.application.common.exception.sequence.ValidationGroup;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class LoginDto {
 
     @Email(message = "MEMBER_EMAIL_FORMAT", groups = ValidationGroup.EmailFormat.class)

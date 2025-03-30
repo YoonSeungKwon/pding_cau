@@ -13,7 +13,9 @@ public enum ExceptionCode {
     MEMBER_EMAIL_FORMAT("이메일 형식이 아닙니다.", HttpStatus.BAD_REQUEST),
     MEMBER_EMAIL_DUPLICATED( "이미 존재하는 이메일 주소입니다.", HttpStatus.BAD_REQUEST),
     MEMBER_PASSWORD_BLANK( "비밀번호를 입력해 주세요.", HttpStatus.BAD_REQUEST),
+    MEMBER_PASSWORD_LENGTH( "비밀번호를 최소 8자 이상 입력해주세요.", HttpStatus.BAD_REQUEST),
     MEMBER_USERNAME_BLANK( "이름을 입력해 주세요.", HttpStatus.BAD_REQUEST),
+    MEMBER_USERNAME_LENGTH( "이름을 최소 2자 이상 입력해주세요.", HttpStatus.BAD_REQUEST),
 
     MEMBER_EMAIL_NOTFOUND("존재하지 않는 이메일 주소입니다.", HttpStatus.UNAUTHORIZED),
     MEMBER_PASSWORD_INVALID( "이메일 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
