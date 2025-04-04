@@ -7,19 +7,14 @@ import org.springframework.stereotype.Service;
 import yoon.capstone.application.common.dto.response.OrderMessageDto;
 import yoon.capstone.application.common.enums.ExceptionCode;
 import yoon.capstone.application.common.exception.OrderException;
-import yoon.capstone.application.common.util.AesEncryptorManager;
+import yoon.capstone.application.service.domain.Projects;
 import yoon.capstone.application.service.manager.CacheManager;
 import yoon.capstone.application.service.manager.MessageManager;
-import yoon.capstone.application.service.manager.OrderManager;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class OrderFacade {
-
-    private final AesEncryptorManager aesEncryptorManager;
-
-    private final OrderManager orderManager;
 
     private final MessageManager messageManager;
 
@@ -31,32 +26,48 @@ public class OrderFacade {
 
 
         OrderMessageDto dto = cacheManager.cacheGet("order", id, OrderMessageDto.class);
+        Projects projects;
 
-        try {
-            boolean available = cacheManager.available("order::"+id);//rLock.tryLock(60L, 1L, TimeUnit.SECONDS);
+        try {   //PG사 결제
+            boolean available = cacheManager.available("order::"+id); //Try Lock
             if (!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
-
-            orderService.kakaoPaymentAccess(dto); // 트랜잭션
-
-        }catch (Exception e){
+            projects = orderService.kakaoPaymentAccess(dto, token);
+        }catch (Exception e){   //결제 에러
             System.out.println(e.getMessage());
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }finally {
+        }finally {  //UnLock
             if(cacheManager.checkLock("order::"+id))
                 cacheManager.unlock("order::"+id);
         }
-        sendKakaoApproveRequest(dto, token);
-        messageManager.publish(dto);
-    }
 
-    public void sendKakaoApproveRequest(OrderMessageDto dto, String token){
-        String tid = aesEncryptorManager.decode(dto.getTid());
-        try {
-            orderManager.orderAccess(dto.getMemberIdx(), dto.getPaymentCode(), tid, token);
-        }catch (Exception e) {
+        try{    //Entity Caching
+            boolean available = cacheManager.available("projects::"+projects.getProjectIdx());
+            if(!available)
+                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
+
+            cacheManager.cachePut("projects", String.valueOf(projects.getProjectIdx()), projects);
+
+        }catch (Exception e){
             rollbackOrder(e, dto);
+            System.out.println(e.getMessage());
+            throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }finally {  //UnLock
+            if(cacheManager.checkLock("projects::"+id))
+                cacheManager.unlock("projects::"+id);
         }
+
+        try {   //Publish Message
+            messageManager.publish(dto);
+        }catch (Exception e){
+            rollbackCache();
+            rollbackOrder(e, dto);
+            throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }finally {
+
+        }
+
+
     }
 
 
@@ -82,5 +93,10 @@ public class OrderFacade {
 
         throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    public void rollbackCache(){
+
+    }
+
 
 }
