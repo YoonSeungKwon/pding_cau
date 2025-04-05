@@ -24,6 +24,11 @@ public class RedisCacheManager implements CacheManager{
     }
 
     @Override
+    public boolean available(String key, long time) {
+        return false;
+    }
+
+    @Override
     public boolean checkLock(String key) {
         return false;
     }

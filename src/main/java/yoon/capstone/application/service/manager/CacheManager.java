@@ -8,6 +8,8 @@ public interface CacheManager {
 
     boolean available(String key);
 
+    boolean available(String key, long time);
+
     boolean checkLock(String key);
 
     void unlock(String key);
