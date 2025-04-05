@@ -47,11 +47,6 @@ public class OrderService {
                 orders.getPayment().getCost(), orders.getComments().getContent(), orders.getPayment().getCreatedAt());
     }
 
-    private ProjectCache toCache(Projects projects){
-        return new ProjectCache(projects.getProjectIdx(), projects.getTitle(), projects.getCurrentAmount(),
-                projects.getGoalAmount(), projects.getParticipantsCount());
-    }
-
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrderList(long idx){
         //Eagle Loading
@@ -74,7 +69,7 @@ public class OrderService {
         Projects projects;
 
         try{
-            boolean available = cacheManager.available("projects::"+dto.getProjectIdx());
+            boolean available = cacheManager.available("projects::"+dto.getProjectIdx(), 5L);
             if(!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
@@ -111,7 +106,7 @@ public class OrderService {
     public Projects kakaoPaymentAccess(OrderMessageDto dto, String token){
         Projects projects;
         try{
-            boolean available = cacheManager.available("projects::"+dto.getProjectIdx());
+            boolean available = cacheManager.available("projects::"+dto.getProjectIdx(), 5L);
             if(!available) {
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
             }
@@ -142,11 +137,11 @@ public class OrderService {
 
         }catch (Exception e) {
             System.out.println(e.getMessage());
-            cancelOrder(dto.getPaymentCode());//Delete Order Try Data From Database
+            deleteOrder(dto.getPaymentCode());//Delete Order Try Data From Database
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }finally {  //Project Cache Unlock
-            if (cacheManager.checkLock("projects::" + dto.getProjectIdx()))
-                cacheManager.unlock("projects::" + dto.getProjectIdx());
+            if (cacheManager.checkLock("project::" + dto.getProjectIdx()))
+                cacheManager.unlock("project::" + dto.getProjectIdx());
         }
 
         return projects;
@@ -156,27 +151,27 @@ public class OrderService {
     public void kakaoPayRollBack(OrderMessageDto dto){
 
         try {
-            boolean available = cacheManager.available("projects::"+dto.getProjectIdx());
+            boolean available = cacheManager.available("project::"+dto.getProjectIdx());
             if(!available) {
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
             }
 
-            Projects projects = cacheManager.cacheGet("projects", String.valueOf(dto.getProjectIdx()), Projects.class);
+            Projects projects = cacheManager.cacheGet("project", String.valueOf(dto.getProjectIdx()), Projects.class);
 
             projects.setCurrentAmount(projects.getCurrentAmount() - dto.getTotal());
             projects.setParticipantsCount(projects.getParticipantsCount() - 1);
 
-            cacheManager.cachePut("projects", String.valueOf(dto.getProjectIdx()), projects);
+            cacheManager.cachePut("project", String.valueOf(dto.getProjectIdx()), projects);
         }catch (Exception e){
 
         }finally {
-            if (cacheManager.checkLock("projects::" + dto.getProjectIdx()))
-                cacheManager.unlock("projects::" + dto.getProjectIdx());
+            if (cacheManager.checkLock("project::" + dto.getProjectIdx()))
+                cacheManager.unlock("project::" + dto.getProjectIdx());
         }
     }
 
     @Transactional
-    public void cancelOrder(String paymentCode){
+    public void deleteOrder(String paymentCode){
         orderRepository.cancelOrder(paymentCode);
     }
 

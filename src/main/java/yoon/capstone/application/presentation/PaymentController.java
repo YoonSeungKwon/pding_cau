@@ -30,13 +30,13 @@ public class PaymentController {
 
     @GetMapping("/cancel/{id}")
     public String paymentCancelHandler(@PathVariable String id){
-        orderService.cancelOrder(id);
+        orderService.deleteOrder(id);
         return "canceled";
     }
 
     @GetMapping("/failure/{id}")
     public String paymentFailureHandler(@PathVariable String id){
-        orderService.cancelOrder(id);
+        orderService.deleteOrder(id);
         return "failed";
     }
 

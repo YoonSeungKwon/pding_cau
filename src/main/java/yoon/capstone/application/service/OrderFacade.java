@@ -29,7 +29,7 @@ public class OrderFacade {
         Projects projects;
 
         try {   //PG사 결제
-            boolean available = cacheManager.available("order::"+id); //Try Lock
+            boolean available = cacheManager.available("order::"+id, 5L); //Try Lock
             if (!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
             projects = orderService.kakaoPaymentAccess(dto, token);
@@ -42,31 +42,28 @@ public class OrderFacade {
         }
 
         try{    //Entity Caching
-            boolean available = cacheManager.available("projects::"+projects.getProjectIdx());
+            boolean available = cacheManager.available("project::"+projects.getProjectIdx(), 5L);
             if(!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
-            cacheManager.cachePut("projects", String.valueOf(projects.getProjectIdx()), projects);
+            cacheManager.cachePut("project", String.valueOf(projects.getProjectIdx()), projects);
 
         }catch (Exception e){
             rollbackOrder(e, dto);
             System.out.println(e.getMessage());
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }finally {  //UnLock
-            if(cacheManager.checkLock("projects::"+id))
-                cacheManager.unlock("projects::"+id);
+            if(cacheManager.checkLock("project::"+id))
+                cacheManager.unlock("project::"+id);
         }
 
         try {   //Publish Message
             messageManager.publish(dto);
         }catch (Exception e){
-            rollbackCache();
+            rollbackCache(dto);
             rollbackOrder(e, dto);
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }finally {
-
         }
-
 
     }
 
@@ -76,14 +73,14 @@ public class OrderFacade {
 
         try {
             boolean available = cacheManager.available("order::"+dto.getPaymentCode());
-            if (!available)
+            if (!available)//로깅, 서버 비정상 종료시 대처법
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
             orderService.kakaoPayRollBack(dto); // 트랜잭션
 
         }catch (Exception ex){
             System.out.println(ex.getMessage());
-            log.error("Redis 롤백 실패 " +
+            log.error("주문 데이터 롤백 실패 " +
                     "\n projectIndex " + dto.getProjectIdx() +
                     "\n total        " + dto.getTotal());
         }finally {
@@ -94,8 +91,30 @@ public class OrderFacade {
         throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public void rollbackCache(){
+    public void rollbackCache(OrderMessageDto dto){
+        try {
+            boolean available = cacheManager.available("project::"+dto.getProjectIdx());
+            if(!available)//로깅, 서버 비정상 종료시 대처법
+                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
+            Projects projects = cacheManager.cacheGet("project", String.valueOf(dto.getProjectIdx()), Projects.class);
+            if (projects == null) {
+                return;
+            }
+
+            projects.setCurrentAmount(projects.getCurrentAmount() - dto.getTotal());
+            projects.setParticipantsCount(projects.getParticipantsCount() - 1);
+
+            cacheManager.cachePut("project", String.valueOf(dto.getProjectIdx()), projects);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            log.error("캐시 데이터 롤백 실패 " +
+                    "\n projectIndex " + dto.getProjectIdx() +
+                    "\n total        " + dto.getTotal());
+        }finally {
+            if(cacheManager.checkLock("project::"+dto.getProjectIdx()))
+                cacheManager.unlock("project::"+dto.getProjectIdx());
+        }
     }
 
 
