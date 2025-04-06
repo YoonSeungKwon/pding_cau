@@ -3,32 +3,33 @@ package yoon.capstone.application.service.manager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import yoon.capstone.application.common.dto.response.OrderMessageDto;
+import yoon.capstone.application.config.RabbitMQConfig;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class RabbitMqManager implements MessageManager{
+public class RabbitMessageManager implements MessageManager{
 
-    @Value("${RABBITMQ_EXCHANGE_NAME}")
-    private String exchange;
-
-    @Value("${RABBITMQ_ROUTING_KEY}")
-    private String routingKey;
 
     private final RabbitTemplate rabbitTemplate;
+
 
 
     @Override
     public void publish(Object o) {
         OrderMessageDto dto = (OrderMessageDto) o;
+        CorrelationData correlationData = new CorrelationData(dto.getPaymentCode());
         try {
-            rabbitTemplate.convertAndSend(exchange, routingKey, dto);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.MAIN_EXCHANGE, RabbitMQConfig.MAIN_QUEUE, dto, msg -> {
+                msg.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);return msg;}, correlationData);
         }catch (AmqpException e) {                  //rabbit
-            System.out.println("Message sending failed: " + e.getMessage());
+            System.out.println("Message sending failed: " + e.getMessage()+"time: "+System.currentTimeMillis());
             log.error("메시지큐 전송 실패" +
                     "\n memberIndex  " + dto.getMemberIdx() +
                     "\n projectIndex " + dto.getProjectIdx() +
