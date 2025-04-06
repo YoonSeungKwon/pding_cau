@@ -12,10 +12,9 @@
 
  ## 3. 개발 환경 및 기술
   + **협업** :     Figma, Notion, Git, Swagger
-  + **언어** :     Java(jdk 17.), html/css, javascript
-  + **FE** :       React, Nginx
-  + **BE** :       Spring Boot(3.3.), JPA/Hibernate
-  + **INFRA** :    MariaDB, Apache Tomcat(10.), AWS EC2, AWS S3, Docker, RabbitMQ
+  + **FE** :       JavaScript, React, Nginx
+  + **BE** :       Java(jdk 17.), Spring Boot(3.3.), JPA/Hibernate
+  + **INFRA** :    MariaDB, AWS EC2, AWS S3, Docker, RabbitMQ
   + **API** :      KAKAO Oauth2, KAKAO PAY
 
  ## 4. 서비스 특징
@@ -85,4 +84,4 @@
 + **프론트엔드**: <https://github.com/YoonSeungKwon/PdingFE>
 
 
-+ **포트폴리오**: <https://sites.google.com/view/cau-artech/3-2/%EC%BA%A1%EC%8A%A4%ED%86%A4%EB%94%94%EC%9E%90%EC%9D%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B81/2023/%ED%94%84%EB%94%A9>
++ **성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
