@@ -60,7 +60,7 @@ public class OrderService {
 
     @Transactional
     @Authenticated
-    public KakaoPayResponse kakaoPayment(OrderDto dto){
+    public KakaoPayResponse kakaoPayment(OrderDto dto){     //카카오 결제 준비
 
         String paymentCode = UUID.randomUUID().toString();
 
@@ -103,7 +103,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Projects kakaoPaymentAccess(OrderMessageDto dto, String token){
+    public Projects kakaoPaymentAccess(OrderMessageDto dto, String token){      //카카오 결제 승인
         Projects projects;
         try{
             boolean available = cacheManager.available("projects::"+dto.getProjectIdx(), 5L);
@@ -131,8 +131,6 @@ public class OrderService {
                 //Update Project
                 projects.setCurrentAmount(projects.getCurrentAmount() + dto.getTotal());
                 projects.setParticipantsCount(projects.getParticipantsCount()+1);
-
-                //cacheManager.cachePut("projects", String.valueOf(projects.getProjectIdx()), projects);
             }
 
         }catch (Exception e) {
@@ -147,28 +145,6 @@ public class OrderService {
         return projects;
     }
 
-    @Transactional
-    public void kakaoPayRollBack(OrderMessageDto dto){
-
-        try {
-            boolean available = cacheManager.available("project::"+dto.getProjectIdx());
-            if(!available) {
-                throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
-            }
-
-            Projects projects = cacheManager.cacheGet("project", String.valueOf(dto.getProjectIdx()), Projects.class);
-
-            projects.setCurrentAmount(projects.getCurrentAmount() - dto.getTotal());
-            projects.setParticipantsCount(projects.getParticipantsCount() - 1);
-
-            cacheManager.cachePut("project", String.valueOf(dto.getProjectIdx()), projects);
-        }catch (Exception e){
-
-        }finally {
-            if (cacheManager.checkLock("project::" + dto.getProjectIdx()))
-                cacheManager.unlock("project::" + dto.getProjectIdx());
-        }
-    }
 
     @Transactional
     public void deleteOrder(String paymentCode){

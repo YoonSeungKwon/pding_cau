@@ -19,7 +19,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/")
-    public ResponseEntity<String> payment(@RequestBody OrderDto dto){
+    public ResponseEntity<String> order(@RequestBody OrderDto dto){
 
         KakaoPayResponse result = orderService.kakaoPayment(dto);
 
@@ -31,5 +31,7 @@ public class OrderController {
         List<OrderResponse> result = orderService.getOrderList(idx);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+
 
 }

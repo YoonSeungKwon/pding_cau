@@ -49,7 +49,7 @@ public class OrderFacade {
             cacheManager.cachePut("project", String.valueOf(projects.getProjectIdx()), projects);
 
         }catch (Exception e){
-            rollbackOrder(e, dto);
+            rollbackOrder(dto);
             System.out.println(e.getMessage());
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }finally {  //UnLock
@@ -61,25 +61,23 @@ public class OrderFacade {
             messageManager.publish(dto);
         }catch (Exception e){
             rollbackCache(dto);
-            rollbackOrder(e, dto);
+            rollbackOrder(dto);
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
 
 
-    public void rollbackOrder(Exception e, OrderMessageDto dto){
-        System.out.println("Client error: " + e.getMessage());
-
+    public void rollbackOrder(OrderMessageDto dto){
         try {
             boolean available = cacheManager.available("order::"+dto.getPaymentCode());
             if (!available)//로깅, 서버 비정상 종료시 대처법
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
-            orderService.kakaoPayRollBack(dto); // 트랜잭션
+            orderService.deleteOrder(dto.getPaymentCode()); // 트랜잭션
 
-        }catch (Exception ex){
-            System.out.println(ex.getMessage());
+        }catch (Exception e){
+            System.out.println(e.getMessage());
             log.error("주문 데이터 롤백 실패 " +
                     "\n projectIndex " + dto.getProjectIdx() +
                     "\n total        " + dto.getTotal());
