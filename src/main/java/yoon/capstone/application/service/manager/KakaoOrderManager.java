@@ -37,7 +37,7 @@ public class KakaoOrderManager implements OrderManager{
         RestTemplate restTemplate = new RestTemplate();
 
         headers.set("Content-type", "application/json");
-        headers.set("Authorization", "DEV_SECRET_KEY " + admin_key);
+        headers.set("Authorization", "SECRET_KEY "+ admin_key);
 
         KakaoReadyRequest kakaoRequest = new KakaoReadyRequest("TC0ONETIME",
                 paymentCode, String.valueOf(index), name, 1, total, total,
