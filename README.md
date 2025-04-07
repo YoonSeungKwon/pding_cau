@@ -1,5 +1,7 @@
 ![로고](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding4.png)
 # 프딩 Pding
++ **성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
++ + **프론트엔드**: <https://github.com/YoonSeungKwon/PdingFE>
 
 ## 1. 프로젝트 개요 
   프딩(프레젠트 펀딩, Present Funding)은 원하는 선물을 등록하면 친구들이 그 금액을 채워주는 크라우드 펀딩 형태의 모바일 중접 웹 서비스입니다.
@@ -80,8 +82,4 @@
 ![경진대회](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding6.png)
 ![과제전](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding7.png)
 
-## 9. 링크
-+ **프론트엔드**: <https://github.com/YoonSeungKwon/PdingFE>
 
-
-+ **성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
