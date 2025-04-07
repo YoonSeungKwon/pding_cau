@@ -32,14 +32,7 @@
     
       서비스 레이어 단위 테스트 시 테스트 목적에 집중한 테스트를 위하여 외부 서비스 추상화와 빌더 패턴을 적극적으로
      활용하여 테스트 용 객체를 만들어 테스트 할 수  있도록 하였다.
-     
-  - **클래스 다이어그램**
 
-     
-![캐싱](https://github.com/YoonSeungKwon/Capstone1/blob/master/src/messageManager.white.png)
-
-
-![메시징](https://github.com/YoonSeungKwon/Capstone1/blob/master/src/cacheManager.png)
 
 ## 5. 문제 해결
 
@@ -65,10 +58,6 @@
       결과적으로 컴포넌트는 RabbitMQ를 추가로 도입하여, 단일 결제 요청 기준으로 약 100ms의 응답 속도에서
       약 50ms으로 테스트 환경에서 약 50ms 가량의 응답 속도를 단축 시킬 수 있었다.
 
-    
-- **주문 과정 시퀀스 다이어그램**
-
-![캐싱](https://github.com/YoonSeungKwon/Capstone1/blob/master/src/saga.white.png)
     
 - **OSIV 문제 해결**
     
