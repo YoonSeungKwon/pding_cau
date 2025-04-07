@@ -1,6 +1,9 @@
 ![로고](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding4.png)
 # 프딩 Pding
 
++ **데이터 안정성을 우선에 둔 성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
++ **프론트엔드**: <https://github.com/YoonSeungKwon/PdingFE>
+
 ## 1. 프로젝트 개요 
   프딩(프레젠트 펀딩, Present Funding)은 원하는 선물을 등록하면 친구들이 그 금액을 채워주는 크라우드 펀딩 형태의 모바일 중접 웹 서비스입니다.
   기존 선물 문화의 문제를 해결하고, 사용자들이 더 나은 선물 경험을 즐길 수 있도록 돕기 위해 제작되었습니다.
@@ -25,7 +28,7 @@
      기능들을 구조로부터 분리하였다.  
 
     
-   - **2. 쉬운 테스트를 위한 설계**
+  - **2. 쉬운 테스트를 위한 설계**
     
       서비스 레이어 단위 테스트 시 테스트 목적에 집중한 테스트를 위하여 외부 서비스 추상화와 빌더 패턴을 적극적으로
      활용하여 테스트 용 객체를 만들어 테스트 할 수  있도록 하였다.
@@ -44,7 +47,8 @@
     2. **주문 데이터 버퍼링**
     
       초반에는 CAS를 사용하는 비동기 큐를 이용하여 주문 정보 WRITE작업 버퍼링을 구현하였지만, 주문 정보라는 데이터의
-      안전성을 위하여 서버 비정상 시에도 영속적으로 데이터를 저장할 수 있는 RabbitMQ를 사용하여 버퍼링 작업을 구현하였다.
+      안전성을 위하여 서버 재시작 시에도 디스크에 데이터를 저장할 수 있고 서버 규모를 고려하여 RabbitMQ를 사용하여 버퍼링 작업을 구현하였다.
+      
     
     3. **데이터베이스 튜닝**
     
@@ -80,8 +84,4 @@
 ![경진대회](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding6.png)
 ![과제전](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding7.png)
 
-## 9. 링크
-+ **프론트엔드**: <https://github.com/YoonSeungKwon/PdingFE>
 
-
-+ **성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
