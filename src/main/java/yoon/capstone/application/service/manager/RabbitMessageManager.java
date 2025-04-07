@@ -27,6 +27,7 @@ public class RabbitMessageManager implements MessageManager{
         CorrelationData correlationData = new CorrelationData(dto.getPaymentCode());
         try {
             rabbitTemplate.convertAndSend(RabbitMQConfig.MAIN_EXCHANGE, RabbitMQConfig.MAIN_QUEUE, dto, msg -> {
+//                msg.getMessageProperties().setExpiration("10000");
                 msg.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);return msg;}, correlationData);
         }catch (AmqpException e) {                  //rabbit
             System.out.println("Message sending failed: " + e.getMessage()+"time: "+System.currentTimeMillis());

@@ -20,7 +20,7 @@ public class RollbackMessageManager implements MessageManager{
     @Override
     public void publish(Object o) {
         OrderMessageDto dto = (OrderMessageDto) o;
-        CorrelationData correlationData = new CorrelationData(dto.getPaymentCode());
+        CorrelationData correlationData = new CorrelationData(dto.getPaymentCode() + "rollback");
         try {
             rabbitTemplate.convertAndSend(RabbitMQConfig.ROLLBACK_EXCHANGE, RabbitMQConfig.ROLLBACK_QUEUE, dto, msg -> {
                 msg.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);return msg;}, correlationData);
