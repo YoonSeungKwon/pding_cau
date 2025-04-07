@@ -1,7 +1,7 @@
 ![로고](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding4.png)
 # 프딩 Pding
 
-+ **성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
++ **데이터 안정성을 우선에 둔 성능 개선기**: <https://www.notion.so/1cbaf94f960c80fa97f8d71034f264e1>
 + **프론트엔드**: <https://github.com/YoonSeungKwon/PdingFE>
 
 ## 1. 프로젝트 개요 
