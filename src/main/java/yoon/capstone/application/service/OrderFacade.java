@@ -10,17 +10,24 @@ import yoon.capstone.application.common.exception.OrderException;
 import yoon.capstone.application.service.domain.Projects;
 import yoon.capstone.application.service.manager.CacheManager;
 import yoon.capstone.application.service.manager.MessageManager;
+import yoon.capstone.application.service.manager.RabbitMessageManager;
+import yoon.capstone.application.service.manager.RollbackMessageManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class OrderFacade {
 
-    private final MessageManager messageManager;
+    private final RabbitMessageManager messageManager;
 
     private final OrderService orderService;
 
     private final CacheManager cacheManager;
+
+    private final RollbackMessageManager rollbackMessageManager;
 
     public void order(String id, String token) {
 
@@ -30,6 +37,7 @@ public class OrderFacade {
 
         try {   //PG사 결제
             boolean available = cacheManager.available("order::"+id, 5L); //Try Lock
+            System.out.println("get lock");
             if (!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
             projects = orderService.kakaoPaymentAccess(dto, token);
@@ -49,22 +57,36 @@ public class OrderFacade {
             cacheManager.cachePut("project", String.valueOf(projects.getProjectIdx()), projects);
 
         }catch (Exception e){
-            rollbackOrder(dto);
-            System.out.println(e.getMessage());
+            try {
+                rollbackOrder(dto);
+            }catch (Exception ex){
+                publishRollbackMessage("ORDER", dto);
+            }
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }finally {  //UnLock
-            if(cacheManager.checkLock("project::"+id))
-                cacheManager.unlock("project::"+id);
+            if(cacheManager.checkLock("project::"+projects.getProjectIdx()))
+                cacheManager.unlock("project::"+projects.getProjectIdx());
         }
 
         try {   //Publish Message
+//            throw new RuntimeException();
             messageManager.publish(dto);
         }catch (Exception e){
-            rollbackCache(dto);
-            rollbackOrder(dto);
+            try {
+                rollbackCache(dto);
+                rollbackOrder(dto);
+            }catch (Exception ex){
+                publishRollbackMessage("CACHE", dto);
+                publishRollbackMessage("ORDER", dto);
+            }
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    public void publishRollbackMessage(String s, OrderMessageDto dto){
+        dto.setTid(s);
+        rollbackMessageManager.publish(dto);
     }
 
 

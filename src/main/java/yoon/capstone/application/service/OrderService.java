@@ -69,22 +69,22 @@ public class OrderService {
         Projects projects;
 
         try{
-            boolean available = cacheManager.available("projects::"+dto.getProjectIdx(), 5L);
+            boolean available = cacheManager.available("project::"+dto.getProjectIdx(), 5L);
             if(!available)
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
 
-            projects = cacheManager.cacheGet("projects", String.valueOf(dto.getProjectIdx()), Projects.class);
+            projects = cacheManager.cacheGet("project", String.valueOf(dto.getProjectIdx()), Projects.class);
             if (projects == null) {
                 projects = projectsRepository.findProject(dto.getProjectIdx()).orElseThrow(()->new ProjectException(ExceptionCode.PROJECT_NOT_FOUND));
-                cacheManager.cachePut("projects", String.valueOf(dto.getProjectIdx()), projects);
+                cacheManager.cachePut("project", String.valueOf(dto.getProjectIdx()), projects);
             }
 
         }catch (Exception e) {
             System.out.println(e.getMessage());
             throw new OrderException("결제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }finally {
-            if(cacheManager.checkLock("projects::"+dto.getProjectIdx()))
-                cacheManager.unlock("projects::"+dto.getProjectIdx());
+            if(cacheManager.checkLock("project::"+dto.getProjectIdx()))
+                cacheManager.unlock("project::"+dto.getProjectIdx());
         }
 
         if(projects.getCurrentAmount() + dto.getTotal() > projects.getGoalAmount())
@@ -106,13 +106,13 @@ public class OrderService {
     public Projects kakaoPaymentAccess(OrderMessageDto dto, String token){      //카카오 결제 승인
         Projects projects;
         try{
-            boolean available = cacheManager.available("projects::"+dto.getProjectIdx(), 5L);
+            boolean available = cacheManager.available("project::"+dto.getProjectIdx(), 5L);
             if(!available) {
                 throw new OrderException(ExceptionCode.ORDER_LOCK_TIMEOUT.getMessage(), ExceptionCode.ORDER_LOCK_TIMEOUT.getStatus());
             }
 
             //Load Project For Validation
-            projects = cacheManager.cacheGet("projects", String.valueOf(dto.getProjectIdx()), Projects.class);
+            projects = cacheManager.cacheGet("project", String.valueOf(dto.getProjectIdx()), Projects.class);
 
             if(projects == null){   //Cache Miss Access Database
                 projects = projectsRepository.findProject(dto.getProjectIdx())
