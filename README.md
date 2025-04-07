@@ -28,11 +28,18 @@
      기능들을 구조로부터 분리하였다.  
 
     
-   - **2. 쉬운 테스트를 위한 설계**
+  - **2. 쉬운 테스트를 위한 설계**
     
       서비스 레이어 단위 테스트 시 테스트 목적에 집중한 테스트를 위하여 외부 서비스 추상화와 빌더 패턴을 적극적으로
      활용하여 테스트 용 객체를 만들어 테스트 할 수  있도록 하였다.
+     
+  - **클래스 다이어그램**
 
+     
+![캐싱](https://github.com/YoonSeungKwon/Capstone1/blob/master/src/messageManager.white.png)
+
+
+![메시징](https://github.com/YoonSeungKwon/Capstone1/blob/master/src/cacheManager.png)
 
 ## 5. 문제 해결
 
@@ -47,7 +54,8 @@
     2. **주문 데이터 버퍼링**
     
       초반에는 CAS를 사용하는 비동기 큐를 이용하여 주문 정보 WRITE작업 버퍼링을 구현하였지만, 주문 정보라는 데이터의
-      안전성을 위하여 서버 비정상 시에도 영속적으로 데이터를 저장할 수 있는 RabbitMQ를 사용하여 버퍼링 작업을 구현하였다.
+      안전성을 위하여 서버 재시작 시에도 디스크에 데이터를 저장할 수 있고 서버 규모를 고려하여 RabbitMQ를 사용하여 버퍼링 작업을 구현하였다.
+      
     
     3. **데이터베이스 튜닝**
     
@@ -57,6 +65,10 @@
       결과적으로 컴포넌트는 RabbitMQ를 추가로 도입하여, 단일 결제 요청 기준으로 약 100ms의 응답 속도에서
       약 50ms으로 테스트 환경에서 약 50ms 가량의 응답 속도를 단축 시킬 수 있었다.
 
+    
+- **주문 과정 시퀀스 다이어그램**
+
+![캐싱](https://github.com/YoonSeungKwon/Capstone1/blob/master/src/saga.white.png)
     
 - **OSIV 문제 해결**
     
