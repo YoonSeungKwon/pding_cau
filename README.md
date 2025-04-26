@@ -82,6 +82,4 @@
 ## 8. 결과물
 
 ![경진대회](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding6.png)
-![과제전](https://github.com/YoonSeungKwon/Capstone1/blob/master/pding7.png)
-
 
